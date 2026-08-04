@@ -8,8 +8,8 @@ const ADMIN_CREDENTIALS_API = '/api/admin-credentials';
 // Obfuscated defaults so they're not plainly readable in source:
 // Base64 of 'admin@vasukipickles.com'
 const _DEFAULT_EMAIL = atob('YWRtaW5AdmFzdWtpcGlja2xlcy5jb20=');
-// Base64 of 'admin123'
-const _DEFAULT_PASS = atob('YWRtaW4xMjM=');
+// Base64 of 'Admin@123'
+const _DEFAULT_PASS = atob('QWRtaW5AMTIz');
 
 const AuthContext = createContext();
 

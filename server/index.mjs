@@ -11,7 +11,7 @@ const productsFile = path.join(dataDir, 'products.json');
 
 const defaultCredentials = {
   email: 'admin@vasukipickles.com',
-  password: 'admin123',
+  password: 'Admin@123',
 };
 
 async function ensureStore() {
