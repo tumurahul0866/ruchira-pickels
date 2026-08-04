@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Shield, ArrowLeft, Home, ShoppingBag, PhoneCall, Sparkles, Lock, Mail } from 'lucide-react';
+import { Shield, ArrowLeft, Home, ShoppingBag, PhoneCall, Lock, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const AdminLogin = () => {

@@ -23,8 +23,8 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initialiseAdminAuth = async () => {
-      const legacyEmail = localStorage.getItem(ADMIN_EMAIL_KEY) || _DEFAULT_EMAIL;
-      const legacyPass = localStorage.getItem(ADMIN_PASS_KEY) || _DEFAULT_PASS;
+      const legacyEmail = (localStorage.getItem(ADMIN_EMAIL_KEY) || _DEFAULT_EMAIL).trim().toLowerCase();
+      const legacyPass = (localStorage.getItem(ADMIN_PASS_KEY) || _DEFAULT_PASS).trim();
 
       if (!localStorage.getItem(ADMIN_EMAIL_KEY)) {
         localStorage.setItem(ADMIN_EMAIL_KEY, legacyEmail);
@@ -37,8 +37,8 @@ export const AuthProvider = ({ children }) => {
         const response = await fetch(ADMIN_CREDENTIALS_API);
         if (response.ok) {
           const remoteCredentials = await response.json();
-          const syncedEmail = remoteCredentials.email || legacyEmail;
-          const syncedPass = remoteCredentials.password || legacyPass;
+          const syncedEmail = (remoteCredentials.email || legacyEmail).trim().toLowerCase();
+          const syncedPass = (remoteCredentials.password || legacyPass).trim();
           setAdminCredentials({ email: syncedEmail, password: syncedPass });
           localStorage.setItem(ADMIN_EMAIL_KEY, syncedEmail);
           localStorage.setItem(ADMIN_PASS_KEY, syncedPass);
@@ -78,13 +78,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginAdmin = async (email, password) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     try {
       const response = await fetch(ADMIN_CREDENTIALS_API);
       if (response.ok) {
         const remoteCredentials = await response.json();
-        const storedEmail = remoteCredentials.email || adminCredentials.email;
-        const storedPass = remoteCredentials.password || adminCredentials.password;
-        if (email === storedEmail && password === storedPass) {
+        const storedEmail = (remoteCredentials.email || adminCredentials.email).trim().toLowerCase();
+        const storedPass = (remoteCredentials.password || adminCredentials.password).trim();
+
+        if (cleanEmail === storedEmail && cleanPassword === storedPass) {
           setAdminCredentials({ email: storedEmail, password: storedPass });
           setIsAdmin(true);
           localStorage.setItem(ADMIN_SESSION_KEY, 'true');
@@ -97,9 +101,9 @@ export const AuthProvider = ({ children }) => {
       // Fall back to the last locally cached values if the server is unavailable.
     }
 
-    const storedEmail = adminCredentials.email || _DEFAULT_EMAIL;
-    const storedPass = adminCredentials.password || _DEFAULT_PASS;
-    if (email === storedEmail && password === storedPass) {
+    const storedEmail = (adminCredentials.email || _DEFAULT_EMAIL).trim().toLowerCase();
+    const storedPass = (adminCredentials.password || _DEFAULT_PASS).trim();
+    if (cleanEmail === storedEmail && cleanPassword === storedPass) {
       setIsAdmin(true);
       localStorage.setItem(ADMIN_SESSION_KEY, 'true');
       return true;
