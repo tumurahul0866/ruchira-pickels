@@ -1,0 +1,122 @@
+import React, { useState, useEffect } from 'react';
+import { getOrders, updateOrderStatus } from '../../services/dataStore';
+
+const ManageOrders = () => {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    setOrders(getOrders().reverse());
+  }, []);
+
+  const handleStatusChange = (id, newStatus) => {
+    updateOrderStatus(id, newStatus);
+    setOrders(getOrders().reverse());
+  };
+
+  const handlePaymentChange = (id, newPaymentStatus) => {
+    updateOrderStatus(id, null, newPaymentStatus);
+    setOrders(getOrders().reverse());
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-serif text-brand-cream mb-6">Manage Orders</h2>
+
+      <div className="space-y-6">
+        {orders.length === 0 ? (
+          <p className="text-brand-cream/50 text-center py-10">No orders found.</p>
+        ) : (
+          orders.map((order) => (
+            <div key={order.id} className="bg-brand-matte border border-white/10 rounded-xl p-6">
+              
+              <div className="flex flex-wrap justify-between items-start mb-6 pb-6 border-b border-white/5 gap-4">
+                <div>
+                  <h3 className="font-bold text-brand-gold text-lg">{order.id}</h3>
+                  <p className="text-sm text-brand-cream/50">{new Date(order.date).toLocaleString()}</p>
+                </div>
+                
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div className="bg-brand-black px-4 py-2 rounded-lg border border-white/10">
+                    <span className="text-xs text-brand-cream/50 uppercase block mb-1">Order Status</span>
+                    <select 
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      className="bg-transparent text-brand-cream text-sm font-bold focus:outline-none cursor-pointer"
+                    >
+                      <option className="bg-brand-black">Pending</option>
+                      <option className="bg-brand-black">Confirmed</option>
+                      <option className="bg-brand-black">Preparing</option>
+                      <option className="bg-brand-black">Out for Delivery</option>
+                      <option className="bg-brand-black">Delivered</option>
+                      <option className="bg-brand-black">Cancelled</option>
+                    </select>
+                  </div>
+
+                  <div className="bg-brand-black px-4 py-2 rounded-lg border border-white/10">
+                    <span className="text-xs text-brand-cream/50 uppercase block mb-1">Payment: {order.customer.paymentMethod}</span>
+                    <select 
+                      value={order.paymentStatus || 'Pending'}
+                      onChange={(e) => handlePaymentChange(order.id, e.target.value)}
+                      className={`bg-transparent text-sm font-bold focus:outline-none cursor-pointer ${order.paymentStatus === 'Paid' ? 'text-green-400' : 'text-brand-red'}`}
+                    >
+                      <option className="bg-brand-black text-brand-cream">Pending</option>
+                      <option className="bg-brand-black text-green-400">Paid</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Customer Details */}
+                <div>
+                  <h4 className="text-sm font-bold text-brand-cream/70 uppercase mb-3 border-b border-white/10 pb-2">Customer Info</h4>
+                  <p className="text-brand-cream font-medium">{order.customer.name}</p>
+                  <p className="text-brand-cream/70 text-sm">{order.customer.email}</p>
+                  <p className="text-brand-cream/70 text-sm mb-3">{order.customer.phone}</p>
+                  
+                  <p className="text-brand-cream/70 text-sm leading-relaxed">
+                    {order.customer.address}<br />
+                    {order.customer.city}, {order.customer.state} - {order.customer.pincode}
+                  </p>
+                  
+                  {order.customer.notes && (
+                    <div className="mt-4 p-3 bg-brand-gold/10 border border-brand-gold/20 rounded-lg">
+                      <p className="text-xs text-brand-gold font-bold mb-1">Notes:</p>
+                      <p className="text-sm text-brand-cream italic">"{order.customer.notes}"</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Order Items */}
+                <div>
+                  <h4 className="text-sm font-bold text-brand-cream/70 uppercase mb-3 border-b border-white/10 pb-2">Order Items</h4>
+                  <div className="space-y-4">
+                    {order.items.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center bg-brand-black/50 p-2 rounded">
+                        <div className="flex gap-3 items-center">
+                          <img src={item.product.image} className="w-10 h-10 object-cover rounded" alt={item.product.name} />
+                          <div>
+                            <p className="text-brand-cream text-sm font-medium">{item.product.name}</p>
+                            <p className="text-brand-cream/50 text-xs">{item.weightOption.weight} x {item.quantity}</p>
+                          </div>
+                        </div>
+                        <p className="text-brand-gold font-bold text-sm">₹{item.weightOption.price * item.quantity}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                    <span className="text-brand-cream/70 font-bold">Total Amount:</span>
+                    <span className="text-xl font-bold text-brand-gold">₹{order.totalAmount}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ManageOrders;

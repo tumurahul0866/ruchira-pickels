@@ -1,0 +1,763 @@
+export const initialProductTypes = [
+  'Pickles',
+  'Podis',
+  'Non-Veg Pickles',
+  'Sweets & Snacks'
+];
+
+export const initialProducts = [
+  {
+    id: '1',
+    name: 'Andhra Avakaya Mango Pickle',
+    category: 'Veg',
+    productType: 'Pickles',
+    weights: [
+      { weight: '250g', price: 180 },
+      { weight: '500g', price: 340 },
+      { weight: '1kg', price: 620 }
+    ],
+    spiceLevel: 'Spicy',
+    description: 'Authentic Andhra style raw mango pickle crafted with premium cold-pressed groundnut oil, Guntur red chilies, and hand-ground spices.',
+    ingredients: 'Raw mango chunks, cold-pressed groundnut oil, Guntur chili powder, mustard powder, fenugreek, garlic, sea salt',
+    shelfLife: '12 Months',
+    discountPrice: 0,
+    bulkPrice: 1700,
+    stockQuantity: 45,
+    inStock: true,
+    bestSeller: true,
+    newArrival: false,
+    visible: true,
+    rating: 4.9,
+    reviewsCount: 128,
+    image: 'https://images.unsplash.com/photo-1596503893341-3b764b8a4a58?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: [
+      'https://images.unsplash.com/photo-1596503893341-3b764b8a4a58?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    ]
+  },
+  {
+    id: '2',
+    name: 'Gongura Garlic Pickle',
+    category: 'Veg',
+    productType: 'Pickles',
+    weights: [
+      { weight: '250g', price: 190 },
+      { weight: '500g', price: 360 },
+      { weight: '1kg', price: 650 }
+    ],
+    spiceLevel: 'Extra Hot',
+    description: 'Iconic Andhra sour sorrel leaves (Gongura) blended with roasted garlic cloves and roasted red chilies. A true staple of Telugu cuisine.',
+    ingredients: 'Fresh Gongura leaves, whole garlic, Guntur chilies, mustard oil, coriander seeds, cumin, salt',
+    shelfLife: '9 Months',
+    discountPrice: 0,
+    bulkPrice: 1800,
+    stockQuantity: 32,
+    inStock: true,
+    bestSeller: true,
+    newArrival: false,
+    visible: true,
+    rating: 4.8,
+    reviewsCount: 94,
+    image: 'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: [
+      'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    ]
+  },
+  {
+    id: '3',
+    name: 'Boneless Chicken Pickle',
+    category: 'Non-Veg',
+    productType: 'Non-Veg Pickles',
+    weights: [
+      { weight: '250g', price: 380 },
+      { weight: '500g', price: 690 },
+      { weight: '1kg', price: 1290 }
+    ],
+    spiceLevel: 'Spicy',
+    description: 'Tender boneless chicken pieces fried to golden perfection, marinated in rich aromatic gravy with freshly roasted whole spices.',
+    ingredients: 'Boneless chicken, groundnut oil, ginger garlic paste, chili powder, lemon juice, garam masala, salt',
+    shelfLife: '4 Months (Refrigeration recommended)',
+    discountPrice: 0,
+    bulkPrice: 3500,
+    stockQuantity: 28,
+    inStock: true,
+    bestSeller: true,
+    newArrival: true,
+    visible: true,
+    rating: 5.0,
+    reviewsCount: 156,
+    image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: [
+      'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    ]
+  },
+  {
+    id: '4',
+    name: 'Spicy Royal Prawns Pickle',
+    category: 'Non-Veg',
+    productType: 'Non-Veg Pickles',
+    weights: [
+      { weight: '250g', price: 440 },
+      { weight: '500g', price: 820 },
+      { weight: '1kg', price: 1550 }
+    ],
+    spiceLevel: 'Spicy',
+    description: 'Juicy coastal sea prawns cooked in spicy Andhra tangy gravy. Packed with intense ocean flavor and traditional spices.',
+    ingredients: 'Fresh sea prawns, groundnut oil, chili powder, ginger, garlic, cloves, cinnamon, lemon concentrate',
+    shelfLife: '4 Months (Refrigerated)',
+    discountPrice: 0,
+    bulkPrice: 4200,
+    stockQuantity: 20,
+    inStock: true,
+    bestSeller: false,
+    newArrival: true,
+    visible: true,
+    rating: 4.9,
+    reviewsCount: 82,
+    image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: [
+      'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    ]
+  },
+  {
+    id: '5',
+    name: 'Andhra Mutton Pickle',
+    category: 'Non-Veg',
+    productType: 'Non-Veg Pickles',
+    weights: [
+      { weight: '250g', price: 460 },
+      { weight: '500g', price: 860 },
+      { weight: '1kg', price: 1650 }
+    ],
+    spiceLevel: 'Extra Hot',
+    description: 'Tender boneless mutton pieces slow-cooked in cold-pressed oil and roasted spice blend. Rich, savory, and extremely delicious.',
+    ingredients: 'Boneless tender mutton, groundnut oil, garlic, ginger, star anise, red chili powder, coriander, salt',
+    shelfLife: '4 Months (Refrigerated)',
+    discountPrice: 0,
+    bulkPrice: 4500,
+    stockQuantity: 15,
+    inStock: true,
+    bestSeller: true,
+    newArrival: true,
+    visible: true,
+    rating: 4.9,
+    reviewsCount: 71,
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: []
+  },
+  {
+    id: '6',
+    name: 'Kandi Podi (Gunpowder)',
+    category: 'Veg',
+    productType: 'Podis',
+    weights: [
+      { weight: '250g', price: 140 },
+      { weight: '500g', price: 260 },
+      { weight: '1kg', price: 490 }
+    ],
+    spiceLevel: 'Medium',
+    description: 'Aromatic roasted toor dal powder blended with cumin seeds and red chilies. Perfectly pairs with hot rice and melted pure ghee.',
+    ingredients: 'Roasted Toor Dal, Bengal Gram, Cumin seeds, Red chilies, Asafoetida, Salt',
+    shelfLife: '9 Months',
+    discountPrice: 0,
+    bulkPrice: 1300,
+    stockQuantity: 50,
+    inStock: true,
+    bestSeller: true,
+    newArrival: false,
+    visible: true,
+    rating: 4.9,
+    reviewsCount: 112,
+    image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: []
+  },
+  {
+    id: '7',
+    name: 'Karivepaku (Curry Leaf) Podi',
+    category: 'Veg',
+    productType: 'Podis',
+    weights: [
+      { weight: '250g', price: 150 },
+      { weight: '500g', price: 280 },
+      { weight: '1kg', price: 520 }
+    ],
+    spiceLevel: 'Mild',
+    description: 'Nutritious curry leaf powder enriched with iron and antioxidants. Roasted with black gram, garlic, and cumin.',
+    ingredients: 'Fresh sun-dried curry leaves, Urad dal, Chana dal, Garlic, Pepper, Cumin, Tamarind, Salt',
+    shelfLife: '9 Months',
+    discountPrice: 0,
+    bulkPrice: 1400,
+    stockQuantity: 40,
+    inStock: true,
+    bestSeller: false,
+    newArrival: true,
+    visible: true,
+    rating: 4.8,
+    reviewsCount: 64,
+    image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: []
+  },
+  {
+    id: '8',
+    name: 'Allam (Ginger) Sweet & Spicy Pickle',
+    category: 'Veg',
+    productType: 'Pickles',
+    weights: [
+      { weight: '250g', price: 170 },
+      { weight: '500g', price: 320 },
+      { weight: '1kg', price: 600 }
+    ],
+    spiceLevel: 'Medium',
+    description: 'Delicious sweet & tangy ginger pickle prepared with organic jaggery and tamarind. Essential condiment for MLA Pesarattu Dosa.',
+    ingredients: 'Fresh ginger, organic jaggery, tamarind extract, red chilies, mustard seeds, fenugreek, oil, salt',
+    shelfLife: '9 Months',
+    discountPrice: 0,
+    bulkPrice: 1600,
+    stockQuantity: 30,
+    inStock: true,
+    bestSeller: false,
+    newArrival: false,
+    visible: true,
+    rating: 4.7,
+    reviewsCount: 53,
+    image: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: []
+  },
+  {
+    id: '9',
+    name: 'Bellam Gavvalu (Jaggery Shells)',
+    category: 'Veg',
+    productType: 'Sweets & Snacks',
+    weights: [
+      { weight: '250g', price: 130 },
+      { weight: '500g', price: 240 },
+      { weight: '1kg', price: 450 }
+    ],
+    spiceLevel: 'Mild',
+    description: 'Traditional crisp sweet shells rolled in pure cardamom-scented jaggery syrup. Crunchy, sweet, and nostalgic.',
+    ingredients: 'Wheat flour, organic jaggery, cardamom powder, pure ghee, refined sunflower oil',
+    shelfLife: '3 Months',
+    discountPrice: 0,
+    bulkPrice: 1200,
+    stockQuantity: 35,
+    inStock: true,
+    bestSeller: true,
+    newArrival: false,
+    visible: true,
+    rating: 4.9,
+    reviewsCount: 88,
+    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    additionalImages: []
+  }
+];
+
+const initialReviews = [
+  {
+    id: 'r1',
+    name: 'Srikanth Reddy (Hyderabad)',
+    product: 'Gongura Garlic Pickle',
+    rating: 5,
+    date: '02 Aug 2026',
+    text: 'The Gongura Garlic pickle tastes exactly like my grandmother used to make in Guntur! Perfect tanginess, bold garlic cloves, and genuine cold-pressed oil aroma. Superb leak-proof packaging.',
+    visible: true,
+    verifiedBuyer: true
+  },
+  {
+    id: 'r2',
+    name: 'Priyanka Sharma (Bengaluru)',
+    product: 'Andhra Avakaya Mango Pickle',
+    rating: 5,
+    date: '31 Jul 2026',
+    text: 'Living in Bangalore, I missed authentic Andhra Avakaya. Ordered the 500g jar from Vasuki Pickles and it exceeded my expectations. Spice level is spot on!',
+    visible: true,
+    verifiedBuyer: true
+  },
+  {
+    id: 'r3',
+    name: 'Ramesh Raju (Vijayawada)',
+    product: 'Boneless Chicken Pickle',
+    rating: 5,
+    date: '27 Jul 2026',
+    text: 'The Boneless Chicken pickle is unbelievable! Juicy, massive chicken pieces with authentic roasted spice gravy. Ordering 1kg jar for my office colleagues too.',
+    visible: true,
+    verifiedBuyer: true
+  },
+  {
+    id: 'r4',
+    name: 'Kavitha Rao (Chennai)',
+    product: 'Kandi Podi (Gunpowder)',
+    rating: 5,
+    date: '22 Jul 2026',
+    text: 'Kandi Podi with hot rice and homemade ghee is pure bliss. Fragrant toor dal aroma and perfectly balanced red chili heat. Highly recommended!',
+    visible: true,
+    verifiedBuyer: true
+  }
+];
+
+const initialOffers = [
+  {
+    id: 'o1',
+    code: 'KONASEMA10',
+    title: 'Grand Konasema Welcome Offer',
+    description: 'Enjoy 10% OFF on all orders above ₹999 + FREE Express Shipping across India!',
+    discount: 10,
+    active: true,
+    minOrderValue: 999
+  }
+];
+
+const defaultStoreSettings = {
+  logoUrl: '/logo.svg',
+  heroBackgroundUrl: 'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+  featureImageUrl: 'https://images.unsplash.com/photo-1596503893341-3b764b8a4a58?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+  aboutImageUrl: 'https://images.unsplash.com/photo-1506544777-64cfb638973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+  brandTagline: 'Handcrafted Heritage Pickles & Podis from Konasema Delta.',
+  heroTitle: 'KONASEMA RUCHULU',
+  heroSubtitle: 'Authentic Andhra & Konasema pickles made with cold-pressed oil and grandma recipes.',
+  whatsappMessage: 'Hi Konasema Ruchulu! I would like to place an order.',
+  whatsappNumber: '+918885473903',
+  contactNumber: '+91 8885473903',
+  email: 'support@konasemaruchulu.com',
+  instagram: 'https://instagram.com/konasemaruchulu',
+  facebook: 'https://facebook.com/konasemaruchulu',
+  mapLink: 'https://maps.google.com',
+  deliveryNote: 'Free Express shipping on all orders above ₹999.',
+  aboutTitle: 'Preserving Authentic Konasema Pickling Traditions',
+  aboutStory: 'Konasema Ruchulu is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
+  aboutStory2: 'What started as a family tradition has blossomed into a trusted brand dedicated to preserving the authentic culinary heritage of South India. We believe that a meal is incomplete without that perfect touch of spice, tanginess, and aromatic cold-pressed groundnut oil.',
+  aboutReasonTitle: 'The Essence of Konasema',
+  aboutReasonText: 'Symbolizes agricultural richness, warmth, and legendary culinary heritage. Like timeless recipes passed through generations, our pickles are bold, memorable, and packaged in food-grade glass jars and sealed pouches without chemical shortcuts.',
+  aboutPromise1Title: '100% Natural Ingredients',
+  aboutPromise1Desc: 'Sourced directly from local Andhra farmers to ensure authentic spice, color, and freshness in every jar.',
+  aboutPromise2Title: 'Traditional Wood-Pressed Oil',
+  aboutPromise2Desc: 'Slow-extracted groundnut oil retains wholesome aroma and natural health benefits without chemical refining.',
+  aboutPromise3Title: 'Made with Love',
+  aboutPromise3Desc: 'Hand-mixed in hygienic small batches with the same devotion and care as for our own family.',
+  businessName: 'Konasema Ruchulu',
+  address: '123 Heritage Spice Lane, Jubilee Hills, Hyderabad, Telangana 500033',
+  freeShippingEnabled: true,
+  minFreeShippingAmount: 999
+};
+
+const defaultPaymentSettings = {
+  qrImage: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=konasemaruchulu@upi%26pn=Konasema%20Ruchulu%20Pickles',
+  upiId: 'konasemaruchulu@upi',
+  phone: '+91 8885473903',
+  enableCOD: true,
+  enableUPI: true,
+  enableScanner: true,
+  scannerNote: 'Scan the QR code using Google Pay, PhonePe, Paytm, or BHIM UPI to complete payment.',
+  instructions: 'After paying, take a screenshot and enter your transaction UTR reference number.'
+};
+
+const defaultAdminProfile = {
+  ownerName: 'Konasema Ruchulu Management',
+  businessName: 'Konasema Ruchulu',
+  email: 'admin@vasukipickles.com',
+  phone: '+91 8885473903',
+  whatsapp: '+91 8885473903',
+  address: 'Hyderabad, Telangana 500033',
+  instagram: 'https://instagram.com/konasemaruchulu'
+};
+
+// Initial Orders Mock Dataset for Business Management Demo
+const initialOrders = [
+  {
+    id: 'ORD884920',
+    date: new Date(Date.now() - 86400000).toISOString(),
+    status: 'Delivered',
+    paymentStatus: 'Paid',
+    paymentMethod: 'UPI',
+    totalAmount: 960,
+    trackingNumber: 'TRK772910',
+    customer: {
+      name: 'Srikanth Reddy',
+      phone: '9885473903',
+      email: 'srikanth@gmail.com',
+      address: 'Flat 402, Sunshine Towers, Jubilee Hills',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      pincode: '500033'
+    },
+    items: [
+      {
+        product: initialProducts[0],
+        weightOption: { weight: '500g', price: 340 },
+        quantity: 1
+      },
+      {
+        product: initialProducts[2],
+        weightOption: { weight: '500g', price: 690 },
+        quantity: 1
+      }
+    ]
+  },
+  {
+    id: 'ORD884921',
+    date: new Date().toISOString(),
+    status: 'Order Placed',
+    paymentStatus: 'Pending',
+    paymentMethod: 'COD',
+    totalAmount: 650,
+    trackingNumber: 'TRK772911',
+    customer: {
+      name: 'Priyanka Sharma',
+      phone: '9876543210',
+      email: 'priyanka@gmail.com',
+      address: 'House 12, Indiranagar 10th Main',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      pincode: '560038'
+    },
+    items: [
+      {
+        product: initialProducts[1],
+        weightOption: { weight: '1kg', price: 650 },
+        quantity: 1
+      }
+    ]
+  }
+];
+
+// --- DATA ACCESS & PERSISTENCE HELPERS ---
+
+export const getProducts = () => {
+  const products = localStorage.getItem('vasuki_products');
+  if (!products) {
+    localStorage.setItem('vasuki_products', JSON.stringify(initialProducts));
+    return initialProducts;
+  }
+  return JSON.parse(products);
+};
+
+export const saveProduct = (product) => {
+  const products = getProducts();
+  const normalized = {
+    id: product.id || Date.now().toString(),
+    name: product.name || '',
+    category: product.category || 'Veg',
+    productType: product.productType || 'Pickles',
+    weights: product.weights || [
+      { weight: '250g', price: 150 },
+      { weight: '500g', price: 280 },
+      { weight: '1kg', price: 500 }
+    ],
+    spiceLevel: product.spiceLevel || 'Medium',
+    description: product.description || '',
+    ingredients: product.ingredients || '',
+    shelfLife: product.shelfLife || '9 Months',
+    discountPrice: Number(product.discountPrice) || 0,
+    bulkPrice: Number(product.bulkPrice) || 0,
+    stockQuantity: Number(product.stockQuantity) || 25,
+    inStock: Number(product.stockQuantity) > 0,
+    bestSeller: Boolean(product.bestSeller),
+    newArrival: Boolean(product.newArrival),
+    visible: product.visible !== undefined ? product.visible : true,
+    rating: product.rating || 4.9,
+    reviewsCount: product.reviewsCount || 10,
+    image: product.image || '',
+    additionalImages: product.additionalImages || []
+  };
+
+  const existingIndex = products.findIndex(p => p.id === normalized.id);
+  if (existingIndex >= 0) {
+    products[existingIndex] = normalized;
+  } else {
+    products.push(normalized);
+  }
+  localStorage.setItem('vasuki_products', JSON.stringify(products));
+};
+
+export const getProductTypes = () => {
+  const types = localStorage.getItem('vasuki_product_types');
+  if (!types) {
+    localStorage.setItem('vasuki_product_types', JSON.stringify(initialProductTypes));
+    return initialProductTypes;
+  }
+  return JSON.parse(types);
+};
+
+export const addProductType = (type) => {
+  const types = getProductTypes();
+  if (!types.includes(type)) {
+    types.push(type);
+    localStorage.setItem('vasuki_product_types', JSON.stringify(types));
+  }
+};
+
+export const deleteProduct = (id) => {
+  const products = getProducts();
+  const updated = products.filter(p => p.id !== id);
+  localStorage.setItem('vasuki_products', JSON.stringify(updated));
+};
+
+export const toggleProductVisibility = (id) => {
+  const products = getProducts();
+  const target = products.find(p => p.id === id);
+  if (target) {
+    target.visible = !target.visible;
+    localStorage.setItem('vasuki_products', JSON.stringify(products));
+  }
+};
+
+export const updateProductStock = (id, quantity) => {
+  const products = getProducts();
+  const product = products.find(p => p.id === id);
+  if (product) {
+    product.stockQuantity = Number(quantity);
+    product.inStock = Number(quantity) > 0;
+    localStorage.setItem('vasuki_products', JSON.stringify(products));
+  }
+};
+
+// --- ORDERS DATABASE & TRACKING ---
+
+export const getOrders = () => {
+  const orders = localStorage.getItem('vasuki_orders');
+  if (!orders) {
+    localStorage.setItem('vasuki_orders', JSON.stringify(initialOrders));
+    return initialOrders;
+  }
+  return JSON.parse(orders);
+};
+
+export const saveOrder = (order) => {
+  const orders = getOrders();
+  const trackingNumber = 'TRK' + Math.floor(100000 + Math.random() * 900000);
+  const newOrder = {
+    ...order,
+    id: order.id || 'ORD' + Date.now().toString().slice(-6),
+    trackingNumber: trackingNumber,
+    date: order.date || new Date().toISOString(),
+    status: order.status || 'Order Placed',
+    paymentStatus: order.paymentStatus || 'Pending',
+    trackingSteps: [
+      { title: 'Order Placed', time: new Date().toLocaleString(), done: true },
+      { title: 'Payment Verified', time: 'In Progress', done: order.paymentStatus === 'Paid' },
+      { title: 'Packed with Care', time: 'Pending', done: false },
+      { title: 'Handed to Express Courier', time: 'Pending', done: false },
+      { title: 'Delivered to Doorstep', time: 'Pending', done: false }
+    ]
+  };
+  orders.unshift(newOrder);
+  localStorage.setItem('vasuki_orders', JSON.stringify(orders));
+  return newOrder;
+};
+
+export const updateOrderStatus = (id, status, paymentStatus) => {
+  const orders = getOrders();
+  const index = orders.findIndex(o => o.id === id);
+  if (index >= 0) {
+    if (status) orders[index].status = status;
+    if (paymentStatus) orders[index].paymentStatus = paymentStatus;
+    localStorage.setItem('vasuki_orders', JSON.stringify(orders));
+  }
+};
+
+// --- REVIEWS DATABASE ---
+
+export const getReviews = () => {
+  const reviews = localStorage.getItem('vasuki_reviews');
+  if (!reviews) {
+    localStorage.setItem('vasuki_reviews', JSON.stringify(initialReviews));
+    return initialReviews;
+  }
+  return JSON.parse(reviews);
+};
+
+export const saveReview = (review) => {
+  const reviews = getReviews();
+  const normalized = {
+    id: review.id || Date.now().toString(),
+    name: review.name || 'Valued Customer',
+    product: review.product || 'Vasuki Pickle',
+    rating: Number(review.rating) || 5,
+    date: review.date || new Date().toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    }),
+    text: review.text || '',
+    visible: review.visible !== undefined ? review.visible : true,
+    verifiedBuyer: true
+  };
+  reviews.unshift(normalized);
+  localStorage.setItem('vasuki_reviews', JSON.stringify(reviews));
+};
+
+export const deleteReview = (id) => {
+  const reviews = getReviews();
+  const updated = reviews.filter(r => r.id !== id);
+  localStorage.setItem('vasuki_reviews', JSON.stringify(updated));
+};
+
+export const toggleReviewVisibility = (id) => {
+  const reviews = getReviews();
+  const target = reviews.find(r => r.id === id);
+  if (target) {
+    target.visible = !target.visible;
+    localStorage.setItem('vasuki_reviews', JSON.stringify(reviews));
+  }
+};
+
+// --- OFFERS DATABASE ---
+
+export const getOffers = () => {
+  const offers = localStorage.getItem('vasuki_offers');
+  if (!offers) {
+    localStorage.setItem('vasuki_offers', JSON.stringify(initialOffers));
+    return initialOffers;
+  }
+  return JSON.parse(offers);
+};
+
+export const saveOffer = (offer) => {
+  const offers = getOffers();
+  const normalized = {
+    id: offer.id || Date.now().toString(),
+    code: (offer.code || 'SALE10').toUpperCase().trim(),
+    title: offer.title || '',
+    description: offer.description || '',
+    discount: Number(offer.discount) || 0,
+    active: offer.active !== undefined ? offer.active : true,
+    productId: offer.productId || '',
+    minOrderValue: Number(offer.minOrderValue) || 0
+  };
+  const index = offers.findIndex(o => o.id === normalized.id);
+  if (index >= 0) {
+    offers[index] = normalized;
+  } else {
+    offers.push(normalized);
+  }
+  localStorage.setItem('vasuki_offers', JSON.stringify(offers));
+};
+
+export const deleteOffer = (id) => {
+  const offers = getOffers();
+  const updated = offers.filter(o => o.id !== id);
+  localStorage.setItem('vasuki_offers', JSON.stringify(updated));
+};
+
+export const toggleOffer = (id) => {
+  const offers = getOffers();
+  const target = offers.find(o => o.id === id);
+  if (target) {
+    target.active = !target.active;
+    localStorage.setItem('vasuki_offers', JSON.stringify(offers));
+  }
+};
+
+// --- STORE & PAYMENT SETTINGS ---
+
+export const getStoreSettings = () => {
+  const data = localStorage.getItem('vasuki_settings');
+  if (data) return JSON.parse(data);
+  localStorage.setItem('vasuki_settings', JSON.stringify(defaultStoreSettings));
+  return defaultStoreSettings;
+};
+
+export const updateStoreSettings = (settings) => {
+  const current = getStoreSettings();
+  localStorage.setItem('vasuki_settings', JSON.stringify({ ...current, ...settings }));
+};
+
+export const saveStoreSettings = updateStoreSettings;
+
+export const getPaymentSettings = () => {
+  const data = localStorage.getItem('vasuki_payment_settings');
+  if (data) return JSON.parse(data);
+  localStorage.setItem('vasuki_payment_settings', JSON.stringify(defaultPaymentSettings));
+  return defaultPaymentSettings;
+};
+
+export const updatePaymentSettings = (settings) => {
+  localStorage.setItem('vasuki_payment_settings', JSON.stringify({ ...defaultPaymentSettings, ...settings }));
+};
+
+// --- USER PROFILE, ADDRESSES & CUSTOMERS ---
+
+export const getUserProfile = (email) => {
+  const profiles = JSON.parse(localStorage.getItem('vasuki_user_profiles') || '{}');
+  if (email && profiles[email]) {
+    return profiles[email];
+  }
+  return {
+    name: '',
+    email: email || '',
+    phone: '',
+    addresses: [],
+    wishlist: []
+  };
+};
+
+export const saveUserProfile = (email, profileData) => {
+  const profiles = JSON.parse(localStorage.getItem('vasuki_user_profiles') || '{}');
+  profiles[email] = {
+    ...profiles[email],
+    ...profileData,
+    email: email
+  };
+  localStorage.setItem('vasuki_user_profiles', JSON.stringify(profiles));
+};
+
+export const getWishlist = (email) => {
+  if (!email) {
+    return JSON.parse(localStorage.getItem('vasuki_guest_wishlist') || '[]');
+  }
+  const profile = getUserProfile(email);
+  return profile.wishlist || [];
+};
+
+export const toggleWishlist = (email, productId) => {
+  let list = getWishlist(email);
+  if (list.includes(productId)) {
+    list = list.filter(id => id !== productId);
+  } else {
+    list.push(productId);
+  }
+
+  if (!email) {
+    localStorage.setItem('vasuki_guest_wishlist', JSON.stringify(list));
+  } else {
+    saveUserProfile(email, { wishlist: list });
+  }
+  return list;
+};
+
+export const isProductInWishlist = (email, productId) => {
+  const list = getWishlist(email);
+  return list.includes(productId);
+};
+
+export const getCustomers = () => {
+  const orders = getOrders();
+  const customersMap = {};
+  orders.forEach((order) => {
+    const key = order.customer?.email || order.customer?.phone || order.customer?.name || 'guest';
+    if (!customersMap[key]) {
+      customersMap[key] = {
+        name: order.customer?.name || 'Customer',
+        email: order.customer?.email || 'N/A',
+        phone: order.customer?.phone || 'N/A',
+        totalOrders: 0,
+        lastOrder: order.date
+      };
+    }
+    customersMap[key].totalOrders += 1;
+    if (new Date(order.date) > new Date(customersMap[key].lastOrder)) {
+      customersMap[key].lastOrder = order.date;
+    }
+  });
+  return Object.values(customersMap);
+};
+
+export const getAdminProfile = () => {
+  const data = localStorage.getItem('vasuki_admin_profile');
+  if (data) return JSON.parse(data);
+  localStorage.setItem('vasuki_admin_profile', JSON.stringify(defaultAdminProfile));
+  return defaultAdminProfile;
+};
+
+export const updateAdminProfile = (profile) => {
+  localStorage.setItem('vasuki_admin_profile', JSON.stringify({ ...defaultAdminProfile, ...profile }));
+};
