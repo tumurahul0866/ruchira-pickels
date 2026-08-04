@@ -19,7 +19,9 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await loginAdmin(email, password);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    const success = await loginAdmin(cleanEmail, cleanPassword);
     if (success) {
       setError('');
       navigate('/admin');
@@ -114,6 +116,10 @@ const AdminLogin = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. admin@vasukipickles.com"
                 required
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 className="w-full rounded-2xl border-2 border-[#5C4033]/20 bg-white px-4 py-3 text-sm font-semibold text-[#5C4033] placeholder-[#5C4033]/40 focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/20 transition-all shadow-inner"
               />
             </div>
@@ -128,6 +134,10 @@ const AdminLogin = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
+                autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 className="w-full rounded-2xl border-2 border-[#5C4033]/20 bg-white px-4 py-3 text-sm font-semibold text-[#5C4033] placeholder-[#5C4033]/40 focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/20 transition-all shadow-inner"
               />
             </div>
