@@ -22,9 +22,9 @@ const FloatingNavbar = () => {
     <motion.aside
       initial={{ x: 80, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-      className="fixed right-2 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-2xl floating-nav-panel"
-      style={{ minWidth: 44 }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
+      className="fixed right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-1 py-2 px-1 rounded-2xl floating-nav-panel"
+      style={{ minWidth: 36 }}
     >
       {/* Collapse toggle */}
       <button
