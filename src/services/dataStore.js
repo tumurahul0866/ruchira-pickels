@@ -605,6 +605,12 @@ export const updateOrderStatus = (id, status, paymentStatus) => {
   }
 };
 
+export const deleteOrder = (id) => {
+  const orders = getOrders();
+  const updated = orders.filter((o) => o.id !== id);
+  localStorage.setItem('vasuki_orders', JSON.stringify(updated));
+};
+
 // --- REVIEWS DATABASE ---
 
 export const getReviews = () => {

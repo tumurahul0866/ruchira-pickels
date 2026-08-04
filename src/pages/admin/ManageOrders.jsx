@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { getOrders, updateOrderStatus } from '../../services/dataStore';
+import { useState } from 'react';
+import { getOrders, updateOrderStatus, deleteOrder } from '../../services/dataStore';
 
 const ManageOrders = () => {
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    setOrders(getOrders().reverse());
-  }, []);
+  const [orders, setOrders] = useState(() => getOrders().reverse());
 
   const handleStatusChange = (id, newStatus) => {
     updateOrderStatus(id, newStatus);
@@ -16,6 +12,13 @@ const ManageOrders = () => {
   const handlePaymentChange = (id, newPaymentStatus) => {
     updateOrderStatus(id, null, newPaymentStatus);
     setOrders(getOrders().reverse());
+  };
+
+  const handleDeleteOrder = (id) => {
+    if (window.confirm('Delete this order permanently?')) {
+      deleteOrder(id);
+      setOrders(getOrders().reverse());
+    }
   };
 
   return (
@@ -63,6 +66,14 @@ const ManageOrders = () => {
                       <option className="bg-brand-black text-green-400">Paid</option>
                     </select>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteOrder(order.id)}
+                    className="rounded-2xl px-4 py-2 text-xs font-semibold text-brand-red bg-brand-red/10 border border-brand-red/20 hover:bg-brand-red/20 transition-colors"
+                  >
+                    Delete Order
+                  </button>
                 </div>
               </div>
 

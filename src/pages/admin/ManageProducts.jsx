@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { getProducts, saveProduct, deleteProduct, toggleProductVisibility, updateProductStock, getProductTypes, addProductType } from '../../services/dataStore';
+import { useState, useEffect } from 'react';
+import { getProducts, saveProduct, deleteProduct, toggleProductVisibility, getProductTypes, addProductType } from '../../services/dataStore';
 import { Edit2, Trash2, Plus, X } from 'lucide-react';
 import Button from '../../components/ui/Button';
 
@@ -86,19 +86,29 @@ const ManageProducts = () => {
     setIsEditing(false);
   };
 
-  const handleWeightPriceChange = (index, value) => {
+  const handleWeightChange = (index, field, value) => {
     const newWeights = [...formData.weights];
-    newWeights[index].price = Number(value);
+    newWeights[index] = {
+      ...newWeights[index],
+      [field]: field === 'price' ? Number(value) : value
+    };
+    setFormData({ ...formData, weights: newWeights });
+  };
+
+  const addWeightRow = () => {
+    setFormData({
+      ...formData,
+      weights: [...formData.weights, { weight: 'Custom', price: 0 }]
+    });
+  };
+
+  const removeWeightRow = (index) => {
+    const newWeights = formData.weights.filter((_, idx) => idx !== index);
     setFormData({ ...formData, weights: newWeights });
   };
 
   const handleVisibilityToggle = async (id) => {
     await toggleProductVisibility(id);
-    await refreshProducts();
-  };
-
-  const handleStockUpdate = async (id, value) => {
-    await updateProductStock(id, value);
     await refreshProducts();
   };
 
@@ -245,20 +255,46 @@ const ManageProducts = () => {
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="space-y-4">
             {formData.weights.map((w, idx) => (
-              <div key={w.weight}>
-                <label className="block text-sm text-brand-cream/70 mb-2">{w.weight} Price</label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  value={w.price}
-                  onChange={(e) => handleWeightPriceChange(idx, e.target.value)}
-                  className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
-                />
+              <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                <div>
+                  <label className="block text-sm text-brand-cream/70 mb-2">Label</label>
+                  <input
+                    type="text"
+                    value={w.weight}
+                    onChange={(e) => handleWeightChange(idx, 'weight', e.target.value)}
+                    placeholder="e.g. 250g, 500ml, 1L, 2 pcs"
+                    className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-brand-cream/70 mb-2">Price</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={w.price}
+                    onChange={(e) => handleWeightChange(idx, 'price', e.target.value)}
+                    className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeWeightRow(idx)}
+                  className="text-xs text-brand-red bg-brand-red/10 rounded-2xl px-4 py-3 font-semibold hover:bg-brand-red/20 transition-colors"
+                >
+                  Remove
+                </button>
               </div>
             ))}
+            <button
+              type="button"
+              onClick={addWeightRow}
+              className="inline-flex items-center justify-center rounded-2xl border border-brand-gold/40 bg-brand-gold/10 px-4 py-3 text-sm font-semibold text-brand-gold hover:bg-brand-gold/20 transition-colors"
+            >
+              Add price variant
+            </button>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -372,7 +408,7 @@ const ManageProducts = () => {
               <th className="px-6 py-4">Image</th>
               <th className="px-6 py-4">Name</th>
               <th className="px-6 py-4">Category</th>
-              <th className="px-6 py-4">250g</th>
+              <th className="px-6 py-4">Primary Price</th>
               <th className="px-6 py-4">Stock</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
@@ -390,7 +426,7 @@ const ManageProducts = () => {
                     {product.category}
                   </span>
                 </td>
-                <td className="px-6 py-4">₹{product.weights[0]?.price || 0}</td>
+                <td className="px-6 py-4">{product.weights[0] ? `${product.weights[0].weight} · ₹${product.weights[0].price}` : '—'}</td>
                 <td className="px-6 py-4">{product.stockQuantity}</td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs ${product.visible ? 'bg-brand-gold/10 text-brand-gold' : 'bg-brand-red/10 text-brand-red'}`}>
