@@ -23,7 +23,7 @@ const FloatingNavbar = () => {
       initial={{ x: 80, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-      className="fixed right-4 top-1/2 -translate-y-1/2 z-50 hidden lg:flex flex-col items-center gap-2 py-4 px-2 rounded-2xl floating-nav-panel"
+      className="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-2 py-4 px-2 rounded-2xl floating-nav-panel"
       style={{ minWidth: 52 }}
     >
       {/* Collapse toggle */}

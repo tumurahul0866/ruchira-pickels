@@ -18,8 +18,11 @@ const ApplyOffers = () => {
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
-    setOffers(getOffers());
-    setProducts(getProducts());
+    const loadData = async () => {
+      setOffers(getOffers());
+      setProducts(await getProducts());
+    };
+    loadData();
   }, []);
 
   const resetForm = () => {

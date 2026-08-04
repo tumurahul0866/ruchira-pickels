@@ -9,8 +9,11 @@ const ChangePictures = () => {
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
-    setStoreSettings(getStoreSettings());
-    setProducts(getProducts());
+    const loadData = async () => {
+      setStoreSettings(getStoreSettings());
+      setProducts(await getProducts());
+    };
+    loadData();
   }, []);
 
   const handleStoreImageChange = (key, value) => {

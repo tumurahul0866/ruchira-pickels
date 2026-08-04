@@ -25,7 +25,7 @@ const ChangePassword = () => {
     setCurrentAdminEmail(getAdminEmail());
   }, [getAdminEmail]);
 
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setEmailMessage(null);
 
@@ -34,7 +34,7 @@ const ChangePassword = () => {
       return;
     }
 
-    const success = changeAdminEmail(emailAuthPassword, newAdminEmail.trim());
+    const success = await changeAdminEmail(emailAuthPassword, newAdminEmail.trim());
     if (success) {
       setEmailMessage({ type: 'success', text: 'Admin email updated successfully!' });
       setCurrentAdminEmail(newAdminEmail.trim());
@@ -45,7 +45,7 @@ const ChangePassword = () => {
     }
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setPassMessage(null);
 
@@ -58,7 +58,7 @@ const ChangePassword = () => {
       return;
     }
 
-    const success = changeAdminPassword(currentPassword, newPassword);
+    const success = await changeAdminPassword(currentPassword, newPassword);
     if (success) {
       setPassMessage({ type: 'success', text: 'Admin password updated successfully! Use your new password on next login.' });
       setCurrentPassword('');

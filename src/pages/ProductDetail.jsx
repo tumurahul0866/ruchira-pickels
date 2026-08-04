@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -31,15 +31,24 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const storeSettings = getStoreSettings();
 
-  const products = getProducts();
-  const product = products.find((item) => item.id === id);
+  const [products, setProducts] = useState([]);
+  const [product, setProduct] = useState(null);
+  const [selectedWeight, setSelectedWeight] = useState({ weight: '250g', price: 0 });
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
-  const [selectedWeight, setSelectedWeight] = useState(
-    product?.weights?.[0] || { weight: '250g', price: 0 }
-  );
-  const [isWishlisted, setIsWishlisted] = useState(
-    isProductInWishlist(user?.email, product?.id)
-  );
+  useEffect(() => {
+    const loadProduct = async () => {
+      const allProducts = await getProducts();
+      setProducts(allProducts);
+      const found = allProducts.find((item) => item.id === id);
+      setProduct(found);
+      if (found) {
+        setSelectedWeight(found.weights?.[0] || { weight: '250g', price: 0 });
+        setIsWishlisted(isProductInWishlist(user?.email, found.id));
+      }
+    };
+    loadProduct();
+  }, [id, user?.email]);
   const [addedToast, setAddedToast] = useState(false);
 
   const reviews = getReviews().filter(

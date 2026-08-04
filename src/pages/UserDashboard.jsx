@@ -91,9 +91,9 @@ const UserDashboard = () => {
     loadWishlist(user.email);
   }, [user, navigate]);
 
-  const loadWishlist = (email) => {
+  const loadWishlist = async (email) => {
     const ids = getWishlist(email);
-    const allProds = getProducts();
+    const allProds = await getProducts();
     const wishProds = allProds.filter((p) => ids.includes(p.id));
     setWishlistProducts(wishProds);
   };

@@ -16,12 +16,15 @@ const Flavours = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const fetchedProducts = getProducts().filter((p) => p.visible !== false);
-    const fetchedTypes = getProductTypes();
-    const fetchedOffers = getOffers().filter((o) => o.active);
-    setProducts(fetchedProducts);
-    setProductTypes(fetchedTypes);
-    setOffers(fetchedOffers);
+    const loadData = async () => {
+      const fetchedProducts = (await getProducts()).filter((p) => p.visible !== false);
+      const fetchedTypes = getProductTypes();
+      const fetchedOffers = getOffers().filter((o) => o.active);
+      setProducts(fetchedProducts);
+      setProductTypes(fetchedTypes);
+      setOffers(fetchedOffers);
+    };
+    loadData();
 
     const urlSearch = searchParams.get('search');
     if (urlSearch) {

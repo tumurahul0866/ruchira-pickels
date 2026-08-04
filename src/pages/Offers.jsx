@@ -18,10 +18,13 @@ const Offers = () => {
   const [copiedCode, setCopiedCode] = useState('');
 
   useEffect(() => {
-    const activeOffers = getOffers().filter((o) => o.active);
-    const visibleProducts = getProducts().filter((p) => p.visible);
-    setOffers(activeOffers);
-    setProducts(visibleProducts);
+    const loadData = async () => {
+      const activeOffers = getOffers().filter((o) => o.active);
+      const visibleProducts = (await getProducts()).filter((p) => p.visible);
+      setOffers(activeOffers);
+      setProducts(visibleProducts);
+    };
+    loadData();
   }, []);
 
   const handleCopyCode = (code) => {

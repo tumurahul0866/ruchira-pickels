@@ -63,18 +63,22 @@ const AdminDashboard = () => {
   const [recentOrders, setRecentOrders] = useState([]);
 
   useEffect(() => {
-    if (!isAdmin) return;
-    const products = getProducts();
-    const orders = getOrders();
-    const today = new Date().toISOString().slice(0, 10);
-    const deliveredOrders = orders.filter((o) => o.status === 'Delivered').length;
-    const cancelledOrders = orders.filter((o) => o.status === 'Cancelled').length;
-    const pendingOrders = orders.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
-    const lowStock = products.filter((p) => p.stockQuantity <= 8 && p.visible).length;
-    const todayOrders = orders.filter((o) => o.date.slice(0, 10) === today).length;
-    const totalRevenue = orders.filter((o) => o.status !== 'Cancelled').reduce((s, o) => s + Number(o.totalAmount), 0);
-    setStats({ totalProducts: products.length, totalOrders: orders.length, pendingOrders, deliveredOrders, cancelledOrders, todayOrders, lowStock, totalRevenue });
-    setRecentOrders(orders.slice(-6).reverse());
+    const loadStats = async () => {
+      if (!isAdmin) return;
+      const products = await getProducts();
+      const orders = getOrders();
+      const today = new Date().toISOString().slice(0, 10);
+      const deliveredOrders = orders.filter((o) => o.status === 'Delivered').length;
+      const cancelledOrders = orders.filter((o) => o.status === 'Cancelled').length;
+      const pendingOrders = orders.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
+      const lowStock = products.filter((p) => p.stockQuantity <= 8 && p.visible).length;
+      const todayOrders = orders.filter((o) => o.date.slice(0, 10) === today).length;
+      const totalRevenue = orders.filter((o) => o.status !== 'Cancelled').reduce((s, o) => s + Number(o.totalAmount), 0);
+      setStats({ totalProducts: products.length, totalOrders: orders.length, pendingOrders, deliveredOrders, cancelledOrders, todayOrders, lowStock, totalRevenue });
+      setRecentOrders(orders.slice(-6).reverse());
+    };
+
+    loadStats();
   }, [isAdmin, activeTab]);
 
   const handleLogout = () => { logout(); navigate('/admin-login'); };

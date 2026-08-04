@@ -17,9 +17,9 @@ const AdminLogin = () => {
     }
   }, [isAdmin, navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = loginAdmin(email, password);
+    const success = await loginAdmin(email, password);
     if (success) {
       setError('');
       navigate('/admin');

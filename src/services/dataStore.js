@@ -419,9 +419,40 @@ const initialOrders = [
   }
 ];
 
-// --- DATA ACCESS & PERSISTENCE HELPERS ---
+const PRODUCTS_API = '/api/products';
 
-export const getProducts = () => {
+const syncLocalProducts = (products) => {
+  localStorage.setItem('vasuki_products', JSON.stringify(products));
+};
+
+const createProductPayload = (product) => ({
+  ...product,
+  name: product.name || '',
+  category: product.category || 'Veg',
+  productType: product.productType || 'Pickles',
+  weights: product.weights || [
+    { weight: '250g', price: 150 },
+    { weight: '500g', price: 280 },
+    { weight: '1kg', price: 500 }
+  ],
+  spiceLevel: product.spiceLevel || 'Medium',
+  description: product.description || '',
+  ingredients: product.ingredients || '',
+  shelfLife: product.shelfLife || '9 Months',
+  discountPrice: Number(product.discountPrice) || 0,
+  bulkPrice: Number(product.bulkPrice) || 0,
+  stockQuantity: Number(product.stockQuantity) || 25,
+  inStock: product.inStock !== undefined ? product.inStock : Number(product.stockQuantity) > 0,
+  bestSeller: Boolean(product.bestSeller),
+  newArrival: Boolean(product.newArrival),
+  visible: product.visible !== undefined ? product.visible : true,
+  rating: product.rating || 4.9,
+  reviewsCount: product.reviewsCount || 10,
+  image: product.image || '',
+  additionalImages: product.additionalImages || []
+});
+
+const getProductsFromLocal = () => {
   const products = localStorage.getItem('vasuki_products');
   if (!products) {
     localStorage.setItem('vasuki_products', JSON.stringify(initialProducts));
@@ -430,42 +461,48 @@ export const getProducts = () => {
   return JSON.parse(products);
 };
 
-export const saveProduct = (product) => {
-  const products = getProducts();
-  const normalized = {
-    id: product.id || Date.now().toString(),
-    name: product.name || '',
-    category: product.category || 'Veg',
-    productType: product.productType || 'Pickles',
-    weights: product.weights || [
-      { weight: '250g', price: 150 },
-      { weight: '500g', price: 280 },
-      { weight: '1kg', price: 500 }
-    ],
-    spiceLevel: product.spiceLevel || 'Medium',
-    description: product.description || '',
-    ingredients: product.ingredients || '',
-    shelfLife: product.shelfLife || '9 Months',
-    discountPrice: Number(product.discountPrice) || 0,
-    bulkPrice: Number(product.bulkPrice) || 0,
-    stockQuantity: Number(product.stockQuantity) || 25,
-    inStock: Number(product.stockQuantity) > 0,
-    bestSeller: Boolean(product.bestSeller),
-    newArrival: Boolean(product.newArrival),
-    visible: product.visible !== undefined ? product.visible : true,
-    rating: product.rating || 4.9,
-    reviewsCount: product.reviewsCount || 10,
-    image: product.image || '',
-    additionalImages: product.additionalImages || []
-  };
-
-  const existingIndex = products.findIndex(p => p.id === normalized.id);
-  if (existingIndex >= 0) {
-    products[existingIndex] = normalized;
-  } else {
-    products.push(normalized);
+export const getProducts = async () => {
+  try {
+    const response = await fetch(PRODUCTS_API);
+    if (!response.ok) throw new Error('Failed to fetch products');
+    const products = await response.json();
+    syncLocalProducts(products);
+    return products;
+  } catch {
+    return getProductsFromLocal();
   }
-  localStorage.setItem('vasuki_products', JSON.stringify(products));
+};
+
+export const saveProduct = async (product) => {
+  const payload = createProductPayload(product);
+  const method = payload.id ? 'PUT' : 'POST';
+  const url = payload.id ? `${PRODUCTS_API}/${payload.id}` : PRODUCTS_API;
+
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to save product');
+    }
+    const updated = await response.json();
+    const products = await getProducts();
+    syncLocalProducts(products);
+    return updated;
+  } catch {
+    const products = getProductsFromLocal();
+    const existingIndex = products.findIndex((p) => p.id === payload.id);
+    if (existingIndex >= 0) {
+      products[existingIndex] = payload;
+    } else {
+      payload.id = payload.id || Date.now().toString();
+      products.push(payload);
+    }
+    syncLocalProducts(products);
+    return payload;
+  }
 };
 
 export const getProductTypes = () => {
@@ -485,29 +522,43 @@ export const addProductType = (type) => {
   }
 };
 
-export const deleteProduct = (id) => {
-  const products = getProducts();
-  const updated = products.filter(p => p.id !== id);
-  localStorage.setItem('vasuki_products', JSON.stringify(updated));
-};
-
-export const toggleProductVisibility = (id) => {
-  const products = getProducts();
-  const target = products.find(p => p.id === id);
-  if (target) {
-    target.visible = !target.visible;
-    localStorage.setItem('vasuki_products', JSON.stringify(products));
+export const deleteProduct = async (id) => {
+  try {
+    const response = await fetch(`${PRODUCTS_API}/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete product');
+    const products = await getProducts();
+    syncLocalProducts(products);
+    return true;
+  } catch {
+    const products = getProductsFromLocal();
+    const updated = products.filter((p) => p.id !== id);
+    syncLocalProducts(updated);
+    return true;
   }
 };
 
-export const updateProductStock = (id, quantity) => {
-  const products = getProducts();
-  const product = products.find(p => p.id === id);
-  if (product) {
-    product.stockQuantity = Number(quantity);
-    product.inStock = Number(quantity) > 0;
-    localStorage.setItem('vasuki_products', JSON.stringify(products));
-  }
+export const toggleProductVisibility = async (id) => {
+  const products = await getProducts();
+  const target = products.find((p) => p.id === id);
+  if (!target) return false;
+  const updatedProduct = { ...target, visible: !target.visible };
+  await saveProduct(updatedProduct);
+  return true;
+};
+
+export const updateProductStock = async (id, quantity) => {
+  const products = await getProducts();
+  const target = products.find((p) => p.id === id);
+  if (!target) return false;
+  const updatedProduct = {
+    ...target,
+    stockQuantity: Number(quantity),
+    inStock: Number(quantity) > 0,
+  };
+  await saveProduct(updatedProduct);
+  return true;
 };
 
 // --- ORDERS DATABASE & TRACKING ---

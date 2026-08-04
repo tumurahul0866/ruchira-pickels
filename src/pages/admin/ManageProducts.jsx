@@ -37,9 +37,13 @@ const ManageProducts = () => {
   const [newType, setNewType] = useState('');
 
   useEffect(() => {
-    setProducts(getProducts());
-    setProductTypes(getProductTypes());
+    const loadProducts = async () => {
+      setProducts(await getProducts());
+      setProductTypes(getProductTypes());
+    };
+    loadProducts();
   }, []);
+
   const handleAddType = (e) => {
     e.preventDefault();
     if (newType.trim() && !productTypes.includes(newType.trim())) {
@@ -49,7 +53,7 @@ const ManageProducts = () => {
     }
   };
 
-  const refreshProducts = () => setProducts(getProducts());
+  const refreshProducts = async () => setProducts(await getProducts());
 
   const handleEdit = (product) => {
     setFormData({ ...product });
@@ -63,22 +67,22 @@ const ManageProducts = () => {
     setIsEditing(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(id);
-      refreshProducts();
+      await deleteProduct(id);
+      await refreshProducts();
     }
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     const payload = {
       ...formData,
       additionalImages: previewImages.filter(Boolean),
       inStock: Number(formData.stockQuantity) > 0
     };
-    saveProduct(payload);
-    refreshProducts();
+    await saveProduct(payload);
+    await refreshProducts();
     setIsEditing(false);
   };
 
@@ -88,14 +92,14 @@ const ManageProducts = () => {
     setFormData({ ...formData, weights: newWeights });
   };
 
-  const handleVisibilityToggle = (id) => {
-    toggleProductVisibility(id);
-    refreshProducts();
+  const handleVisibilityToggle = async (id) => {
+    await toggleProductVisibility(id);
+    await refreshProducts();
   };
 
-  const handleStockUpdate = (id, value) => {
-    updateProductStock(id, value);
-    refreshProducts();
+  const handleStockUpdate = async (id, value) => {
+    await updateProductStock(id, value);
+    await refreshProducts();
   };
 
   if (isEditing) {

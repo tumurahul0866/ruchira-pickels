@@ -29,17 +29,20 @@ const Home = () => {
   const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
-    const storeSettings = getStoreSettings();
-    const visibleProducts = getProducts().filter((product) => product.visible);
-    const activeOffers = getOffers().filter((offer) => offer.active);
-    const types = getProductTypes();
-    const allReviews = getReviews().filter((r) => r.visible);
+    const loadData = async () => {
+      const storeSettings = getStoreSettings();
+      const visibleProducts = (await getProducts()).filter((product) => product.visible);
+      const activeOffers = getOffers().filter((offer) => offer.active);
+      const types = getProductTypes();
+      const allReviews = getReviews().filter((r) => r.visible);
 
-    setSettings(storeSettings);
-    setProducts(visibleProducts);
-    setOffers(activeOffers);
-    setProductTypes(['All', ...types]);
-    setReviews(allReviews.slice(0, 3));
+      setSettings(storeSettings);
+      setProducts(visibleProducts);
+      setOffers(activeOffers);
+      setProductTypes(['All', ...types]);
+      setReviews(allReviews.slice(0, 3));
+    };
+    loadData();
   }, []);
 
   const brandTagline = settings.brandTagline || 'Authentic Andhra Pickles & Podis Handcrafted with Love.';
