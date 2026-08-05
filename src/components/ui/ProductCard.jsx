@@ -9,8 +9,12 @@ import { toggleWishlist, isProductInWishlist } from '../../services/dataStore';
 const ProductCard = ({ product, offer }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
-  
-  const [selectedWeight, setSelectedWeight] = useState(product.weights[0]);
+
+  const weightOptions = Array.isArray(product.weights) && product.weights.length > 0
+    ? product.weights
+    : [{ weight: '250g', price: 0 }];
+
+  const [selectedWeight, setSelectedWeight] = useState(() => weightOptions[0]);
   const [isWishlisted, setIsWishlisted] = useState(isProductInWishlist(user?.email, product.id));
   const [addedToast, setAddedToast] = useState(false);
 
@@ -125,7 +129,7 @@ const ProductCard = ({ product, offer }) => {
               Select Pack Weight:
             </label>
             <div className="flex gap-2">
-              {product.weights.map((w, idx) => (
+              {weightOptions.map((w, idx) => (
                 <button
                   key={idx}
                   onClick={(e) => {

@@ -426,7 +426,7 @@ const ManageProducts = () => {
                     {product.category}
                   </span>
                 </td>
-                <td className="px-6 py-4">{product.weights[0] ? `${product.weights[0].weight} · ₹${product.weights[0].price}` : '—'}</td>
+                <td className="px-6 py-4">{Array.isArray(product.weights) && product.weights[0] ? `${product.weights[0].weight} · ₹${product.weights[0].price}` : '—'}</td>
                 <td className="px-6 py-4">{product.stockQuantity}</td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs ${product.visible ? 'bg-brand-gold/10 text-brand-gold' : 'bg-brand-red/10 text-brand-red'}`}>

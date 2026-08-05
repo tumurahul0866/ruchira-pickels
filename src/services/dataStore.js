@@ -499,11 +499,13 @@ const createProductPayload = (product) => ({
   name: product.name || '',
   category: product.category || 'Veg',
   productType: product.productType || 'Pickles',
-  weights: product.weights || [
-    { weight: '250g', price: 150 },
-    { weight: '500g', price: 280 },
-    { weight: '1kg', price: 500 }
-  ],
+  weights: Array.isArray(product.weights) && product.weights.length > 0
+    ? product.weights
+    : [
+        { weight: '250g', price: 150 },
+        { weight: '500g', price: 280 },
+        { weight: '1kg', price: 500 }
+      ],
   spiceLevel: product.spiceLevel || 'Medium',
   description: product.description || '',
   ingredients: product.ingredients || '',
@@ -518,7 +520,7 @@ const createProductPayload = (product) => ({
   rating: product.rating || 4.9,
   reviewsCount: product.reviewsCount || 10,
   image: product.image || '',
-  additionalImages: product.additionalImages || []
+  additionalImages: Array.isArray(product.additionalImages) ? product.additionalImages : []
 });
 
 const getProductsFromLocal = () => {

@@ -43,7 +43,10 @@ const ProductDetail = () => {
       const found = allProducts.find((item) => item.id === id);
       setProduct(found);
       if (found) {
-        setSelectedWeight(found.weights?.[0] || { weight: '250g', price: 0 });
+        const safeWeights = Array.isArray(found.weights) && found.weights.length > 0
+          ? found.weights
+          : [{ weight: '250g', price: 0 }];
+        setSelectedWeight(safeWeights[0]);
         setIsWishlisted(isProductInWishlist(user?.email, found.id));
       }
     };
@@ -178,7 +181,7 @@ const ProductDetail = () => {
                     Select Jar Weight:
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {product.weights.map((w, idx) => (
+                    {(Array.isArray(product.weights) ? product.weights : [{ weight: '250g', price: 0 }]).map((w, idx) => (
                       <button
                         key={idx}
                         onClick={() => setSelectedWeight(w)}
