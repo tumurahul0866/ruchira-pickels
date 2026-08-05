@@ -5,15 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"vite\"",
-    "dev:server": "node server/index.mjs",
+    "dev:server": "node backend/server.js",
+    "start": "node backend/server.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "express": "^4.21.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",
+    "pg": "^8.22.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.15.0"
@@ -33,5 +37,18 @@
     "postcss": "^8.5.14",
     "tailwindcss": "^4.2.4",
     "vite": "^8.0.10"
-  }
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tumurahul0866/ruchira-pickels.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tumurahul0866/ruchira-pickels/issues"
+  },
+  "homepage": "https://github.com/tumurahul0866/ruchira-pickels#readme"
 }

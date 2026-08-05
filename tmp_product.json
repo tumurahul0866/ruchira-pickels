@@ -1,0 +1,12 @@
+{
+  "id": "test-prod-002",
+  "name": "TEST PICKLE 2",
+  "category": "Veg",
+  "productType": "Pickles",
+  "weights": [
+    { "weight": "250g", "price": 100 }
+  ],
+  "stockQuantity": 5,
+  "inStock": true,
+  "visible": true
+}

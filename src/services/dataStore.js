@@ -420,9 +420,75 @@ const initialOrders = [
 ];
 
 const PRODUCTS_API = '/api/products';
+const ORDERS_API = '/api/orders';
+const REVIEWS_API = '/api/reviews';
+const OFFERS_API = '/api/offers';
+const STORE_SETTINGS_API = '/api/store-settings';
+const PAYMENT_SETTINGS_API = '/api/payment-settings';
+const ADMIN_PROFILE_API = '/api/admin-profile';
+const PRODUCT_TYPES_API = '/api/product-types';
+const USER_PROFILES_API = '/api/user-profiles';
+const CUSTOMERS_API = '/api/customers';
+
+const API_HEADERS = {
+  'Content-Type': 'application/json',
+};
+
+const fetchJson = async (url, options = {}) => {
+  const response = await fetch(url, { headers: API_HEADERS, ...options });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
+};
+
+const backgroundFetch = async (url, updater) => {
+  try {
+    const data = await fetchJson(url);
+    updater(data);
+  } catch {
+    // Ignore background sync failures
+  }
+};
 
 const syncLocalProducts = (products) => {
   localStorage.setItem('vasuki_products', JSON.stringify(products));
+};
+
+const syncLocalOrders = (orders) => {
+  localStorage.setItem('vasuki_orders', JSON.stringify(orders));
+};
+
+const syncLocalReviews = (reviews) => {
+  localStorage.setItem('vasuki_reviews', JSON.stringify(reviews));
+};
+
+const syncLocalOffers = (offers) => {
+  localStorage.setItem('vasuki_offers', JSON.stringify(offers));
+};
+
+const syncLocalStoreSettings = (settings) => {
+  localStorage.setItem('vasuki_settings', JSON.stringify(settings));
+};
+
+const syncLocalPaymentSettings = (settings) => {
+  localStorage.setItem('vasuki_payment_settings', JSON.stringify(settings));
+};
+
+const syncLocalAdminProfile = (profile) => {
+  localStorage.setItem('vasuki_admin_profile', JSON.stringify(profile));
+};
+
+const syncLocalProductTypes = (types) => {
+  localStorage.setItem('vasuki_product_types', JSON.stringify(types));
+};
+
+const syncLocalUserProfiles = (profiles) => {
+  localStorage.setItem('vasuki_user_profiles', JSON.stringify(profiles));
+};
+
+const syncLocalCustomers = (customers) => {
+  localStorage.setItem('vasuki_customers', JSON.stringify(customers));
 };
 
 const createProductPayload = (product) => ({
@@ -456,16 +522,17 @@ const getProductsFromLocal = () => {
   const products = localStorage.getItem('vasuki_products');
   if (!products) {
     localStorage.setItem('vasuki_products', JSON.stringify(initialProducts));
+    backgroundFetch(PRODUCTS_API, syncLocalProducts);
     return initialProducts;
   }
-  return JSON.parse(products);
+  const parsed = JSON.parse(products);
+  backgroundFetch(PRODUCTS_API, syncLocalProducts);
+  return parsed;
 };
 
 export const getProducts = async () => {
   try {
-    const response = await fetch(PRODUCTS_API);
-    if (!response.ok) throw new Error('Failed to fetch products');
-    const products = await response.json();
+    const products = await fetchJson(PRODUCTS_API);
     syncLocalProducts(products);
     return products;
   } catch {
@@ -509,34 +576,38 @@ export const getProductTypes = () => {
   const types = localStorage.getItem('vasuki_product_types');
   if (!types) {
     localStorage.setItem('vasuki_product_types', JSON.stringify(initialProductTypes));
+    backgroundFetch(PRODUCT_TYPES_API, syncLocalProductTypes);
     return initialProductTypes;
   }
-  return JSON.parse(types);
+  const parsed = JSON.parse(types);
+  backgroundFetch(PRODUCT_TYPES_API, syncLocalProductTypes);
+  return parsed;
 };
 
 export const addProductType = (type) => {
   const types = getProductTypes();
   if (!types.includes(type)) {
-    types.push(type);
-    localStorage.setItem('vasuki_product_types', JSON.stringify(types));
+    const nextTypes = [...types, type];
+    localStorage.setItem('vasuki_product_types', JSON.stringify(nextTypes));
+    fetch(PRODUCT_TYPES_API, {
+      method: 'POST',
+      headers: API_HEADERS,
+      body: JSON.stringify(nextTypes),
+    }).catch(() => {
+      // continue on local fallback
+    });
   }
 };
 
 export const deleteProduct = async (id) => {
-  try {
-    const response = await fetch(`${PRODUCTS_API}/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Failed to delete product');
-    const products = await getProducts();
-    syncLocalProducts(products);
-    return true;
-  } catch {
-    const products = getProductsFromLocal();
-    const updated = products.filter((p) => p.id !== id);
-    syncLocalProducts(updated);
-    return true;
-  }
+  const localProducts = getProductsFromLocal().filter((p) => p.id !== id);
+  syncLocalProducts(localProducts);
+  fetch(`${PRODUCTS_API}/${id}`, {
+    method: 'DELETE',
+  }).catch(() => {
+    // ignore backend failure
+  });
+  return true;
 };
 
 export const toggleProductVisibility = async (id) => {
@@ -563,67 +634,90 @@ export const updateProductStock = async (id, quantity) => {
 
 // --- ORDERS DATABASE & TRACKING ---
 
-export const getOrders = () => {
+const getOrdersFromLocal = () => {
   const orders = localStorage.getItem('vasuki_orders');
   if (!orders) {
     localStorage.setItem('vasuki_orders', JSON.stringify(initialOrders));
+    backgroundFetch(ORDERS_API, syncLocalOrders);
     return initialOrders;
   }
-  return JSON.parse(orders);
+  const parsed = JSON.parse(orders);
+  backgroundFetch(ORDERS_API, syncLocalOrders);
+  return parsed;
 };
 
+export const getOrders = () => getOrdersFromLocal();
+
 export const saveOrder = (order) => {
-  const orders = getOrders();
+  const orders = getOrdersFromLocal();
   const trackingNumber = 'TRK' + Math.floor(100000 + Math.random() * 900000);
   const newOrder = {
     ...order,
     id: order.id || 'ORD' + Date.now().toString().slice(-6),
-    trackingNumber: trackingNumber,
+    trackingNumber,
     date: order.date || new Date().toISOString(),
     status: order.status || 'Order Placed',
     paymentStatus: order.paymentStatus || 'Pending',
-    trackingSteps: [
-      { title: 'Order Placed', time: new Date().toLocaleString(), done: true },
-      { title: 'Payment Verified', time: 'In Progress', done: order.paymentStatus === 'Paid' },
-      { title: 'Packed with Care', time: 'Pending', done: false },
-      { title: 'Handed to Express Courier', time: 'Pending', done: false },
-      { title: 'Delivered to Doorstep', time: 'Pending', done: false }
-    ]
   };
-  orders.unshift(newOrder);
-  localStorage.setItem('vasuki_orders', JSON.stringify(orders));
+  const nextOrders = [newOrder, ...orders];
+  syncLocalOrders(nextOrders);
+
+  fetch(ORDERS_API, {
+    method: 'POST',
+    headers: API_HEADERS,
+    body: JSON.stringify(newOrder),
+  }).catch(() => {
+    // offline mode
+  });
+
   return newOrder;
 };
 
 export const updateOrderStatus = (id, status, paymentStatus) => {
-  const orders = getOrders();
-  const index = orders.findIndex(o => o.id === id);
+  const orders = getOrdersFromLocal();
+  const index = orders.findIndex((o) => o.id === id);
   if (index >= 0) {
     if (status) orders[index].status = status;
     if (paymentStatus) orders[index].paymentStatus = paymentStatus;
-    localStorage.setItem('vasuki_orders', JSON.stringify(orders));
+    syncLocalOrders(orders);
+    fetch(`${ORDERS_API}/${id}`, {
+      method: 'PUT',
+      headers: API_HEADERS,
+      body: JSON.stringify({ status, paymentStatus }),
+    }).catch(() => {
+      // ignore backend failure
+    });
   }
 };
 
 export const deleteOrder = (id) => {
-  const orders = getOrders();
-  const updated = orders.filter((o) => o.id !== id);
-  localStorage.setItem('vasuki_orders', JSON.stringify(updated));
+  const orders = getOrdersFromLocal().filter((o) => o.id !== id);
+  syncLocalOrders(orders);
+  fetch(`${ORDERS_API}/${id}`, {
+    method: 'DELETE',
+  }).catch(() => {
+    // ignore
+  });
 };
 
 // --- REVIEWS DATABASE ---
 
-export const getReviews = () => {
+const getReviewsFromLocal = () => {
   const reviews = localStorage.getItem('vasuki_reviews');
   if (!reviews) {
     localStorage.setItem('vasuki_reviews', JSON.stringify(initialReviews));
+    backgroundFetch(REVIEWS_API, syncLocalReviews);
     return initialReviews;
   }
-  return JSON.parse(reviews);
+  const parsed = JSON.parse(reviews);
+  backgroundFetch(REVIEWS_API, syncLocalReviews);
+  return parsed;
 };
 
+export const getReviews = () => getReviewsFromLocal();
+
 export const saveReview = (review) => {
-  const reviews = getReviews();
+  const reviews = getReviewsFromLocal();
   const normalized = {
     id: review.id || Date.now().toString(),
     name: review.name || 'Valued Customer',
@@ -632,44 +726,76 @@ export const saveReview = (review) => {
     date: review.date || new Date().toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     }),
     text: review.text || '',
     visible: review.visible !== undefined ? review.visible : true,
-    verifiedBuyer: true
+    verifiedBuyer: review.verifiedBuyer !== undefined ? review.verifiedBuyer : true,
   };
-  reviews.unshift(normalized);
-  localStorage.setItem('vasuki_reviews', JSON.stringify(reviews));
+  const existingIndex = reviews.findIndex((item) => item.id === normalized.id);
+  const nextReviews = existingIndex >= 0 ? [...reviews] : [normalized, ...reviews];
+  if (existingIndex >= 0) {
+    nextReviews[existingIndex] = normalized;
+  }
+  syncLocalReviews(nextReviews);
+
+  const method = normalized.id && existingIndex >= 0 ? 'PUT' : 'POST';
+  const url = normalized.id && existingIndex >= 0 ? `${REVIEWS_API}/${normalized.id}` : REVIEWS_API;
+
+  fetch(url, {
+    method,
+    headers: API_HEADERS,
+    body: JSON.stringify(normalized),
+  }).catch(() => {
+    // offline fallback
+  });
+  return normalized;
 };
 
 export const deleteReview = (id) => {
-  const reviews = getReviews();
-  const updated = reviews.filter(r => r.id !== id);
-  localStorage.setItem('vasuki_reviews', JSON.stringify(updated));
+  const reviews = getReviewsFromLocal().filter((r) => r.id !== id);
+  syncLocalReviews(reviews);
+  fetch(`${REVIEWS_API}/${id}`, {
+    method: 'DELETE',
+  }).catch(() => {
+    // ignore
+  });
 };
 
 export const toggleReviewVisibility = (id) => {
-  const reviews = getReviews();
-  const target = reviews.find(r => r.id === id);
+  const reviews = getReviewsFromLocal();
+  const target = reviews.find((r) => r.id === id);
   if (target) {
     target.visible = !target.visible;
-    localStorage.setItem('vasuki_reviews', JSON.stringify(reviews));
+    syncLocalReviews(reviews);
+    fetch(`${REVIEWS_API}/${id}`, {
+      method: 'PUT',
+      headers: API_HEADERS,
+      body: JSON.stringify({ visible: target.visible }),
+    }).catch(() => {
+      // ignore
+    });
   }
 };
 
 // --- OFFERS DATABASE ---
 
-export const getOffers = () => {
+const getOffersFromLocal = () => {
   const offers = localStorage.getItem('vasuki_offers');
   if (!offers) {
     localStorage.setItem('vasuki_offers', JSON.stringify(initialOffers));
+    backgroundFetch(OFFERS_API, syncLocalOffers);
     return initialOffers;
   }
-  return JSON.parse(offers);
+  const parsed = JSON.parse(offers);
+  backgroundFetch(OFFERS_API, syncLocalOffers);
+  return parsed;
 };
 
+export const getOffers = () => getOffersFromLocal();
+
 export const saveOffer = (offer) => {
-  const offers = getOffers();
+  const offers = getOffersFromLocal();
   const normalized = {
     id: offer.id || Date.now().toString(),
     code: (offer.code || 'SALE10').toUpperCase().trim(),
@@ -678,62 +804,117 @@ export const saveOffer = (offer) => {
     discount: Number(offer.discount) || 0,
     active: offer.active !== undefined ? offer.active : true,
     productId: offer.productId || '',
-    minOrderValue: Number(offer.minOrderValue) || 0
+    minOrderValue: Number(offer.minOrderValue) || 0,
   };
-  const index = offers.findIndex(o => o.id === normalized.id);
+  const index = offers.findIndex((o) => o.id === normalized.id);
+  const nextOffers = [...offers];
   if (index >= 0) {
-    offers[index] = normalized;
+    nextOffers[index] = normalized;
   } else {
-    offers.push(normalized);
+    nextOffers.push(normalized);
   }
-  localStorage.setItem('vasuki_offers', JSON.stringify(offers));
+  syncLocalOffers(nextOffers);
+
+  const method = index >= 0 ? 'PUT' : 'POST';
+  const url = index >= 0 ? `${OFFERS_API}/${normalized.id}` : OFFERS_API;
+
+  fetch(url, {
+    method,
+    headers: API_HEADERS,
+    body: JSON.stringify(normalized),
+  }).catch(() => {
+    // offline fallback
+  });
+  return normalized;
 };
 
 export const deleteOffer = (id) => {
-  const offers = getOffers();
-  const updated = offers.filter(o => o.id !== id);
-  localStorage.setItem('vasuki_offers', JSON.stringify(updated));
+  const offers = getOffersFromLocal().filter((o) => o.id !== id);
+  syncLocalOffers(offers);
+  fetch(`${OFFERS_API}/${id}`, {
+    method: 'DELETE',
+  }).catch(() => {
+    // ignore
+  });
 };
 
 export const toggleOffer = (id) => {
-  const offers = getOffers();
-  const target = offers.find(o => o.id === id);
+  const offers = getOffersFromLocal();
+  const target = offers.find((o) => o.id === id);
   if (target) {
     target.active = !target.active;
-    localStorage.setItem('vasuki_offers', JSON.stringify(offers));
+    syncLocalOffers(offers);
+    fetch(`${OFFERS_API}/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: API_HEADERS,
+      body: JSON.stringify(target),
+    }).catch(() => {
+      // ignore
+    });
   }
 };
 
 // --- STORE & PAYMENT SETTINGS ---
 
-export const getStoreSettings = () => {
+const getStoreSettingsFromLocal = () => {
   const data = localStorage.getItem('vasuki_settings');
-  if (data) return JSON.parse(data);
-  localStorage.setItem('vasuki_settings', JSON.stringify(defaultStoreSettings));
-  return defaultStoreSettings;
+  if (!data) {
+    localStorage.setItem('vasuki_settings', JSON.stringify(defaultStoreSettings));
+    backgroundFetch(STORE_SETTINGS_API, syncLocalStoreSettings);
+    return defaultStoreSettings;
+  }
+  const parsed = JSON.parse(data);
+  backgroundFetch(STORE_SETTINGS_API, syncLocalStoreSettings);
+  return parsed;
 };
 
+export const getStoreSettings = () => getStoreSettingsFromLocal();
+
 export const updateStoreSettings = (settings) => {
-  const current = getStoreSettings();
-  localStorage.setItem('vasuki_settings', JSON.stringify({ ...current, ...settings }));
+  const current = getStoreSettingsFromLocal();
+  const nextSettings = { ...current, ...settings };
+  syncLocalStoreSettings(nextSettings);
+  fetch(STORE_SETTINGS_API, {
+    method: 'POST',
+    headers: API_HEADERS,
+    body: JSON.stringify(nextSettings),
+  }).catch(() => {
+    // ignore
+  });
 };
 
 export const saveStoreSettings = updateStoreSettings;
 
-export const getPaymentSettings = () => {
+const getPaymentSettingsFromLocal = () => {
   const data = localStorage.getItem('vasuki_payment_settings');
-  if (data) return JSON.parse(data);
-  localStorage.setItem('vasuki_payment_settings', JSON.stringify(defaultPaymentSettings));
-  return defaultPaymentSettings;
+  if (!data) {
+    localStorage.setItem('vasuki_payment_settings', JSON.stringify(defaultPaymentSettings));
+    backgroundFetch(PAYMENT_SETTINGS_API, syncLocalPaymentSettings);
+    return defaultPaymentSettings;
+  }
+  const parsed = JSON.parse(data);
+  backgroundFetch(PAYMENT_SETTINGS_API, syncLocalPaymentSettings);
+  return parsed;
 };
 
+export const getPaymentSettings = () => getPaymentSettingsFromLocal();
+
 export const updatePaymentSettings = (settings) => {
-  localStorage.setItem('vasuki_payment_settings', JSON.stringify({ ...defaultPaymentSettings, ...settings }));
+  const current = getPaymentSettingsFromLocal();
+  const nextSettings = { ...current, ...settings };
+  syncLocalPaymentSettings(nextSettings);
+  fetch(PAYMENT_SETTINGS_API, {
+    method: 'POST',
+    headers: API_HEADERS,
+    body: JSON.stringify(nextSettings),
+  }).catch(() => {
+    // ignore
+  });
 };
 
 // --- USER PROFILE, ADDRESSES & CUSTOMERS ---
 
-export const getUserProfile = (email) => {
+const getUserProfileFromLocal = (email) => {
   const profiles = JSON.parse(localStorage.getItem('vasuki_user_profiles') || '{}');
   if (email && profiles[email]) {
     return profiles[email];
@@ -743,8 +924,20 @@ export const getUserProfile = (email) => {
     email: email || '',
     phone: '',
     addresses: [],
-    wishlist: []
+    wishlist: [],
   };
+};
+
+export const getUserProfile = (email) => {
+  const profile = getUserProfileFromLocal(email);
+  if (email) {
+    backgroundFetch(`${USER_PROFILES_API}/${encodeURIComponent(email)}`, (data) => {
+      const profiles = JSON.parse(localStorage.getItem('vasuki_user_profiles') || '{}');
+      profiles[email] = data;
+      syncLocalUserProfiles(profiles);
+    });
+  }
+  return profile;
 };
 
 export const saveUserProfile = (email, profileData) => {
@@ -752,9 +945,17 @@ export const saveUserProfile = (email, profileData) => {
   profiles[email] = {
     ...profiles[email],
     ...profileData,
-    email: email
+    email,
   };
-  localStorage.setItem('vasuki_user_profiles', JSON.stringify(profiles));
+  syncLocalUserProfiles(profiles);
+  fetch(`${USER_PROFILES_API}/${encodeURIComponent(email)}`, {
+    method: 'POST',
+    headers: API_HEADERS,
+    body: JSON.stringify(profiles[email]),
+  }).catch(() => {
+    // ignore
+  });
+  return profiles[email];
 };
 
 export const getWishlist = (email) => {
@@ -787,7 +988,14 @@ export const isProductInWishlist = (email, productId) => {
 };
 
 export const getCustomers = () => {
-  const orders = getOrders();
+  const customers = localStorage.getItem('vasuki_customers');
+  if (customers) {
+    const parsed = JSON.parse(customers);
+    backgroundFetch(CUSTOMERS_API, syncLocalCustomers);
+    return parsed;
+  }
+
+  const orders = getOrdersFromLocal();
   const customersMap = {};
   orders.forEach((order) => {
     const key = order.customer?.email || order.customer?.phone || order.customer?.name || 'guest';
@@ -797,7 +1005,7 @@ export const getCustomers = () => {
         email: order.customer?.email || 'N/A',
         phone: order.customer?.phone || 'N/A',
         totalOrders: 0,
-        lastOrder: order.date
+        lastOrder: order.date,
       };
     }
     customersMap[key].totalOrders += 1;
@@ -805,16 +1013,33 @@ export const getCustomers = () => {
       customersMap[key].lastOrder = order.date;
     }
   });
-  return Object.values(customersMap);
+  const result = Object.values(customersMap);
+  localStorage.setItem('vasuki_customers', JSON.stringify(result));
+  backgroundFetch(CUSTOMERS_API, syncLocalCustomers);
+  return result;
 };
 
 export const getAdminProfile = () => {
   const data = localStorage.getItem('vasuki_admin_profile');
-  if (data) return JSON.parse(data);
-  localStorage.setItem('vasuki_admin_profile', JSON.stringify(defaultAdminProfile));
-  return defaultAdminProfile;
+  if (!data) {
+    localStorage.setItem('vasuki_admin_profile', JSON.stringify(defaultAdminProfile));
+    backgroundFetch(ADMIN_PROFILE_API, syncLocalAdminProfile);
+    return defaultAdminProfile;
+  }
+  const parsed = JSON.parse(data);
+  backgroundFetch(ADMIN_PROFILE_API, syncLocalAdminProfile);
+  return parsed;
 };
 
 export const updateAdminProfile = (profile) => {
-  localStorage.setItem('vasuki_admin_profile', JSON.stringify({ ...defaultAdminProfile, ...profile }));
+  const nextProfile = { ...defaultAdminProfile, ...profile };
+  localStorage.setItem('vasuki_admin_profile', JSON.stringify(nextProfile));
+  fetch(ADMIN_PROFILE_API, {
+    method: 'POST',
+    headers: API_HEADERS,
+    body: JSON.stringify(nextProfile),
+  }).catch(() => {
+    // offline fallback
+  });
+  return nextProfile;
 };
