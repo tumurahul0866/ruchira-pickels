@@ -419,16 +419,19 @@ const initialOrders = [
   }
 ];
 
-const PRODUCTS_API = '/api/products';
-const ORDERS_API = '/api/orders';
-const REVIEWS_API = '/api/reviews';
-const OFFERS_API = '/api/offers';
-const STORE_SETTINGS_API = '/api/store-settings';
-const PAYMENT_SETTINGS_API = '/api/payment-settings';
-const ADMIN_PROFILE_API = '/api/admin-profile';
-const PRODUCT_TYPES_API = '/api/product-types';
-const USER_PROFILES_API = '/api/user-profiles';
-const CUSTOMERS_API = '/api/customers';
+const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/$/, '') || '';
+const API_PREFIX = BACKEND_BASE ? `${BACKEND_BASE}/api` : '/api';
+
+const PRODUCTS_API = `${API_PREFIX}/products`;
+const ORDERS_API = `${API_PREFIX}/orders`;
+const REVIEWS_API = `${API_PREFIX}/reviews`;
+const OFFERS_API = `${API_PREFIX}/offers`;
+const STORE_SETTINGS_API = `${API_PREFIX}/store-settings`;
+const PAYMENT_SETTINGS_API = `${API_PREFIX}/payment-settings`;
+const ADMIN_PROFILE_API = `${API_PREFIX}/admin-profile`;
+const PRODUCT_TYPES_API = `${API_PREFIX}/product-types`;
+const USER_PROFILES_API = `${API_PREFIX}/user-profiles`;
+const CUSTOMERS_API = `${API_PREFIX}/customers`;
 
 const API_HEADERS = {
   'Content-Type': 'application/json',

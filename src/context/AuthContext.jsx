@@ -3,7 +3,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ADMIN_EMAIL_KEY = 'vasuki_admin_email';
 const ADMIN_PASS_KEY = 'vasuki_admin_password';
 const ADMIN_SESSION_KEY = 'vasuki_admin';
-const ADMIN_CREDENTIALS_API = '/api/admin-credentials';
+const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/$/, '') || '';
+const ADMIN_CREDENTIALS_API = BACKEND_BASE ? `${BACKEND_BASE}/api/admin-credentials` : '/api/admin-credentials';
 
 // Obfuscated defaults so they're not plainly readable in source:
 // Base64 of 'admin@vasukipickles.com'
