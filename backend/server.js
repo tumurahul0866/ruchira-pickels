@@ -710,6 +710,8 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+export { app };
+
 app.get('/api/admin-credentials', async (_req, res) => {
   try {
     const credentials = await readCredentials();
@@ -1159,11 +1161,13 @@ app.get('/api/customers', async (_req, res) => {
 });
 
 const port = Number(process.env.PORT || 3001);
-app.listen(port, () => {
-  console.log(`Admin auth server listening on http://localhost:${port}`);
-  if (isPostgresEnabled) {
-    console.log('Connected to PostgreSQL via DATABASE_URL');
-  } else {
-    console.log('Using local JSON data store because DATABASE_URL is not configured.');
-  }
-});
+if (process.env.VERCEL !== 'true') {
+  app.listen(port, () => {
+    console.log(`Admin auth server listening on http://localhost:${port}`);
+    if (isPostgresEnabled) {
+      console.log('Connected to PostgreSQL via DATABASE_URL');
+    } else {
+      console.log('Using local JSON data store because DATABASE_URL is not configured.');
+    }
+  });
+}
