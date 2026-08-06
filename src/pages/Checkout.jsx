@@ -118,7 +118,7 @@ const Checkout = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const requiredFields = ['name', 'phone', 'address', 'city', 'state', 'pincode'];
@@ -149,7 +149,14 @@ const Checkout = () => {
       date: new Date().toISOString()
     };
 
-    const createdOrder = saveOrder(newOrder);
+    let createdOrder;
+    try {
+      createdOrder = await saveOrder(newOrder);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to place your order right now.');
+      return;
+    }
+
     const createdId = createdOrder.id;
 
     // Generate WhatsApp direct URL

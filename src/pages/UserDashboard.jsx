@@ -34,12 +34,7 @@ const UserDashboard = () => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('orders');
-  const [orders] = useState(() => {
-    if (!user) return [];
-    return getOrders().filter(
-      (o) => o.customer?.email?.toLowerCase() === user.email?.toLowerCase() || !o.customer?.email
-    ).reverse();
-  });
+  const [orders, setOrders] = useState([]);
   const [userProfile, setUserProfileState] = useState(() => (user ? getUserProfile(user.email) : {
     name: '',
     email: '',
@@ -87,6 +82,17 @@ const UserDashboard = () => {
     getProducts().then((allProds) => {
       setWishlistProducts(allProds.filter((p) => ids.includes(p.id)));
     });
+
+    const loadOrders = async () => {
+      const allOrders = await getOrders();
+      setOrders(
+        allOrders
+          .filter((o) => o.customer?.email?.toLowerCase() === user.email?.toLowerCase() || !o.customer?.email)
+          .reverse()
+      );
+    };
+
+    loadOrders();
   }, [user, navigate]);
 
   if (!user) return null;

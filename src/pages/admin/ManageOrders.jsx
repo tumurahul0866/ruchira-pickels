@@ -1,23 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getOrders, updateOrderStatus, deleteOrder } from '../../services/dataStore';
 
 const ManageOrders = () => {
-  const [orders, setOrders] = useState(() => getOrders().reverse());
+  const [orders, setOrders] = useState([]);
 
-  const handleStatusChange = (id, newStatus) => {
-    updateOrderStatus(id, newStatus);
-    setOrders(getOrders().reverse());
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const savedOrders = await getOrders();
+        setOrders(Array.isArray(savedOrders) ? [...savedOrders].reverse() : []);
+      } catch {
+        setOrders([]);
+      }
+    };
+    loadOrders();
+  }, []);
+
+  const refreshOrders = async () => {
+    try {
+      const savedOrders = await getOrders();
+      setOrders(Array.isArray(savedOrders) ? [...savedOrders].reverse() : []);
+    } catch {
+      setOrders([]);
+    }
   };
 
-  const handlePaymentChange = (id, newPaymentStatus) => {
-    updateOrderStatus(id, null, newPaymentStatus);
-    setOrders(getOrders().reverse());
+  const handleStatusChange = async (id, newStatus) => {
+    await updateOrderStatus(id, newStatus);
+    await refreshOrders();
   };
 
-  const handleDeleteOrder = (id) => {
+  const handlePaymentChange = async (id, newPaymentStatus) => {
+    await updateOrderStatus(id, null, newPaymentStatus);
+    await refreshOrders();
+  };
+
+  const handleDeleteOrder = async (id) => {
     if (window.confirm('Delete this order permanently?')) {
-      deleteOrder(id);
-      setOrders(getOrders().reverse());
+      await deleteOrder(id);
+      await refreshOrders();
     }
   };
 
@@ -56,7 +77,7 @@ const ManageOrders = () => {
                   </div>
 
                   <div className="bg-brand-black px-4 py-2 rounded-lg border border-white/10">
-                    <span className="text-xs text-brand-cream/50 uppercase block mb-1">Payment: {order.customer.paymentMethod}</span>
+                    <span className="text-xs text-brand-cream/50 uppercase block mb-1">Payment: {order.paymentMethod || order.customer?.paymentMethod || 'COD'}</span>
                     <select 
                       value={order.paymentStatus || 'Pending'}
                       onChange={(e) => handlePaymentChange(order.id, e.target.value)}
@@ -81,13 +102,13 @@ const ManageOrders = () => {
                 {/* Customer Details */}
                 <div>
                   <h4 className="text-sm font-bold text-brand-cream/70 uppercase mb-3 border-b border-white/10 pb-2">Customer Info</h4>
-                  <p className="text-brand-cream font-medium">{order.customer.name}</p>
-                  <p className="text-brand-cream/70 text-sm">{order.customer.email}</p>
-                  <p className="text-brand-cream/70 text-sm mb-3">{order.customer.phone}</p>
+                  <p className="text-brand-cream font-medium">{order.customer?.name || 'Customer'}</p>
+                  <p className="text-brand-cream/70 text-sm">{order.customer?.email || 'N/A'}</p>
+                  <p className="text-brand-cream/70 text-sm mb-3">{order.customer?.phone || 'N/A'}</p>
                   
                   <p className="text-brand-cream/70 text-sm leading-relaxed">
-                    {order.customer.address}<br />
-                    {order.customer.city}, {order.customer.state} - {order.customer.pincode}
+                    {order.customer?.address || 'Address not available'}<br />
+                    {order.customer?.city || 'City'}, {order.customer?.state || 'State'} - {order.customer?.pincode || 'PIN'}
                   </p>
                   
                   {order.customer.notes && (
@@ -102,16 +123,16 @@ const ManageOrders = () => {
                 <div>
                   <h4 className="text-sm font-bold text-brand-cream/70 uppercase mb-3 border-b border-white/10 pb-2">Order Items</h4>
                   <div className="space-y-4">
-                    {order.items.map((item, idx) => (
+                    {(Array.isArray(order.items) ? order.items : []).map((item, idx) => (
                       <div key={idx} className="flex justify-between items-center bg-brand-black/50 p-2 rounded">
                         <div className="flex gap-3 items-center">
-                          <img src={item.product.image} className="w-10 h-10 object-cover rounded" alt={item.product.name} />
+                          <img src={item.product?.image || ''} className="w-10 h-10 object-cover rounded" alt={item.product?.name || 'Item'} />
                           <div>
-                            <p className="text-brand-cream text-sm font-medium">{item.product.name}</p>
-                            <p className="text-brand-cream/50 text-xs">{item.weightOption.weight} x {item.quantity}</p>
+                            <p className="text-brand-cream text-sm font-medium">{item.product?.name || 'Item'}</p>
+                            <p className="text-brand-cream/50 text-xs">{item.weightOption?.weight || 'Unit'} x {item.quantity || 1}</p>
                           </div>
                         </div>
-                        <p className="text-brand-gold font-bold text-sm">₹{item.weightOption.price * item.quantity}</p>
+                        <p className="text-brand-gold font-bold text-sm">₹{(item.weightOption?.price || 0) * (item.quantity || 1)}</p>
                       </div>
                     ))}
                   </div>

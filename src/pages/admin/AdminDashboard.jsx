@@ -153,18 +153,28 @@ const AdminDashboard = () => {
   useEffect(() => {
     const loadStats = async () => {
       if (!isAdmin) return;
-      const products = await getProducts();
-      const ordersData = getOrders().slice().sort((a, b) => new Date(b.date) - new Date(a.date));
-      const today = new Date().toISOString().slice(0, 10);
-      const deliveredOrders = ordersData.filter((o) => o.status === 'Delivered').length;
-      const cancelledOrders = ordersData.filter((o) => o.status === 'Cancelled').length;
-      const pendingOrders = ordersData.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
-      const lowStock = products.filter((p) => p.stockQuantity <= 8 && p.visible).length;
-      const todayOrders = ordersData.filter((o) => o.date.slice(0, 10) === today).length;
-      const totalRevenue = ordersData.filter((o) => o.status !== 'Cancelled').reduce((s, o) => s + Number(o.totalAmount), 0);
-      setStats({ totalProducts: products.length, totalOrders: ordersData.length, pendingOrders, deliveredOrders, cancelledOrders, todayOrders, lowStock, totalRevenue });
-      setOrders(ordersData);
-      setRecentOrders(ordersData.slice(0, 10));
+      try {
+        const products = Array.isArray(await getProducts()) ? await getProducts() : [];
+        const rawOrders = await getOrders();
+        const ordersData = Array.isArray(rawOrders)
+          ? [...rawOrders].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+          : [];
+        const today = new Date().toISOString().slice(0, 10);
+        const deliveredOrders = ordersData.filter((o) => o.status === 'Delivered').length;
+        const cancelledOrders = ordersData.filter((o) => o.status === 'Cancelled').length;
+        const pendingOrders = ordersData.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
+        const lowStock = products.filter((p) => Number(p.stockQuantity) <= 8 && p.visible).length;
+        const todayOrders = ordersData.filter((o) => (o.date || '').slice(0, 10) === today).length;
+        const totalRevenue = ordersData.filter((o) => o.status !== 'Cancelled').reduce((s, o) => s + Number(o.totalAmount || 0), 0);
+        setStats({ totalProducts: products.length, totalOrders: ordersData.length, pendingOrders, deliveredOrders, cancelledOrders, todayOrders, lowStock, totalRevenue });
+        setOrders(ordersData);
+        setRecentOrders(ordersData.slice(0, 10));
+      } catch (error) {
+        console.error('Failed to load admin stats:', error);
+        setStats({ totalProducts: 0, totalOrders: 0, pendingOrders: 0, deliveredOrders: 0, cancelledOrders: 0, todayOrders: 0, lowStock: 0, totalRevenue: 0 });
+        setOrders([]);
+        setRecentOrders([]);
+      }
     };
 
     loadStats();
@@ -539,7 +549,7 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
                     <td className="py-4 px-5 font-mono text-xs text-brand-gold">{order.id}</td>
                     <td className="py-4 px-5 text-brand-cream/80">{order.customer?.name || 'Guest'}</td>
                     <td className="py-4 px-5 font-bold text-brand-cream">₹{order.totalAmount}</td>
-                    <td className="py-4 px-5 text-brand-cream/60 text-xs">{order.customer?.paymentMethod || '—'}</td>
+                    <td className="py-4 px-5 text-brand-cream/60 text-xs">{order.paymentMethod || order.customer?.paymentMethod || '—'}</td>
                     <td className="py-4 px-5">
                       <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${statusBadge(order.status)}`}>
                         {order.status || 'Pending'}
