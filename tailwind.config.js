@@ -8,7 +8,7 @@ export default {
         'brand-gold-light': '#f2cf76',
         'brand-red': '#7a2c1d',
         'brand-cream': '#f7eee3',
-        'brand-black': '#111827',
+        'brand-black': '#1f2937',
         'brand-matte': '#e5d4b2',
         'brand-yellow': '#f9c846',
       },

@@ -559,27 +559,31 @@ export const saveProduct = async (product) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+
     if (!response.ok) {
       const errorPayload = await response.text();
-      throw new Error(errorPayload || 'Failed to save product');
+      let message = 'Failed to save product';
+      try {
+        const parsed = JSON.parse(errorPayload);
+        message = parsed.error || parsed.message || message;
+      } catch {
+        if (errorPayload) message = errorPayload;
+      }
+      throw new Error(message || `HTTP ${response.status}`);
     }
+
     const updated = await response.json();
-    const products = await getProducts();
+    const products = getProductsFromLocal();
+    const existingIndex = products.findIndex((item) => item.id === updated.id);
+    if (existingIndex >= 0) {
+      products[existingIndex] = updated;
+    } else {
+      products.push(updated);
+    }
     syncLocalProducts(products);
     return updated;
   } catch (error) {
-    const products = getProductsFromLocal();
-    const existingIndex = products.findIndex((p) => p.id === payload.id);
-    if (existingIndex >= 0) {
-      products[existingIndex] = payload;
-    } else {
-      payload.id = payload.id || Date.now().toString();
-      products.push(payload);
-    }
-    syncLocalProducts(products);
-    if (error instanceof Error) {
-      error.message = `${error.message}`;
-    }
+    console.error('saveProduct error:', error);
     throw error;
   }
 };

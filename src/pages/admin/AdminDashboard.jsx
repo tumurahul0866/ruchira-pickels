@@ -203,9 +203,9 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-brand-black text-brand-cream">
+    <div className="min-h-screen flex bg-brand-matte text-brand-black">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 bg-[#0f0f0f] border-r border-white/5">
+      <aside className="hidden md:flex flex-col w-64 shrink-0 bg-brand-cream border-r border-brand-gold/20">
         <Sidebar activeTab={activeTab} onNav={handleNav} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
       </aside>
 
@@ -215,13 +215,13 @@ const AdminDashboard = () => {
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 z-40 md:hidden"
+              className="fixed inset-0 bg-black/10 z-40 md:hidden"
               onClick={() => setSidebarOpen(false)}
             />
             <motion.aside
               initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed top-0 left-0 h-full w-72 bg-[#0f0f0f] border-r border-white/5 z-50 md:hidden"
+              className="fixed top-0 left-0 h-full w-72 bg-brand-cream border-r border-brand-gold/20 z-50 md:hidden"
             >
               <Sidebar mobile activeTab={activeTab} onNav={handleNav} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
             </motion.aside>
@@ -232,9 +232,9 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="bg-[#0f0f0f] border-b border-white/5 px-4 py-3.5 flex items-center gap-4">
+        <header className="bg-brand-cream border-b border-brand-gold/20 px-4 py-3.5 flex items-center gap-4">
           <button
-            className="md:hidden p-2 rounded-xl bg-white/5 text-brand-cream/70 hover:bg-white/10"
+            className="md:hidden p-2 rounded-xl bg-brand-gold/10 text-brand-black hover:bg-brand-gold/20"
             onClick={() => setSidebarOpen(true)}
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -242,17 +242,17 @@ const AdminDashboard = () => {
             </svg>
           </button>
           <div className="flex-1">
-            <h2 className="font-serif font-bold text-brand-cream text-base md:text-xl tracking-wide">
+            <h2 className="font-serif font-bold text-brand-black text-base md:text-xl tracking-wide">
               {navItems.find((n) => n.id === activeTab)?.label || 'Admin Portal'}
             </h2>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-brand-cream/60 text-xs font-medium transition-all">
+            <Link to="/" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-gold/10 hover:bg-brand-gold/20 text-brand-black text-xs font-medium transition-all">
               View Site →
             </Link>
             <button
               onClick={handleLogout}
-              className="px-3 py-1.5 rounded-xl bg-brand-red/10 hover:bg-brand-red/20 text-brand-red text-xs font-bold transition-all"
+              className="px-3 py-1.5 rounded-xl bg-brand-gold text-brand-black text-xs font-bold transition-all hover:bg-brand-gold-light"
             >
               Logout
             </button>
@@ -361,25 +361,25 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
       <div className="grid gap-4 xl:grid-cols-[1.8fr_1fr]">
         <div className="grid gap-4 mb-6 sm:grid-cols-2 xl:grid-cols-3">
           {activeStats.map((item) => (
-            <div key={item.key} className={`rounded-3xl border ${item.border} bg-[#0f0f0f] p-5`}> 
+            <div key={item.key} className={`rounded-3xl border ${item.border} bg-brand-cream/95 p-5`}>
               <p className={item.textColor + ' text-sm font-semibold'}>{item.label}</p>
-              <p className="mt-4 text-3xl font-serif font-bold text-brand-cream">{item.prefix}{item.formatter(item.value)}</p>
+              <p className="mt-4 text-3xl font-serif font-bold text-brand-black">{item.prefix}{item.formatter(item.value)}</p>
             </div>
           ))}
         </div>
-        <div className="rounded-3xl border border-white/8 bg-[#0f0f0f] p-6">
+        <div className="rounded-3xl border border-brand-gold/20 bg-brand-cream/95 p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-brand-cream/40 mb-2 font-bold">Large Line Chart</p>
-              <h2 className="text-2xl font-serif font-bold text-brand-cream">Monthly Sales</h2>
-              <p className="text-sm text-brand-cream/60 mt-1">Revenue by month for the most recent six-month period.</p>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-brand-black/40 mb-2 font-bold">Large Line Chart</p>
+              <h2 className="text-2xl font-serif font-bold text-brand-black">Monthly Sales</h2>
+              <p className="text-sm text-brand-black/60 mt-1">Revenue by month for the most recent six-month period.</p>
             </div>
-            <div className="rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm font-semibold text-brand-cream">
+            <div className="rounded-full bg-brand-gold/15 border border-brand-gold/30 px-4 py-2 text-sm font-semibold text-brand-black">
               Total Sales ₹{monthlySales.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
             </div>
           </div>
 
-          <div className="mt-6 overflow-hidden rounded-3xl bg-[#111111] p-4">
+          <div className="mt-6 overflow-hidden rounded-3xl bg-brand-cream/95 p-4">
             <div className="relative h-52">
               <svg viewBox="0 0 320 180" className="w-full h-full">
                 <defs>
@@ -424,13 +424,13 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
         </div>
 
         <div className="grid gap-4">
-          <div className="rounded-3xl border border-white/8 bg-[#0f0f0f] p-6">
+          <div className="rounded-3xl border border-brand-gold/20 bg-brand-cream/95 p-6">
             <div className="flex items-center justify-between gap-4 mb-5">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.25em] text-brand-cream/40 mb-2 font-bold">Bar Chart</p>
-                <h3 className="text-xl font-semibold text-brand-cream">Top Selling Pickles</h3>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-brand-black/40 mb-2 font-bold">Bar Chart</p>
+                <h3 className="text-xl font-semibold text-brand-black">Top Selling Pickles</h3>
               </div>
-              <span className="text-xs font-semibold text-brand-cream/60">Top 5 Products</span>
+              <span className="text-xs font-semibold text-brand-black/60">Top 5 Products</span>
             </div>
             <div className="space-y-4">
               {topSelling.length === 0 ? (
@@ -454,16 +454,16 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/8 bg-[#0f0f0f] p-6">
+          <div className="rounded-3xl border border-brand-gold/20 bg-brand-cream/95 p-6">
             <div className="flex items-center justify-between gap-4 mb-5">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.25em] text-brand-cream/40 mb-2 font-bold">Pie Chart</p>
-                <h3 className="text-xl font-semibold text-brand-cream">Order Status</h3>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-brand-black/40 mb-2 font-bold">Pie Chart</p>
+                <h3 className="text-xl font-semibold text-brand-black">Order Status</h3>
               </div>
-              <span className="text-xs font-semibold text-brand-cream/60">Current Distribution</span>
+              <span className="text-xs font-semibold text-brand-black/60">Current Distribution</span>
             </div>
             <div className="flex flex-col gap-5 md:flex-row md:items-center">
-              <div className="h-40 w-40 rounded-full border border-white/10 bg-[#111111]" style={{ background: totalStatus ? `conic-gradient(${statusBackground})` : '#334155' }} />
+              <div className="h-40 w-40 rounded-full border border-brand-gold/20 bg-brand-cream/95" style={{ background: totalStatus ? `conic-gradient(${statusBackground})` : '#334155' }} />
               <div className="grid gap-3 flex-1">
                 {statusItems.length === 0 ? (
                   <p className="text-sm text-brand-cream/50">No orders placed yet.</p>
@@ -496,7 +496,7 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.35 }}
-        className="rounded-3xl border border-white/8 bg-[#0f0f0f] overflow-hidden"
+        className="rounded-3xl border border-brand-gold/20 bg-brand-cream/95 overflow-hidden"
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
           <div>

@@ -134,13 +134,13 @@ const ManageProducts = () => {
 
   if (isEditing) {
     return (
-      <div className="bg-brand-matte border border-white/10 rounded-3xl p-6">
+      <div className="bg-brand-cream border border-brand-gold/20 rounded-3xl p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <h2 className="text-3xl font-serif text-brand-cream">{formData.id ? 'Edit Product' : 'Add New Product'}</h2>
-            <p className="text-brand-cream/60 mt-1">Update product details, pricing, stock and images. Changes reflect on customer pages immediately.</p>
+            <h2 className="text-3xl font-serif text-brand-black">{formData.id ? 'Edit Product' : 'Add New Product'}</h2>
+            <p className="text-brand-black/60 mt-1">Update product details, pricing, stock and images. Changes reflect on customer pages immediately.</p>
           </div>
-          <button onClick={() => setIsEditing(false)} className="text-brand-cream/70 hover:text-brand-cream">
+          <button onClick={() => setIsEditing(false)} className="text-brand-black/70 hover:text-brand-black">
             <X size={26} />
           </button>
         </div>
@@ -154,7 +154,7 @@ const ManageProducts = () => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
               />
 
 
@@ -163,7 +163,7 @@ const ManageProducts = () => {
                 required
                 value={formData.productType}
                 onChange={(e) => setFormData({ ...formData, productType: e.target.value })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
               >
                 <option value="">Select Type</option>
                 {productTypes.map((type) => (
@@ -177,7 +177,7 @@ const ManageProducts = () => {
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
                   placeholder="Add new type (e.g. Masalas)"
-                  className="flex-1 bg-brand-black border border-white/10 rounded-2xl px-4 py-2 text-brand-cream"
+                  className="flex-1 bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-2 text-brand-black"
                 />
                 <button type="button" onClick={handleAddType} className="bg-brand-gold text-brand-black rounded-2xl px-4 py-2 font-semibold">Add</button>
               </div>
@@ -186,7 +186,7 @@ const ManageProducts = () => {
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
               >
                 <option>Veg</option>
                 <option>Non-Veg</option>
@@ -196,7 +196,7 @@ const ManageProducts = () => {
               <select
                 value={formData.spiceLevel}
                 onChange={(e) => setFormData({ ...formData, spiceLevel: e.target.value })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
               >
                 <option>Mild</option>
                 <option>Medium</option>
@@ -210,7 +210,7 @@ const ManageProducts = () => {
                 type="url"
                 value={formData.image}
                 onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
                 placeholder="https://"
               />
 
@@ -220,7 +220,7 @@ const ManageProducts = () => {
                   rows={3}
                   value={previewImages.join('\n')}
                   onChange={(e) => setPreviewImages(e.target.value.split('\n').map((url) => url.trim()))}
-                  className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream resize-none"
+                  className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black resize-none"
                   placeholder="One URL per line"
                 />
               </div>
@@ -233,7 +233,7 @@ const ManageProducts = () => {
                 rows={4}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream resize-none"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black resize-none"
               />
 
               <label className="block text-sm text-brand-cream/70">Ingredients</label>
@@ -241,7 +241,7 @@ const ManageProducts = () => {
                 rows={2}
                 value={formData.ingredients}
                 onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream resize-none"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black resize-none"
               />
 
               <label className="block text-sm text-brand-cream/70">Shelf Life</label>
@@ -249,7 +249,7 @@ const ManageProducts = () => {
                 type="text"
                 value={formData.shelfLife}
                 onChange={(e) => setFormData({ ...formData, shelfLife: e.target.value })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
                 placeholder="e.g. 6 months"
               />
 
@@ -260,7 +260,7 @@ const ManageProducts = () => {
                   min="0"
                   value={formData.discountPrice}
                   onChange={(e) => setFormData({ ...formData, discountPrice: Number(e.target.value) })}
-                  className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                  className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
                 />
               </div>
 
@@ -270,7 +270,7 @@ const ManageProducts = () => {
                 min="0"
                 value={formData.bulkPrice}
                 onChange={(e) => setFormData({ ...formData, bulkPrice: Number(e.target.value) })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
               />
             </div>
           </div>
@@ -285,7 +285,7 @@ const ManageProducts = () => {
                     value={w.weight}
                     onChange={(e) => handleWeightChange(idx, 'weight', e.target.value)}
                     placeholder="e.g. 250g, 500ml, 1L, 2 pcs"
-                    className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                    className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
                   />
                 </div>
                 <div>
@@ -296,7 +296,7 @@ const ManageProducts = () => {
                     required
                     value={w.price}
                     onChange={(e) => handleWeightChange(idx, 'price', e.target.value)}
-                    className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                    className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
                   />
                 </div>
                 <button
@@ -325,7 +325,7 @@ const ManageProducts = () => {
                 min="0"
                 value={formData.stockQuantity}
                 onChange={(e) => setFormData({ ...formData, stockQuantity: Number(e.target.value), inStock: Number(e.target.value) > 0 })}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
               />
             </div>
             <div className="flex flex-col gap-3">
@@ -355,7 +355,7 @@ const ManageProducts = () => {
                 type="checkbox"
                 checked={formData.bestSeller}
                 onChange={(e) => setFormData({ ...formData, bestSeller: e.target.checked })}
-                className="h-5 w-5 rounded border border-white/10 bg-brand-black"
+                className="h-5 w-5 rounded border border-brand-gold/30 bg-brand-cream/10"
               />
               Best Seller
             </label>
@@ -364,7 +364,7 @@ const ManageProducts = () => {
                 type="checkbox"
                 checked={formData.newArrival}
                 onChange={(e) => setFormData({ ...formData, newArrival: e.target.checked })}
-                className="h-5 w-5 rounded border border-white/10 bg-brand-black"
+                className="h-5 w-5 rounded border border-brand-gold/30 bg-brand-cream/10"
               />
               New Arrival
             </label>
@@ -373,7 +373,7 @@ const ManageProducts = () => {
                 type="checkbox"
                 checked={formData.inStock}
                 onChange={(e) => setFormData({ ...formData, inStock: e.target.checked, stockQuantity: e.target.checked ? formData.stockQuantity || 1 : 0 })}
-                className="h-5 w-5 rounded border border-white/10 bg-brand-black"
+                className="h-5 w-5 rounded border border-brand-gold/30 bg-brand-cream/10"
               />
               In Stock
             </label>
@@ -382,7 +382,7 @@ const ManageProducts = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
             <div>
               <p className="text-sm text-brand-cream/70 mb-2">Preview Image</p>
-              <div className="rounded-3xl border border-white/10 overflow-hidden bg-brand-black h-44 flex items-center justify-center">
+              <div className="rounded-3xl border border-brand-gold/20 overflow-hidden bg-brand-cream h-44 flex items-center justify-center">
                 {formData.image ? (
                   <img src={formData.image} alt="Preview" className="h-full w-full object-cover" />
                 ) : (
@@ -431,7 +431,7 @@ const ManageProducts = () => {
 
       <div className="overflow-x-auto rounded-3xl border border-white/10 bg-brand-matte">
         <table className="w-full text-left text-sm text-brand-cream/80">
-          <thead className="text-xs uppercase bg-brand-black border-b border-white/10">
+          <thead className="text-xs uppercase bg-brand-gold/10 border-b border-brand-gold/20 text-brand-black">
             <tr>
               <th className="px-6 py-4">Image</th>
               <th className="px-6 py-4">Name</th>
@@ -462,7 +462,7 @@ const ManageProducts = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right flex flex-wrap justify-end gap-2">
-                  <button onClick={() => handleVisibilityToggle(product.id)} className="rounded-2xl border border-white/10 bg-brand-black/70 px-3 py-2 text-xs font-semibold text-brand-cream hover:bg-brand-gold/10 transition-colors">
+                  <button onClick={() => handleVisibilityToggle(product.id)} className="rounded-2xl border border-brand-gold/20 bg-brand-gold/10 px-3 py-2 text-xs font-semibold text-brand-black hover:bg-brand-gold/20 transition-colors">
                     {product.visible ? 'Hide' : 'Show'}
                   </button>
                   <button onClick={() => handleEdit(product)} className="rounded-2xl bg-brand-gold/10 px-3 py-2 text-xs font-semibold text-brand-gold hover:bg-brand-gold/20 transition-colors flex items-center gap-2">
