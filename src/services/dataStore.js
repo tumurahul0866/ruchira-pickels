@@ -662,9 +662,20 @@ const getOrdersFromLocal = () => {
   return parsed;
 };
 
-export const getOrders = () => getOrdersFromLocal();
+export const getOrders = async () => {
+  try {
+    const orders = await fetchJson(ORDERS_API);
+    if (Array.isArray(orders) && orders.length > 0) {
+      syncLocalOrders(orders);
+      return orders;
+    }
+  } catch {
+    // Fall back to the locally cached orders if the backend is unavailable.
+  }
+  return getOrdersFromLocal();
+};
 
-export const saveOrder = (order) => {
+export const saveOrder = async (order) => {
   const orders = getOrdersFromLocal();
   const trackingNumber = 'TRK' + Math.floor(100000 + Math.random() * 900000);
   const newOrder = {
@@ -678,15 +689,33 @@ export const saveOrder = (order) => {
   const nextOrders = [newOrder, ...orders];
   syncLocalOrders(nextOrders);
 
-  fetch(ORDERS_API, {
-    method: 'POST',
-    headers: API_HEADERS,
-    body: JSON.stringify(newOrder),
-  }).catch(() => {
-    // offline mode
-  });
+  try {
+    const response = await fetch(ORDERS_API, {
+      method: 'POST',
+      headers: API_HEADERS,
+      body: JSON.stringify(newOrder),
+    });
 
-  return newOrder;
+    if (response.ok) {
+      const savedOrder = await response.json();
+      const mergedOrders = [savedOrder, ...orders.filter((o) => o.id !== savedOrder.id)];
+      syncLocalOrders(mergedOrders);
+      return savedOrder;
+    }
+
+    const errorPayload = await response.text();
+    let message = 'Failed to save order';
+    try {
+      const parsed = JSON.parse(errorPayload);
+      message = parsed.error || parsed.message || message;
+    } catch {
+      if (errorPayload) message = errorPayload;
+    }
+    throw new Error(message || `HTTP ${response.status}`);
+  } catch (error) {
+    console.error('saveOrder error:', error);
+    return newOrder;
+  }
 };
 
 export const updateOrderStatus = (id, status, paymentStatus) => {
