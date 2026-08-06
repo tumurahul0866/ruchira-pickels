@@ -1,7 +1,10 @@
+const DEFAULT_PROD_BACKEND = 'https://ruchira-backend-kv3q.onrender.com';
+
 export const resolveApiPrefix = (env = import.meta.env) => {
   const configuredBase = env?.VITE_BACKEND_URL?.trim().replace(/\/$/, '');
   if (configuredBase) {
-    return `${configuredBase}/api`;
+    const normalizedBase = configuredBase.replace(/\/api$/, '');
+    return `${normalizedBase}/api`;
   }
 
   if (import.meta.env.DEV) {
@@ -12,7 +15,8 @@ export const resolveApiPrefix = (env = import.meta.env) => {
     return 'http://127.0.0.1:3001/api';
   }
 
-  return '/api';
+  // In production, default to the separate backend deployment when no VITE_BACKEND_URL is configured.
+  return `${DEFAULT_PROD_BACKEND}/api`;
 };
 
 export const resolveApiUrl = (path, env = import.meta.env) => {
