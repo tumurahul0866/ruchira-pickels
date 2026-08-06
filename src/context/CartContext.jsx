@@ -3,59 +3,53 @@ import { createContext, useContext, useState } from 'react';
 
 const CartContext = createContext();
 
+const getItemKey = (product, weightOption) => `${product.id}::${weightOption?.weight ?? 'unit'}`;
+
+const normalizeCartItems = (items) => {
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => ({
+    ...item,
+    itemKey: item.itemKey || getItemKey(item.product, item.weightOption),
+  }));
+};
+
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
     if (typeof window === 'undefined') return [];
     const savedCart = localStorage.getItem('vasuki_cart');
-    return savedCart ? JSON.parse(savedCart) : [];
+    return savedCart ? normalizeCartItems(JSON.parse(savedCart)) : [];
   });
 
   const saveCart = (items) => {
-    setCartItems(items);
-    localStorage.setItem('vasuki_cart', JSON.stringify(items));
-  };
-
-  const getCartItemKey = (product, weightOption) => {
-    if (product.pricePerUnit) {
-      return `${product.id}::${product.quantityType || 'Unit'}`;
-    }
-    return `${product.id}::${weightOption.weight}`;
+    const normalizedItems = normalizeCartItems(items);
+    setCartItems(normalizedItems);
+    localStorage.setItem('vasuki_cart', JSON.stringify(normalizedItems));
   };
 
   const addToCart = (product, weightOption, quantity) => {
-    const itemKey = getCartItemKey(product, weightOption);
+    const itemKey = `${product.id}::${weightOption.weight}`;
     const existingIndex = cartItems.findIndex(
-      item => getCartItemKey(item.product, item.weightOption) === itemKey
+      item => item.itemKey === itemKey
     );
 
     let newCart = [...cartItems];
     if (existingIndex >= 0) {
       newCart[existingIndex].quantity += quantity;
     } else {
-      newCart.push({ product, weightOption, quantity });
+      newCart.push({ itemKey, product, weightOption, quantity });
     }
     saveCart(newCart);
   };
 
-  const removeFromCart = (productId, weightOptionOrType) => {
-    const newCart = cartItems.filter((item) => {
-      const key = getCartItemKey(item.product, item.weightOption);
-      const matchKey = item.product.pricePerUnit
-        ? `${productId}::${item.product.quantityType || 'Unit'}`
-        : `${productId}::${weightOptionOrType}`;
-      return key !== matchKey;
-    });
+  const removeFromCart = (itemKey) => {
+    const newCart = cartItems.filter(item => item.itemKey !== itemKey);
     saveCart(newCart);
   };
 
-  const updateQuantity = (productId, weightOptionOrType, quantity) => {
-    if (quantity <= 0) return removeFromCart(productId, weightOptionOrType);
-    const newCart = cartItems.map((item) => {
-      const key = getCartItemKey(item.product, item.weightOption);
-      const matchKey = item.product.pricePerUnit
-        ? `${productId}::${item.product.quantityType || 'Unit'}`
-        : `${productId}::${weightOptionOrType}`;
-      if (key === matchKey) {
+  const updateQuantity = (itemKey, quantity) => {
+    if (quantity <= 0) return removeFromCart(itemKey);
+    const newCart = cartItems.map(item => {
+      if (item.itemKey === itemKey) {
         return { ...item, quantity };
       }
       return item;

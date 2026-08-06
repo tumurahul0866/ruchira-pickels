@@ -63,11 +63,10 @@ const ManageOrders = () => {
                   <div className="bg-brand-black px-4 py-2 rounded-lg border border-white/10">
                     <span className="text-xs text-brand-cream/50 uppercase block mb-1">Order Status</span>
                     <select 
-                      value={order.status || 'Order Placed'}
+                      value={order.status}
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
                       className="bg-transparent text-brand-cream text-sm font-bold focus:outline-none cursor-pointer"
                     >
-                      <option className="bg-brand-black">Order Placed</option>
                       <option className="bg-brand-black">Pending</option>
                       <option className="bg-brand-black">Confirmed</option>
                       <option className="bg-brand-black">Preparing</option>

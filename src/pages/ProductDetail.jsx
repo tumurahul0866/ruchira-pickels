@@ -80,19 +80,21 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    const addItem = isLegacyProduct(product)
-      ? { product, option: selectedWeight, quantity: 1 }
-      : { product, option: { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) }, quantity: selectedQuantity };
-    addToCart(addItem.product, addItem.option, addItem.quantity);
+    const option = isLegacyProduct(product)
+      ? selectedWeight
+      : { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) };
+    const quantity = isLegacyProduct(product) ? 1 : selectedQuantity;
+    addToCart(product, option, quantity);
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 2000);
   };
 
   const handleBuyNow = () => {
-    const addItem = isLegacyProduct(product)
-      ? { product, option: selectedWeight, quantity: 1 }
-      : { product, option: { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) }, quantity: selectedQuantity };
-    addToCart(addItem.product, addItem.option, addItem.quantity);
+    const option = isLegacyProduct(product)
+      ? selectedWeight
+      : { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) };
+    const quantity = isLegacyProduct(product) ? 1 : selectedQuantity;
+    addToCart(product, option, quantity);
     navigate('/checkout');
   };
 

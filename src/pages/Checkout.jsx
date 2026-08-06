@@ -499,15 +499,9 @@ const Checkout = () => {
                     />
                     <div className="flex-grow">
                       <h4 className="text-xs font-bold text-slate-900 line-clamp-1">{item.product.name}</h4>
-                      {item.product.pricePerUnit ? (
-                        <p className="text-[11px] text-slate-500">
-                          {item.product.quantityType || 'Unit'}: {item.quantity}
-                        </p>
-                      ) : (
-                        <p className="text-[11px] text-slate-500">
-                          {item.product.quantityType || 'Weight'}: {item.weightOption.weight} × {item.quantity}
-                        </p>
-                      )}
+                      <p className="text-[11px] text-slate-500">
+                        {item.product.quantityType || 'Weight'}: {item.weightOption.weight} × {item.quantity}
+                      </p>
                     </div>
                     <p className="text-xs font-bold text-slate-900 font-mono">
                       ₹{item.weightOption.price * item.quantity}

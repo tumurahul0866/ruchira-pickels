@@ -732,22 +732,20 @@ export const saveOrder = async (order) => {
   }
 };
 
-export const updateOrderStatus = async (id, status, paymentStatus) => {
+export const updateOrderStatus = (id, status, paymentStatus) => {
   const orders = getOrdersFromLocal();
   const index = orders.findIndex((o) => o.id === id);
   if (index >= 0) {
     if (status) orders[index].status = status;
     if (paymentStatus) orders[index].paymentStatus = paymentStatus;
     syncLocalOrders(orders);
-    try {
-      await fetch(`${ORDERS_API}/${id}`, {
-        method: 'PUT',
-        headers: API_HEADERS,
-        body: JSON.stringify({ status, paymentStatus }),
-      });
-    } catch {
+    fetch(`${ORDERS_API}/${id}`, {
+      method: 'PUT',
+      headers: API_HEADERS,
+      body: JSON.stringify({ status, paymentStatus }),
+    }).catch(() => {
       // ignore backend failure
-    }
+    });
   }
 };
 
@@ -903,10 +901,15 @@ export const toggleOffer = (id) => {
   const offers = getOffersFromLocal();
   const target = offers.find((o) => o.id === id);
   if (target) {
-    const updatedOffer = { ...target, active: !target.active };
-    const nextOffers = offers.map((o) => (o.id === id ? updatedOffer : o));
-    syncLocalOffers(nextOffers);
-    saveOffer(updatedOffer);
+    target.active = !target.active;
+    syncLocalOffers(offers);
+    fetch(`${OFFERS_API}/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: API_HEADERS,
+      body: JSON.stringify(target),
+    }).catch(() => {
+      // ignore
+    });
   }
 };
 

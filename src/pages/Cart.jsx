@@ -78,7 +78,7 @@ const Cart = () => {
           <div className="flex-grow space-y-4">
             {cartItems.map((item) => (
               <motion.div 
-                key={`${item.product.id}-${item.weightOption.weight}`}
+                key={item.itemKey}
                 layout
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -124,7 +124,7 @@ const Cart = () => {
                   <div className="flex items-center gap-2 bg-[#F8F3E8] border border-[#5C4033]/20 rounded-xl p-1">
                     <motion.button 
                       whileTap={{ scale: 0.85 }}
-                      onClick={() => updateQuantity(item.product.id, item.weightOption.weight, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.itemKey, item.quantity - 1)}
                       className="p-1.5 rounded-lg text-[#5C4033] hover:bg-white transition-colors"
                       title="Decrease"
                     >
@@ -133,7 +133,7 @@ const Cart = () => {
                     <span className="w-7 text-center text-xs font-bold text-[#5C4033]">{item.quantity}</span>
                     <motion.button 
                       whileTap={{ scale: 0.85 }}
-                      onClick={() => updateQuantity(item.product.id, item.weightOption.weight, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.itemKey, item.quantity + 1)}
                       className="p-1.5 rounded-lg text-[#5C4033] hover:bg-white transition-colors"
                       title="Increase"
                     >
@@ -145,7 +145,7 @@ const Cart = () => {
                     <p className="text-sm font-bold text-[#5C4033]">₹{item.weightOption.price * item.quantity}</p>
                     <motion.button 
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => removeFromCart(item.product.id, item.weightOption.weight)}
+                      onClick={() => removeFromCart(item.itemKey)}
                       className="text-xs text-[#8B1E1E] hover:underline font-semibold flex items-center gap-1 mt-0.5"
                     >
                       <Trash2 size={13} /> Remove
