@@ -1,12 +1,15 @@
 export const resolveApiPrefix = (env = import.meta.env) => {
 const DEFAULT_PROD_BACKEND = 'https://ruchira-backend-kv3q.onrender.com';
 
-  const configuredBase = env?.VITE_BACKEND_URL?.trim().replace(/\/$/, '');
+  let configuredBase = env?.VITE_BACKEND_URL?.trim().replace(/\/$/, '');
   if (configuredBase) {
     const normalizedBase = configuredBase.replace(/\/api$/, '');
+    const safeHost = normalizedBase.replace(/^(https?:\/\/)?ruchira-backend\.vercel\.app(?:\/api)?$/i, 'https://ruchira-backend-kv3q.onrender.com');
+    configuredBase = safeHost;
+    const finalBase = configuredBase.replace(/\/api$/, '');
     // If the configured value is a bare host (no protocol), default to https://
-    const hasProtocol = /^https?:\/\//i.test(normalizedBase);
-    const withProtocol = hasProtocol ? normalizedBase : `https://${normalizedBase}`;
+    const hasProtocol = /^https?:\/\//i.test(finalBase);
+    const withProtocol = hasProtocol ? finalBase : `https://${finalBase}`;
     return `${withProtocol}/api`;
   }
 
