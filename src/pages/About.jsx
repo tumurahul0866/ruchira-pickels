@@ -1,30 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Leaf, Award, Heart, Sparkles } from 'lucide-react';
 import { getStoreSettings } from '../services/dataStore';
 
 const About = () => {
-  const [settings, setSettings] = useState({
-    aboutTitle: 'Preserving Authentic Konasema Pickling Traditions',
-    aboutStory: 'Konasema Ruchulu is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
-    aboutStory2: 'What started as a family tradition has blossomed into a trusted brand dedicated to preserving the authentic culinary heritage of South India. We believe that a meal is incomplete without that perfect touch of spice, tanginess, and aromatic cold-pressed groundnut oil.',
-    aboutReasonTitle: 'The Essence of Konasema',
-    aboutReasonText: 'Symbolizes agricultural richness, warmth, and legendary culinary heritage. Like timeless recipes passed through generations, our pickles are bold, memorable, and packaged in food-grade glass jars and sealed pouches without chemical shortcuts.',
-    aboutImageUrl: 'https://images.unsplash.com/photo-1506544777-64cfb638973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    aboutPromise1Title: '100% Natural Ingredients',
-    aboutPromise1Desc: 'Sourced directly from local Andhra farmers to ensure authentic spice, color, and freshness in every jar.',
-    aboutPromise2Title: 'Traditional Wood-Pressed Oil',
-    aboutPromise2Desc: 'Slow-extracted groundnut oil retains wholesome aroma and natural health benefits without chemical refining.',
-    aboutPromise3Title: 'Made with Love',
-    aboutPromise3Desc: 'Hand-mixed in hygienic small batches with the same devotion and care as for our own family.'
-  });
-
-  useEffect(() => {
-    const s = getStoreSettings();
-    if (s) {
-      setSettings((prev) => ({ ...prev, ...s }));
-    }
-  }, []);
+  const [settings] = useState(() => ({
+    ...{
+      aboutTitle: 'Preserving Authentic Konasema Pickling Traditions',
+      aboutStory: 'Konasema Ruchulu is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
+      aboutStory2: 'What started as a family tradition has blossomed into a trusted brand dedicated to preserving the authentic culinary heritage of South India. We believe that a meal is incomplete without that perfect touch of spice, tanginess, and aromatic cold-pressed groundnut oil.',
+      aboutReasonTitle: 'The Essence of Konasema',
+      aboutReasonText: 'Symbolizes agricultural richness, warmth, and legendary culinary heritage. Like timeless recipes passed through generations, our pickles are bold, memorable, and packaged in food-grade glass jars and sealed pouches without chemical shortcuts.',
+      aboutImageUrl: 'https://images.unsplash.com/photo-1506544777-64cfb638973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      aboutPromise1Title: '100% Natural Ingredients',
+      aboutPromise1Desc: 'Sourced directly from local Andhra farmers to ensure authentic spice, color, and freshness in every jar.',
+      aboutPromise2Title: 'Traditional Wood-Pressed Oil',
+      aboutPromise2Desc: 'Slow-extracted groundnut oil retains wholesome aroma and natural health benefits without chemical refining.',
+      aboutPromise3Title: 'Made with Love',
+      aboutPromise3Desc: 'Hand-mixed in hygienic small batches with the same devotion and care as for our own family.'
+    },
+    ...(getStoreSettings() || {})
+  }));
 
   return (
     <div className="flex-grow bg-[#F8F3E8] text-[#5C4033] py-16 md:py-24">
@@ -158,3 +154,4 @@ const About = () => {
 };
 
 export default About;
+

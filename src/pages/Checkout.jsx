@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -12,15 +12,9 @@ import {
 import {
   CheckCircle2,
   MapPin,
-  Phone,
   User,
   CreditCard,
-  QrCode,
-  ShieldCheck,
-  ShoppingBag,
   MessageSquare,
-  ArrowRight,
-  Sparkles,
   ChevronRight
 } from 'lucide-react';
 import Button from '../components/ui/Button';
@@ -59,36 +53,18 @@ const Checkout = () => {
     notes: ''
   });
 
-  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [savedAddresses] = useState(() => {
+    if (!user?.email) return [];
+    const profile = getUserProfile(user.email);
+    return profile?.addresses || [];
+  });
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [whatsappUrl, setWhatsappUrl] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [paymentSettings, setPaymentSettings] = useState({ enableScanner: true, scannerNote: '' });
+  const [paymentSettings] = useState(() => getPaymentSettings());
   const storeSettings = getStoreSettings();
 
-  useEffect(() => {
-    const ps = getPaymentSettings();
-    setPaymentSettings(ps);
-    // Auto-select the first enabled payment method
-    const defaultMethod = ps.enableCOD ? 'COD' : ps.enableUPI ? 'UPI' : '';
-    setFormData((prev) => ({ ...prev, paymentMethod: defaultMethod }));
-    if (user?.email) {
-      const profile = getUserProfile(user.email);
-      if (profile) {
-        setFormData((prev) => ({
-          ...prev,
-          name: profile.name || user.name || prev.name,
-          email: user.email || prev.email,
-          phone: profile.phone || user.phone || prev.phone,
-          paymentMethod: defaultMethod
-        }));
-        if (profile.addresses && profile.addresses.length > 0) {
-          setSavedAddresses(profile.addresses);
-        }
-      }
-    }
-  }, [user]);
 
   if (cartItems.length === 0 && !orderPlaced) {
     navigate('/cart');
@@ -190,7 +166,7 @@ const Checkout = () => {
     // Direct launch WhatsApp immediately
     try {
       window.location.href = url;
-    } catch (err) {
+    } catch {
       console.log('Direct launch failed, fallback button available');
     }
   };

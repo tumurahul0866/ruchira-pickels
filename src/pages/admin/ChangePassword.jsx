@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { Key, Eye, EyeOff, CheckCircle2, ShieldAlert, Lock, Mail } from 'lucide-react';
+import { Key, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
 const ChangePassword = () => {
   const { changeAdminPassword, changeAdminEmail, getAdminEmail } = useAuth();
   
   // Email states
-  const [currentAdminEmail, setCurrentAdminEmail] = useState('');
+  const [currentAdminEmail, setCurrentAdminEmail] = useState(() => getAdminEmail());
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [emailAuthPassword, setEmailAuthPassword] = useState('');
   const [emailMessage, setEmailMessage] = useState(null);
@@ -20,10 +20,6 @@ const ChangePassword = () => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [passMessage, setPassMessage] = useState(null);
-
-  useEffect(() => {
-    setCurrentAdminEmail(getAdminEmail());
-  }, [getAdminEmail]);
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();

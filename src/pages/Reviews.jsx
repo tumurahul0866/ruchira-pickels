@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { getReviews, saveReview } from '../services/dataStore';
 import { Star, CheckCircle2, Sparkles, MessageSquarePlus } from 'lucide-react';
@@ -57,14 +57,10 @@ const StarInputInteractive = ({ rating, onChange }) => {
 };
 
 const Reviews = () => {
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(() => getReviews().filter((review) => review.visible !== false));
   const [formState, setFormState] = useState({ name: '', rating: 5, text: '', product: 'Andhra Avakaya Mango Pickle' });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    setReviews(getReviews().filter((review) => review.visible !== false));
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, SlidersHorizontal, Flame, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Search, X, Sparkles } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getProducts, getProductTypes, getOffers } from '../services/dataStore';
 
@@ -12,8 +12,8 @@ const Flavours = () => {
   const [selectedType, setSelectedType] = useState('All');
   const [selectedSpice, setSelectedSpice] = useState('All');
   const [sortBy, setSortBy] = useState('default');
-  const [searchQuery, setSearchQuery] = useState('');
   const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
 
   useEffect(() => {
     const loadData = async () => {
@@ -25,13 +25,7 @@ const Flavours = () => {
       setOffers(fetchedOffers);
     };
     loadData();
-
-    const urlSearch = searchParams.get('search');
-    if (urlSearch) {
-      setSearchQuery(urlSearch);
-      setSelectedType('All');
-    }
-  }, [searchParams]);
+  }, []);
 
   const availableTypes = ['All', ...productTypes];
   const spiceLevels = ['All', 'Sweet', 'Mild', 'Medium', 'Hot', 'Extra Hot'];

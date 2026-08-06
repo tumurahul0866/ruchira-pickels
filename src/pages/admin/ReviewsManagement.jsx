@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { getReviews, saveReview, deleteReview, toggleReviewVisibility } from '../../services/dataStore';
 import Button from '../../components/ui/Button';
 import { Star } from 'lucide-react';
 
 const ReviewsManagement = () => {
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(() => getReviews());
   const [formState, setFormState] = useState({ id: '', name: '', rating: 5, text: '', visible: true });
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    setReviews(getReviews());
-  }, []);
 
   const refresh = () => setReviews(getReviews());
 

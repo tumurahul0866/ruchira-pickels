@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { getAdminProfile, updateAdminProfile } from '../../services/dataStore';
 import Button from '../../components/ui/Button';
 import { User } from 'lucide-react';
 
 const AdminProfile = () => {
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState(() => getAdminProfile() || {
     ownerName: '',
     businessName: '',
     email: '',
@@ -17,10 +17,6 @@ const AdminProfile = () => {
     logoImage: ''
   });
   const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    setProfile(getAdminProfile());
-  }, []);
 
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });

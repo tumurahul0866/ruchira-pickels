@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Tag, Check, ShieldCheck } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { getOffers } from '../services/dataStore';
 

@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  LayoutDashboard, Package, ShoppingBag, LogOut, TrendingUp,
-  Users, Settings, CreditCard, Star, Bell, Globe, User, Key, Plus,
-  ChevronRight, IndianRupee
+  LayoutDashboard, Package, ShoppingBag, LogOut, Settings,
+  CreditCard, Star, Bell, Globe, User, Key, ChevronRight, Users
 } from 'lucide-react';
 import { getProducts, getOrders } from '../../services/dataStore';
 import ManageProducts from './ManageProducts';
 import ManageOrders from './ManageOrders';
 import StoreSettings from './StoreSettings';
-import AddPickle from './AddPickle';
 import PaymentSettings from './PaymentSettings';
 import ReviewsManagement from './ReviewsManagement';
 import CustomersManagement from './CustomersManagement';
@@ -41,15 +39,104 @@ const groups = [
   { key: 'settings', label: 'Settings' },
 ];
 
-// Stat card colours
 const statConfig = [
-  { key: 'totalRevenue',   label: 'Revenue',        color: 'from-amber-500/20 to-amber-600/5', border: 'border-amber-500/30', textColor: 'text-amber-400',  prefix: '₹', formatter: (v) => v.toLocaleString() },
-  { key: 'totalOrders',    label: 'Total Orders',   color: 'from-sky-500/20 to-sky-600/5',    border: 'border-sky-500/30',   textColor: 'text-sky-400',    prefix: '',  formatter: (v) => v },
-  { key: 'pendingOrders',  label: 'Pending',        color: 'from-rose-500/20 to-rose-600/5',  border: 'border-rose-500/30',  textColor: 'text-rose-400',   prefix: '',  formatter: (v) => v },
-  { key: 'deliveredOrders',label: 'Delivered',      color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/30', textColor: 'text-emerald-400', prefix: '', formatter: (v) => v },
-  { key: 'todayOrders',    label: 'Today\'s Orders',color: 'from-violet-500/20 to-violet-600/5', border: 'border-violet-500/30', textColor: 'text-violet-400', prefix: '', formatter: (v) => v },
-  { key: 'lowStock',       label: 'Low Stock',      color: 'from-orange-500/20 to-orange-600/5', border: 'border-orange-500/30', textColor: 'text-orange-400', prefix: '', formatter: (v) => v },
+  {
+    key: 'totalProducts',
+    label: 'Total Products',
+    prefix: '',
+    formatter: (value) => value.toLocaleString(),
+    border: 'border-white/10',
+    textColor: 'text-brand-cream'
+  },
+  {
+    key: 'totalOrders',
+    label: 'Orders Placed',
+    prefix: '',
+    formatter: (value) => value.toLocaleString(),
+    border: 'border-white/10',
+    textColor: 'text-brand-cream'
+  },
+  {
+    key: 'totalRevenue',
+    label: 'Revenue',
+    prefix: '₹',
+    formatter: (value) => Number(value).toLocaleString(),
+    border: 'border-white/10',
+    textColor: 'text-brand-cream'
+  }
 ];
+
+const Sidebar = ({ mobile = false, activeTab, onNav, onClose, onLogout }) => (
+  <div className={`flex flex-col h-full ${mobile ? '' : ''}`}>
+    <div className="p-5 border-b border-white/5">
+      <Link to="/" className="flex items-center gap-3 mb-3 group" onClick={onClose}>
+        <div className="w-10 h-10 rounded-xl bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center font-serif font-bold text-brand-gold">
+          K
+        </div>
+        <div>
+          <p className="font-serif font-bold text-brand-cream text-sm leading-tight group-hover:text-brand-gold transition-colors">Konasema Ruchulu</p>
+          <p className="text-[10px] text-brand-cream/40 uppercase tracking-widest">Admin Portal</p>
+        </div>
+      </Link>
+      <div className="px-3 py-2 rounded-xl bg-brand-gold/5 border border-brand-gold/10">
+        <p className="text-[10px] uppercase tracking-widest text-brand-gold/60 font-bold">Control Center</p>
+        <p className="text-xs text-brand-cream/50 mt-0.5">Manage store & operations</p>
+      </div>
+    </div>
+
+    <nav className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
+      {groups.map((group) => {
+        const items = navItems.filter((n) => n.group === group.key);
+        return (
+          <div key={group.key}>
+            {group.label && (
+              <p className="px-3 mb-1.5 text-[9px] uppercase tracking-[0.25em] font-bold text-brand-cream/25">
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {items.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <motion.button
+                    key={item.id}
+                    onClick={() => {
+                      onNav(item.id);
+                      if (mobile) onClose();
+                    }}
+                    whileHover={{ x: 3 }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r from-brand-gold/15 to-brand-gold/5 text-brand-gold border border-brand-gold/20 shadow-sm'
+                        : 'text-brand-cream/60 hover:bg-white/5 hover:text-brand-cream/90'
+                    }`}
+                  >
+                    <Icon size={15} className={isActive ? 'text-brand-gold' : 'text-brand-cream/40'} />
+                    <span className="truncate">{item.label}</span>
+                    {isActive && <ChevronRight size={12} className="ml-auto text-brand-gold/60" />}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </nav>
+
+    <div className="p-3 border-t border-white/5">
+      <motion.button
+        onClick={onLogout}
+        whileHover={{ x: 3 }}
+        whileTap={{ scale: 0.97 }}
+        className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-brand-red/70 hover:bg-brand-red/8 hover:text-brand-red transition-all text-sm font-semibold"
+      >
+        <LogOut size={15} /> Logout Admin
+      </motion.button>
+    </div>
+  </div>
+);
 
 const AdminDashboard = () => {
   const { isAdmin, logout } = useAuth();
@@ -60,29 +147,31 @@ const AdminDashboard = () => {
     totalProducts: 0, totalOrders: 0, pendingOrders: 0,
     deliveredOrders: 0, cancelledOrders: 0, todayOrders: 0, lowStock: 0, totalRevenue: 0
   });
+  const [orders, setOrders] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
 
   useEffect(() => {
     const loadStats = async () => {
       if (!isAdmin) return;
       const products = await getProducts();
-      const orders = getOrders();
+      const ordersData = getOrders().slice().sort((a, b) => new Date(b.date) - new Date(a.date));
       const today = new Date().toISOString().slice(0, 10);
-      const deliveredOrders = orders.filter((o) => o.status === 'Delivered').length;
-      const cancelledOrders = orders.filter((o) => o.status === 'Cancelled').length;
-      const pendingOrders = orders.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
+      const deliveredOrders = ordersData.filter((o) => o.status === 'Delivered').length;
+      const cancelledOrders = ordersData.filter((o) => o.status === 'Cancelled').length;
+      const pendingOrders = ordersData.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
       const lowStock = products.filter((p) => p.stockQuantity <= 8 && p.visible).length;
-      const todayOrders = orders.filter((o) => o.date.slice(0, 10) === today).length;
-      const totalRevenue = orders.filter((o) => o.status !== 'Cancelled').reduce((s, o) => s + Number(o.totalAmount), 0);
-      setStats({ totalProducts: products.length, totalOrders: orders.length, pendingOrders, deliveredOrders, cancelledOrders, todayOrders, lowStock, totalRevenue });
-      setRecentOrders(orders.slice(-6).reverse());
+      const todayOrders = ordersData.filter((o) => o.date.slice(0, 10) === today).length;
+      const totalRevenue = ordersData.filter((o) => o.status !== 'Cancelled').reduce((s, o) => s + Number(o.totalAmount), 0);
+      setStats({ totalProducts: products.length, totalOrders: ordersData.length, pendingOrders, deliveredOrders, cancelledOrders, todayOrders, lowStock, totalRevenue });
+      setOrders(ordersData);
+      setRecentOrders(ordersData.slice(0, 10));
     };
 
     loadStats();
   }, [isAdmin, activeTab]);
 
   const handleLogout = () => { logout(); navigate('/admin-login'); };
-  const handleNav = (id) => { setActiveTab(id); setSidebarOpen(false); };
+  const handleNav = (id) => { setActiveTab(id); };
 
   if (!isAdmin) return <Navigate to="/admin-login" replace />;
 
@@ -98,7 +187,7 @@ const AdminDashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':       return <Overview stats={stats} recentOrders={recentOrders} setActiveTab={setActiveTab} statusBadge={statusBadge} />;
+      case 'overview':       return <Overview stats={stats} orders={orders} recentOrders={recentOrders} setActiveTab={setActiveTab} statusBadge={statusBadge} />;
       case 'products':       return <ManageProducts />;
       case 'orders':         return <ManageOrders />;
       case 'payments':       return <PaymentSettings />;
@@ -113,83 +202,11 @@ const AdminDashboard = () => {
     }
   };
 
-  const Sidebar = ({ mobile = false }) => (
-    <div className={`flex flex-col h-full ${mobile ? '' : ''}`}>
-      {/* Logo & Brand */}
-      <div className="p-5 border-b border-white/5">
-        <Link to="/" className="flex items-center gap-3 mb-3 group" onClick={() => setSidebarOpen(false)}>
-          <div className="w-10 h-10 rounded-xl bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center font-serif font-bold text-brand-gold">
-            K
-          </div>
-          <div>
-            <p className="font-serif font-bold text-brand-cream text-sm leading-tight group-hover:text-brand-gold transition-colors">Konasema Ruchulu</p>
-            <p className="text-[10px] text-brand-cream/40 uppercase tracking-widest">Admin Portal</p>
-          </div>
-        </Link>
-        <div className="px-3 py-2 rounded-xl bg-brand-gold/5 border border-brand-gold/10">
-          <p className="text-[10px] uppercase tracking-widest text-brand-gold/60 font-bold">Control Center</p>
-          <p className="text-xs text-brand-cream/50 mt-0.5">Manage store & operations</p>
-        </div>
-      </div>
-
-      {/* Nav Groups */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
-        {groups.map((group) => {
-          const items = navItems.filter((n) => n.group === group.key);
-          return (
-            <div key={group.key}>
-              {group.label && (
-                <p className="px-3 mb-1.5 text-[9px] uppercase tracking-[0.25em] font-bold text-brand-cream/25">
-                  {group.label}
-                </p>
-              )}
-              <div className="space-y-0.5">
-                {items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <motion.button
-                      key={item.id}
-                      onClick={() => handleNav(item.id)}
-                      whileHover={{ x: 3 }}
-                      whileTap={{ scale: 0.97 }}
-                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-medium transition-all ${
-                        isActive
-                          ? 'bg-gradient-to-r from-brand-gold/15 to-brand-gold/5 text-brand-gold border border-brand-gold/20 shadow-sm'
-                          : 'text-brand-cream/60 hover:bg-white/5 hover:text-brand-cream/90'
-                      }`}
-                    >
-                      <Icon size={15} className={isActive ? 'text-brand-gold' : 'text-brand-cream/40'} />
-                      <span className="truncate">{item.label}</span>
-                      {isActive && <ChevronRight size={12} className="ml-auto text-brand-gold/60" />}
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </nav>
-
-      {/* Logout */}
-      <div className="p-3 border-t border-white/5">
-        <motion.button
-          onClick={handleLogout}
-          whileHover={{ x: 3 }}
-          whileTap={{ scale: 0.97 }}
-          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-brand-red/70 hover:bg-brand-red/8 hover:text-brand-red transition-all text-sm font-semibold"
-        >
-          <LogOut size={15} /> Logout Admin
-        </motion.button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen flex bg-brand-black text-brand-cream">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 shrink-0 bg-[#0f0f0f] border-r border-white/5">
-        <Sidebar />
+        <Sidebar activeTab={activeTab} onNav={handleNav} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
       </aside>
 
       {/* Mobile Sidebar Overlay */}
@@ -206,7 +223,7 @@ const AdminDashboard = () => {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="fixed top-0 left-0 h-full w-72 bg-[#0f0f0f] border-r border-white/5 z-50 md:hidden"
             >
-              <Sidebar mobile />
+              <Sidebar mobile activeTab={activeTab} onNav={handleNav} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
             </motion.aside>
           </>
         )}
@@ -262,98 +279,282 @@ const AdminDashboard = () => {
 };
 
 /* ─── Overview Tab ──────────────────────────────────────────── */
-const Overview = ({ stats, recentOrders, setActiveTab, statusBadge }) => (
-  <div className="space-y-8">
-    <div>
-      <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-cream">
-        Dashboard Overview
-      </h1>
-      <p className="text-brand-cream/50 mt-1.5 text-sm">
-        Track product activity, order flow and store performance in one premium admin console.
-      </p>
-    </div>
+const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge }) => {
+  const lastSixMonths = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - (5 - index));
+    return {
+      key: `${date.getFullYear()}-${date.getMonth()}`,
+      label: date.toLocaleString('en-US', { month: 'short' }),
+    };
+  });
 
-    {/* Stat Cards */}
-    <div className="grid gap-4 grid-cols-2 xl:grid-cols-3">
-      {statConfig.map((s, i) => (
-        <motion.div
-          key={s.key}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.06, duration: 0.35 }}
-          className={`p-6 rounded-3xl bg-gradient-to-br ${s.color} border ${s.border} backdrop-blur-sm`}
-        >
-          <p className="text-[10px] uppercase tracking-[0.25em] text-brand-cream/40 mb-3 font-bold">{s.label}</p>
-          <p className={`text-3xl md:text-4xl font-bold font-mono ${s.textColor}`}>
-            {s.prefix}{s.formatter(stats[s.key])}
-          </p>
-        </motion.div>
-      ))}
-    </div>
+  const monthlySales = lastSixMonths.map((month) => ({
+    label: month.label,
+    value: orders.reduce((sum, order) => {
+      const orderKey = `${new Date(order.date).getFullYear()}-${new Date(order.date).getMonth()}`;
+      return orderKey === month.key && order.status !== 'Cancelled'
+        ? sum + Number(order.totalAmount)
+        : sum;
+    }, 0),
+  }));
 
-    {/* Recent Orders */}
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4, duration: 0.35 }}
-      className="rounded-3xl border border-white/8 bg-[#0f0f0f] overflow-hidden"
-    >
-      <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-brand-cream/40 mb-1 font-bold">Activity</p>
-          <h2 className="text-xl font-serif font-bold text-brand-cream">Recent Orders</h2>
+  const maxSales = Math.max(...monthlySales.map((item) => item.value), 1);
+  const linePoints = monthlySales.map((item, index) => {
+    const x = 40 + index * 45;
+    const y = 140 - (item.value / maxSales) * 110;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const productSales = orders.reduce((acc, order) => {
+    if (!Array.isArray(order.items)) return acc;
+    order.items.forEach((item) => {
+      const name = item.product?.name || item.product || 'Unknown';
+      acc[name] = (acc[name] || 0) + Number(item.quantity || 1);
+    });
+    return acc;
+  }, {});
+
+  const topSelling = Object.entries(productSales)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const statusCounts = orders.reduce((acc, order) => {
+    const status = order.status || 'Pending';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const statusItems = Object.entries(statusCounts).map(([status, value]) => ({ status, value }));
+  const totalStatus = statusItems.reduce((sum, item) => sum + item.value, 0);
+  let statusPosition = 0;
+  const statusBackground = statusItems
+    .map((item) => {
+      const start = statusPosition;
+      const slice = totalStatus ? (item.value / totalStatus) * 100 : 0;
+      statusPosition += slice;
+      const color = item.status === 'Delivered' ? '#22c55e'
+        : item.status === 'Processing' ? '#38bdf8'
+        : item.status === 'Cancelled' ? '#f43f5e'
+        : '#f59e0b';
+      return `${color} ${start}% ${statusPosition}%`;
+    })
+    .join(', ');
+
+  const activeStats = statConfig.map((item) => ({
+    ...item,
+    value: stats[item.key] ?? 0,
+  }));
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-brand-cream">
+          Dashboard Overview
+        </h1>
+        <p className="text-brand-cream/50 mt-1.5 text-sm">
+          Track product activity, order flow and store performance in one premium admin console.
+        </p>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.8fr_1fr]">
+        <div className="grid gap-4 mb-6 sm:grid-cols-2 xl:grid-cols-3">
+          {activeStats.map((item) => (
+            <div key={item.key} className={`rounded-3xl border ${item.border} bg-[#0f0f0f] p-5`}> 
+              <p className={item.textColor + ' text-sm font-semibold'}>{item.label}</p>
+              <p className="mt-4 text-3xl font-serif font-bold text-brand-cream">{item.prefix}{item.formatter(item.value)}</p>
+            </div>
+          ))}
         </div>
-        <button
-          onClick={() => setActiveTab('orders')}
-          className="text-brand-gold hover:text-brand-gold-light text-xs font-bold flex items-center gap-1 transition-colors"
-        >
-          View All <ChevronRight size={14} />
-        </button>
+        <div className="rounded-3xl border border-white/8 bg-[#0f0f0f] p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-brand-cream/40 mb-2 font-bold">Large Line Chart</p>
+              <h2 className="text-2xl font-serif font-bold text-brand-cream">Monthly Sales</h2>
+              <p className="text-sm text-brand-cream/60 mt-1">Revenue by month for the most recent six-month period.</p>
+            </div>
+            <div className="rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm font-semibold text-brand-cream">
+              Total Sales ₹{monthlySales.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+            </div>
+          </div>
+
+          <div className="mt-6 overflow-hidden rounded-3xl bg-[#111111] p-4">
+            <div className="relative h-52">
+              <svg viewBox="0 0 320 180" className="w-full h-full">
+                <defs>
+                  <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#FACC15" />
+                    <stop offset="100%" stopColor="#F59E0B" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d={`M${linePoints}`}
+                  fill="none"
+                  stroke="url(#lineGradient)"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+                <polyline points={linePoints} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="12" />
+                {monthlySales.map((item, index) => {
+                  const x = 40 + index * 45;
+                  const y = 140 - (item.value / maxSales) * 110;
+                  return (
+                    <g key={item.label}>
+                      <circle cx={x} cy={y} r="5" fill="#FACC15" />
+                      <circle cx={x} cy={y} r="10" fill="rgba(250, 204, 21, 0.08)" />
+                    </g>
+                  );
+                })}
+                {monthlySales.map((item, index) => (
+                  <text
+                    key={`${item.label}-label`}
+                    x={40 + index * 45}
+                    y="168"
+                    textAnchor="middle"
+                    fill="#94A3B8"
+                    fontSize="10"
+                  >
+                    {item.label}
+                  </text>
+                ))}
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <div className="rounded-3xl border border-white/8 bg-[#0f0f0f] p-6">
+            <div className="flex items-center justify-between gap-4 mb-5">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-brand-cream/40 mb-2 font-bold">Bar Chart</p>
+                <h3 className="text-xl font-semibold text-brand-cream">Top Selling Pickles</h3>
+              </div>
+              <span className="text-xs font-semibold text-brand-cream/60">Top 5 Products</span>
+            </div>
+            <div className="space-y-4">
+              {topSelling.length === 0 ? (
+                <p className="text-sm text-brand-cream/50">No sales data available yet.</p>
+              ) : (
+                topSelling.map((item) => {
+                  const barWidth = Math.max((item.count / Math.max(...topSelling.map((row) => row.count))) * 100, 10);
+                  return (
+                    <div key={item.name} className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-brand-cream/60">
+                        <span className="truncate max-w-[150px]">{item.name}</span>
+                        <span className="font-semibold text-brand-cream">{item.count}</span>
+                      </div>
+                      <div className="h-3 rounded-full bg-white/5 overflow-hidden">
+                        <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{ width: `${barWidth}%` }} />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-white/8 bg-[#0f0f0f] p-6">
+            <div className="flex items-center justify-between gap-4 mb-5">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-brand-cream/40 mb-2 font-bold">Pie Chart</p>
+                <h3 className="text-xl font-semibold text-brand-cream">Order Status</h3>
+              </div>
+              <span className="text-xs font-semibold text-brand-cream/60">Current Distribution</span>
+            </div>
+            <div className="flex flex-col gap-5 md:flex-row md:items-center">
+              <div className="h-40 w-40 rounded-full border border-white/10 bg-[#111111]" style={{ background: totalStatus ? `conic-gradient(${statusBackground})` : '#334155' }} />
+              <div className="grid gap-3 flex-1">
+                {statusItems.length === 0 ? (
+                  <p className="text-sm text-brand-cream/50">No orders placed yet.</p>
+                ) : (
+                  statusItems.map((item) => {
+                    const color = item.status === 'Delivered' ? 'bg-emerald-400/15 text-emerald-300 border-emerald-400/20'
+                      : item.status === 'Processing' ? 'bg-sky-400/15 text-sky-300 border-sky-400/20'
+                      : item.status === 'Cancelled' ? 'bg-rose-400/15 text-rose-300 border-rose-400/20'
+                      : 'bg-amber-400/15 text-amber-300 border-amber-400/20';
+                    return (
+                      <div key={item.status} className={`rounded-3xl border px-4 py-3 ${color}`}>
+                        <div className="flex items-center justify-between gap-3 text-sm font-semibold">
+                          <span>{item.status}</span>
+                          <span>{item.value}</span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+                          <div className="h-full rounded-full bg-current" style={{ width: `${totalStatus ? (item.value / totalStatus) * 100 : 0}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="border-b border-white/5">
-            <tr>
-              {['Order ID', 'Customer', 'Amount', 'Payment', 'Status', 'Date'].map((h) => (
-                <th key={h} className="py-3 px-5 text-left text-[10px] uppercase tracking-widest text-brand-cream/30 font-bold">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {recentOrders.length === 0 ? (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.35 }}
+        className="rounded-3xl border border-white/8 bg-[#0f0f0f] overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-brand-cream/40 mb-1 font-bold">Activity</p>
+            <h2 className="text-xl font-serif font-bold text-brand-cream">Latest Orders</h2>
+          </div>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className="text-brand-gold hover:text-brand-gold-light text-xs font-bold flex items-center gap-1 transition-colors"
+          >
+            View All <ChevronRight size={14} />
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="border-b border-white/5">
               <tr>
-                <td colSpan="6" className="py-12 text-center text-brand-cream/30 text-sm">
-                  No orders yet. Orders will appear here once customers start placing them.
-                </td>
+                {['Order ID', 'Customer', 'Amount', 'Payment', 'Status', 'Date'].map((h) => (
+                  <th key={h} className="py-3 px-5 text-left text-[10px] uppercase tracking-widest text-brand-cream/30 font-bold">{h}</th>
+                ))}
               </tr>
-            ) : (
-              recentOrders.map((order, i) => (
-                <motion.tr
-                  key={order.id}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.45 + i * 0.04 }}
-                  className="border-b border-white/5 hover:bg-white/3 transition-colors"
-                >
-                  <td className="py-4 px-5 font-mono text-xs text-brand-gold">{order.id}</td>
-                  <td className="py-4 px-5 text-brand-cream/80">{order.customer?.name || 'Guest'}</td>
-                  <td className="py-4 px-5 font-bold text-brand-cream">₹{order.totalAmount}</td>
-                  <td className="py-4 px-5 text-brand-cream/60 text-xs">{order.customer?.paymentMethod || '—'}</td>
-                  <td className="py-4 px-5">
-                    <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${statusBadge(order.status)}`}>
-                      {order.status || 'Pending'}
-                    </span>
+            </thead>
+            <tbody>
+              {recentOrders.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="py-12 text-center text-brand-cream/30 text-sm">
+                    No orders yet. Orders will appear here once customers start placing them.
                   </td>
-                  <td className="py-4 px-5 text-brand-cream/50 text-xs">{new Date(order.date).toLocaleDateString()}</td>
-                </motion.tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </motion.div>
-  </div>
-);
+                </tr>
+              ) : (
+                recentOrders.map((order, i) => (
+                  <motion.tr
+                    key={order.id}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.45 + i * 0.04 }}
+                    className="border-b border-white/5 hover:bg-white/3 transition-colors"
+                  >
+                    <td className="py-4 px-5 font-mono text-xs text-brand-gold">{order.id}</td>
+                    <td className="py-4 px-5 text-brand-cream/80">{order.customer?.name || 'Guest'}</td>
+                    <td className="py-4 px-5 font-bold text-brand-cream">₹{order.totalAmount}</td>
+                    <td className="py-4 px-5 text-brand-cream/60 text-xs">{order.customer?.paymentMethod || '—'}</td>
+                    <td className="py-4 px-5">
+                      <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${statusBadge(order.status)}`}>
+                        {order.status || 'Pending'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-5 text-brand-cream/50 text-xs">{new Date(order.date).toLocaleDateString()}</td>
+                  </motion.tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 export default AdminDashboard;

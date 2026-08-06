@@ -1,3 +1,5 @@
+import { resolveApiUrl } from './apiConfig';
+
 export const initialProductTypes = [
   'Pickles',
   'Podis',
@@ -419,19 +421,16 @@ const initialOrders = [
   }
 ];
 
-const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/$/, '') || '';
-const API_PREFIX = BACKEND_BASE ? `${BACKEND_BASE}/api` : '/api';
-
-const PRODUCTS_API = `${API_PREFIX}/products`;
-const ORDERS_API = `${API_PREFIX}/orders`;
-const REVIEWS_API = `${API_PREFIX}/reviews`;
-const OFFERS_API = `${API_PREFIX}/offers`;
-const STORE_SETTINGS_API = `${API_PREFIX}/store-settings`;
-const PAYMENT_SETTINGS_API = `${API_PREFIX}/payment-settings`;
-const ADMIN_PROFILE_API = `${API_PREFIX}/admin-profile`;
-const PRODUCT_TYPES_API = `${API_PREFIX}/product-types`;
-const USER_PROFILES_API = `${API_PREFIX}/user-profiles`;
-const CUSTOMERS_API = `${API_PREFIX}/customers`;
+const PRODUCTS_API = resolveApiUrl('/products');
+const ORDERS_API = resolveApiUrl('/orders');
+const REVIEWS_API = resolveApiUrl('/reviews');
+const OFFERS_API = resolveApiUrl('/offers');
+const STORE_SETTINGS_API = resolveApiUrl('/store-settings');
+const PAYMENT_SETTINGS_API = resolveApiUrl('/payment-settings');
+const ADMIN_PROFILE_API = resolveApiUrl('/admin-profile');
+const PRODUCT_TYPES_API = resolveApiUrl('/product-types');
+const USER_PROFILES_API = resolveApiUrl('/user-profiles');
+const CUSTOMERS_API = resolveApiUrl('/customers');
 
 const API_HEADERS = {
   'Content-Type': 'application/json',
@@ -538,11 +537,15 @@ const getProductsFromLocal = () => {
 export const getProducts = async () => {
   try {
     const products = await fetchJson(PRODUCTS_API);
-    syncLocalProducts(products);
-    return products;
+    if (Array.isArray(products) && products.length > 0) {
+      syncLocalProducts(products);
+      return products;
+    }
   } catch {
-    return getProductsFromLocal();
+    // fall back to local cache below
   }
+
+  return getProductsFromLocal();
 };
 
 export const saveProduct = async (product) => {
@@ -557,13 +560,14 @@ export const saveProduct = async (product) => {
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      throw new Error('Failed to save product');
+      const errorPayload = await response.text();
+      throw new Error(errorPayload || 'Failed to save product');
     }
     const updated = await response.json();
     const products = await getProducts();
     syncLocalProducts(products);
     return updated;
-  } catch {
+  } catch (error) {
     const products = getProductsFromLocal();
     const existingIndex = products.findIndex((p) => p.id === payload.id);
     if (existingIndex >= 0) {
@@ -573,7 +577,10 @@ export const saveProduct = async (product) => {
       products.push(payload);
     }
     syncLocalProducts(products);
-    return payload;
+    if (error instanceof Error) {
+      error.message = `${error.message}`;
+    }
+    throw error;
   }
 };
 

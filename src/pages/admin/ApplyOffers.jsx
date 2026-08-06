@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getOffers, saveOffer, deleteOffer, toggleOffer, getProducts } from '../../services/dataStore';
-import { Tag, Plus, Trash2, Check, Sparkles, Edit2, Ticket, Percent } from 'lucide-react';
+import { Trash2, Check, Edit2, Ticket } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const ApplyOffers = () => {
-  const [offers, setOffers] = useState([]);
+  const [offers, setOffers] = useState(() => getOffers());
   const [products, setProducts] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
 
@@ -19,7 +19,6 @@ const ApplyOffers = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      setOffers(getOffers());
       setProducts(await getProducts());
     };
     loadData();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Shield, Menu, X, LogOut, Search, Heart, Sparkles } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
@@ -10,7 +10,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
-  const [activeOffer, setActiveOffer] = useState(null);
   const { cartItems } = useCart();
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
@@ -24,13 +23,9 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
+  const activeOffer = useMemo(() => {
     const activeOffers = getOffers().filter((o) => o.active);
-    if (activeOffers.length > 0) {
-      setActiveOffer(activeOffers[0]);
-    } else {
-      setActiveOffer(null);
-    }
+    return activeOffers.length > 0 ? activeOffers[0] : null;
   }, []);
 
   const handleLogout = () => {
@@ -168,14 +163,6 @@ const Navbar = () => {
                   >
                     Login
                   </Link>
-
-                  <Link
-                    to="/admin-login"
-                    className="px-3.5 py-2 rounded-full bg-[#5C4033] text-[#F8F3E8] hover:bg-[#8B1E1E] transition-all text-xs font-bold flex items-center gap-1.5 shadow-sm"
-                  >
-                    <Shield size={13} className="text-[#FFD700]" />
-                    Admin Login
-                  </Link>
                 </div>
               )}
             </div>
@@ -256,23 +243,13 @@ const Navbar = () => {
                     </button>
                   </>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <Link
-                      to="/login"
-                      onClick={() => setIsOpen(false)}
-                      className="text-center py-2.5 rounded-xl border-2 border-[#8B1E1E] text-[#8B1E1E] font-bold text-xs"
-                    >
-                      User Login
-                    </Link>
-
-                    <Link
-                      to="/admin-login"
-                      onClick={() => setIsOpen(false)}
-                      className="text-center py-2.5 rounded-xl bg-[#5C4033] text-[#F8F3E8] font-bold text-xs flex items-center justify-center gap-1"
-                    >
-                      <Shield size={13} className="text-[#FFD700]" /> Admin Login
-                    </Link>
-                  </div>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full text-center py-2.5 rounded-xl border-2 border-[#8B1E1E] text-[#8B1E1E] font-bold text-xs"
+                  >
+                    User Login
+                  </Link>
                 )}
               </div>
             </motion.div>

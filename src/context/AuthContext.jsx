@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useEffect } from 'react';
+import { resolveApiUrl } from '../services/apiConfig';
 
 const ADMIN_EMAIL_KEY = 'vasuki_admin_email';
 const ADMIN_PASS_KEY = 'vasuki_admin_password';
 const ADMIN_SESSION_KEY = 'vasuki_admin';
-const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL?.trim().replace(/\/$/, '') || '';
-const ADMIN_CREDENTIALS_API = BACKEND_BASE ? `${BACKEND_BASE}/api/admin-credentials` : '/api/admin-credentials';
+const ADMIN_CREDENTIALS_API = resolveApiUrl('/admin-credentials');
 
 // Obfuscated defaults so they're not plainly readable in source:
 // Base64 of 'admin@vasukipickles.com'
@@ -59,7 +60,7 @@ export const AuthProvider = ({ children }) => {
     initialiseAdminAuth();
   }, []);
 
-  const loginUser = (email, password) => {
+  const loginUser = (email) => {
     const mockUser = { id: '1', name: 'Customer', email };
     setUser(mockUser);
     localStorage.setItem('vasuki_user', JSON.stringify(mockUser));

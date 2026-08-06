@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getStoreSettings, saveStoreSettings } from '../../services/dataStore';
-import { Settings, Check, Phone, Mail, MapPin, Truck, MessageSquare, BookOpen, ShieldCheck } from 'lucide-react';
+import { Settings, Check, Phone, Mail, MapPin, Truck, MessageSquare, BookOpen } from 'lucide-react';
 
 const Field = ({ label, icon: Icon, hint, children }) => (
   <div className="space-y-2">
@@ -18,35 +18,9 @@ const inputClass = "w-full bg-white border-2 border-brand-gold/30 rounded-2xl px
 const textareaClass = "w-full bg-white border-2 border-brand-gold/30 rounded-2xl px-4 py-3 text-gray-900 text-sm font-semibold focus:outline-none focus:border-brand-gold transition-all placeholder-gray-400 shadow-inner resize-none";
 
 const StoreSettings = () => {
-  const [settings, setSettings] = useState({
-    businessName: '',
-    contactNumber: '',
-    email: '',
-    whatsappNumber: '',
-    whatsappMessage: '',
-    address: '',
-    freeShippingEnabled: true,
-    minFreeShippingAmount: 999,
-    heroTitle: '',
-    brandTagline: '',
-    aboutTitle: '',
-    aboutStory: '',
-    aboutStory2: '',
-    aboutReasonTitle: '',
-    aboutReasonText: '',
-    aboutPromise1Title: '',
-    aboutPromise1Desc: '',
-    aboutPromise2Title: '',
-    aboutPromise2Desc: '',
-    aboutPromise3Title: '',
-    aboutPromise3Desc: ''
-  });
-
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
+  const [settings, setSettings] = useState(() => {
     const s = getStoreSettings();
-    setSettings({
+    return {
       businessName: s.businessName || 'Konasema Ruchulu',
       contactNumber: s.contactNumber || '+91 8885473903',
       email: s.email || 'support@konasemaruchulu.com',
@@ -68,8 +42,10 @@ const StoreSettings = () => {
       aboutPromise2Desc: s.aboutPromise2Desc || 'Slow-extracted groundnut oil retains wholesome aroma and natural health benefits without chemical refining.',
       aboutPromise3Title: s.aboutPromise3Title || 'Made with Love',
       aboutPromise3Desc: s.aboutPromise3Desc || 'Hand-mixed in hygienic small batches with the same devotion and care as for our own family.'
-    });
-  }, []);
+    };
+  });
+
+  const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

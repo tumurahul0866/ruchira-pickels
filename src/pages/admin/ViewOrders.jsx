@@ -1,15 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const ViewOrders = () => {
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    // Fetch orders logic
-    setOrders([
-      { id: 1, customer: 'John Doe', total: 500, status: 'Pending' },
-      { id: 2, customer: 'Jane Smith', total: 1200, status: 'Completed' },
-    ]);
-  }, []);
+  const [orders] = useState(() => [
+    { id: 1, customer: 'John Doe', total: 500, status: 'Pending' },
+    { id: 2, customer: 'Jane Smith', total: 1200, status: 'Completed' },
+  ]);
 
   return (
     <div className="view-orders">

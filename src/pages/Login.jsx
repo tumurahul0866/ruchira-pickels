@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Sparkles, Shield } from 'lucide-react';
+import { LogIn, Shield } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');

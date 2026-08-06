@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Heart, Star, ShoppingCart, Check } from 'lucide-react';
@@ -6,7 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { toggleWishlist, isProductInWishlist } from '../../services/dataStore';
 
-const ProductCard = ({ product, offer }) => {
+const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
 

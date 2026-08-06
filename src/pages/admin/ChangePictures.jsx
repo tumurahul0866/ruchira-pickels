@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getStoreSettings, saveStoreSettings, getProducts, saveProduct } from '../../services/dataStore';
-import { Image, Upload, Check, Trash2, RotateCcw } from 'lucide-react';
+import { Image, Upload, Check, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const ChangePictures = () => {
-  const [storeSettings, setStoreSettings] = useState({});
+  const [storeSettings, setStoreSettings] = useState(() => getStoreSettings());
   const [products, setProducts] = useState([]);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
-      setStoreSettings(getStoreSettings());
       setProducts(await getProducts());
     };
     loadData();

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getOffers, getProducts } from '../services/dataStore';
 import ProductCard from '../components/ui/ProductCard';
-import { Tag, Sparkles, Gift, Check, Copy, Flame, Percent, Info } from 'lucide-react';
+import { Tag, Sparkles, Gift, Check, Copy, Flame } from 'lucide-react';
 
 const gradients = [
   'from-[#8B1E1E] to-[#5C4033] border-[#D97706]/40',

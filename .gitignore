@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 data/
+!data/products.json
 *.local
 
 # Editor directories and files
@@ -23,6 +24,6 @@ data/
 *.njsproj
 *.sln
 *.sw?
+# backend/ is intentionally tracked for deployment
 .vercel
 .env*
-backend/

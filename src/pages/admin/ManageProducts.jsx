@@ -3,6 +3,8 @@ import { getProducts, saveProduct, deleteProduct, toggleProductVisibility, getPr
 import { Edit2, Trash2, Plus, X } from 'lucide-react';
 import Button from '../../components/ui/Button';
 
+const emptyMessage = 'Please fill in the required product details before saving.';
+
 const defaultProduct = {
   id: '',
   name: '',
@@ -35,6 +37,8 @@ const ManageProducts = () => {
   const [previewImages, setPreviewImages] = useState([]);
   const [productTypes, setProductTypes] = useState([]);
   const [newType, setNewType] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -76,14 +80,30 @@ const ManageProducts = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...formData,
-      additionalImages: previewImages.filter(Boolean),
-      inStock: Number(formData.stockQuantity) > 0
-    };
-    await saveProduct(payload);
-    await refreshProducts();
-    setIsEditing(false);
+    setSaveError('');
+
+    if (!formData.name.trim() || !formData.description.trim() || !formData.image.trim()) {
+      setSaveError(emptyMessage);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        ...formData,
+        additionalImages: previewImages.filter(Boolean),
+        inStock: Number(formData.stockQuantity) > 0
+      };
+      await saveProduct(payload);
+      await refreshProducts();
+      setIsEditing(false);
+      setSaveError('');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to save product right now.';
+      setSaveError(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleWeightChange = (index, field, value) => {
@@ -151,7 +171,7 @@ const ManageProducts = () => {
                 ))}
               </select>
 
-              <form onSubmit={handleAddType} className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2">
                 <input
                   type="text"
                   value={newType}
@@ -159,8 +179,8 @@ const ManageProducts = () => {
                   placeholder="Add new type (e.g. Masalas)"
                   className="flex-1 bg-brand-black border border-white/10 rounded-2xl px-4 py-2 text-brand-cream"
                 />
-                <button type="submit" className="bg-brand-gold text-brand-black rounded-2xl px-4 py-2 font-semibold">Add</button>
-              </form>
+                <button type="button" onClick={handleAddType} className="bg-brand-gold text-brand-black rounded-2xl px-4 py-2 font-semibold">Add</button>
+              </div>
 
               <label className="block text-sm text-brand-cream/70 mt-4">Category</label>
               <select
@@ -380,9 +400,17 @@ const ManageProducts = () => {
             </div>
           </div>
 
+          {saveError ? (
+            <div className="rounded-2xl border border-brand-red/30 bg-brand-red/10 px-4 py-3 text-sm text-brand-red">
+              {saveError}
+            </div>
+          ) : null}
+
           <div className="flex justify-end gap-4 pt-4">
             <Button variant="ghost" onClick={() => setIsEditing(false)}>Cancel</Button>
-            <Button variant="primary" type="submit">Save Product</Button>
+            <Button variant="primary" type="submit" disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save Product'}
+            </Button>
           </div>
         </form>
       </div>

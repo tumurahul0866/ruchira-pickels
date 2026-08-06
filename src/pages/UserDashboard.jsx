@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   getOrders,
@@ -26,30 +25,33 @@ import {
   Trash2,
   ArrowRight,
   ShoppingBag,
-  ShieldCheck,
-  Edit2
+  ShieldCheck
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 const UserDashboard = () => {
   const { user, logout } = useAuth();
-  const { addToCart } = useCart();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('orders');
-  const [orders, setOrders] = useState([]);
-  const [userProfile, setUserProfileState] = useState({
+  const [orders] = useState(() => {
+    if (!user) return [];
+    return getOrders().filter(
+      (o) => o.customer?.email?.toLowerCase() === user.email?.toLowerCase() || !o.customer?.email
+    ).reverse();
+  });
+  const [userProfile, setUserProfileState] = useState(() => (user ? getUserProfile(user.email) : {
     name: '',
     email: '',
     phone: '',
     addresses: [],
     wishlist: []
-  });
+  }));
   const [wishlistProducts, setWishlistProducts] = useState([]);
   
   // Profile edit states
-  const [editName, setEditName] = useState('');
-  const [editPhone, setEditPhone] = useState('');
+  const [editName, setEditName] = useState(() => user?.name || '');
+  const [editPhone, setEditPhone] = useState(() => user?.phone || '');
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
 
   // New Address modal/form states
@@ -68,35 +70,24 @@ const UserDashboard = () => {
 
   const storeSettings = getStoreSettings();
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    // Fetch user profile from database
-    const profile = getUserProfile(user.email);
-    setUserProfileState(profile);
-    setEditName(profile.name || user.name || '');
-    setEditPhone(profile.phone || user.phone || '');
-
-    // Fetch orders associated with this user
-    const allOrders = getOrders();
-    const myOrders = allOrders.filter(
-      (o) => o.customer?.email?.toLowerCase() === user.email?.toLowerCase() || !o.customer?.email
-    );
-    setOrders(myOrders.reverse());
-
-    // Fetch wishlist items
-    loadWishlist(user.email);
-  }, [user, navigate]);
-
   const loadWishlist = async (email) => {
     const ids = getWishlist(email);
     const allProds = await getProducts();
     const wishProds = allProds.filter((p) => ids.includes(p.id));
     setWishlistProducts(wishProds);
   };
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    const ids = getWishlist(user.email);
+    getProducts().then((allProds) => {
+      setWishlistProducts(allProds.filter((p) => ids.includes(p.id)));
+    });
+  }, [user, navigate]);
 
   if (!user) return null;
 

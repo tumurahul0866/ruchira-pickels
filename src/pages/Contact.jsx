@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, MessageCircle, Share2 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { getStoreSettings } from '../services/dataStore';
 
 const Contact = () => {
-  const [settings, setSettings] = useState({});
+  const [settings] = useState(() => getStoreSettings());
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    setSettings(getStoreSettings());
-  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();

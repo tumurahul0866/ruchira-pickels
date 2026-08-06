@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { getCustomers } from '../../services/dataStore';
 import { Users } from 'lucide-react';
 
 const CustomersManagement = () => {
-  const [customers, setCustomers] = useState([]);
-
-  useEffect(() => {
-    setCustomers(getCustomers());
-  }, []);
+  const [customers] = useState(() => getCustomers());
 
   return (
     <div>

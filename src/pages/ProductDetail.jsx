@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -18,7 +18,6 @@ import {
   Check,
   ShieldCheck,
   Truck,
-  Flame,
   MessageSquare,
   Sparkles
 } from 'lucide-react';
@@ -31,7 +30,6 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const storeSettings = getStoreSettings();
 
-  const [products, setProducts] = useState([]);
   const [product, setProduct] = useState(null);
   const [selectedWeight, setSelectedWeight] = useState({ weight: '250g', price: 0 });
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -39,7 +37,6 @@ const ProductDetail = () => {
   useEffect(() => {
     const loadProduct = async () => {
       const allProducts = await getProducts();
-      setProducts(allProducts);
       const found = allProducts.find((item) => item.id === id);
       setProduct(found);
       if (found) {
@@ -57,13 +54,6 @@ const ProductDetail = () => {
   const reviews = getReviews().filter(
     (review) => review.visible !== false && (!review.product || review.product === product?.name)
   );
-
-  const relatedProducts = useMemo(() => {
-    if (!product) return [];
-    return products
-      .filter((item) => item.id !== product.id && item.productType === product.productType)
-      .slice(0, 4);
-  }, [product, products]);
 
   if (!product) {
     return (

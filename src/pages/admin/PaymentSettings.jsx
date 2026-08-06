@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPaymentSettings, updatePaymentSettings } from '../../services/dataStore';
 import { CreditCard, QrCode, Check, AlertCircle, Banknote, Smartphone } from 'lucide-react';
@@ -13,7 +13,7 @@ const Field = ({ label, hint, children }) => (
   </div>
 );
 
-const ToggleRow = ({ icon: Icon, title, subtitle, enabled, onClick, accentColor = 'brand-gold' }) => (
+const ToggleRow = ({ icon: Icon, title, subtitle, enabled, onClick }) => (
   <motion.div
     whileHover={{ scale: 1.01 }}
     onClick={onClick}
@@ -43,20 +43,8 @@ const ToggleRow = ({ icon: Icon, title, subtitle, enabled, onClick, accentColor 
 );
 
 const PaymentSettings = () => {
-  const [settings, setSettings] = useState({
-    enableCOD: true,
-    enableUPI: true,
-    enableScanner: true,
-    upiId: '',
-    qrImage: '',
-    scannerNote: '',
-    instructions: ''
-  });
+  const [settings, setSettings] = useState(() => getPaymentSettings());
   const [message, setMessage] = useState(null);
-
-  useEffect(() => {
-    setSettings(getPaymentSettings());
-  }, []);
 
   const handleChange = (e) => {
     const { name, type, checked, value } = e.target;
