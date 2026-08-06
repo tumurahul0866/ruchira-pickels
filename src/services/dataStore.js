@@ -732,20 +732,22 @@ export const saveOrder = async (order) => {
   }
 };
 
-export const updateOrderStatus = (id, status, paymentStatus) => {
+export const updateOrderStatus = async (id, status, paymentStatus) => {
   const orders = getOrdersFromLocal();
   const index = orders.findIndex((o) => o.id === id);
   if (index >= 0) {
     if (status) orders[index].status = status;
     if (paymentStatus) orders[index].paymentStatus = paymentStatus;
     syncLocalOrders(orders);
-    fetch(`${ORDERS_API}/${id}`, {
-      method: 'PUT',
-      headers: API_HEADERS,
-      body: JSON.stringify({ status, paymentStatus }),
-    }).catch(() => {
+    try {
+      await fetch(`${ORDERS_API}/${id}`, {
+        method: 'PUT',
+        headers: API_HEADERS,
+        body: JSON.stringify({ status, paymentStatus }),
+      });
+    } catch {
       // ignore backend failure
-    });
+    }
   }
 };
 
