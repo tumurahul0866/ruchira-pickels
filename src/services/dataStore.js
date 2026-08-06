@@ -498,13 +498,9 @@ const createProductPayload = (product) => ({
   name: product.name || '',
   category: product.category || 'Veg',
   productType: product.productType || 'Pickles',
-  weights: Array.isArray(product.weights) && product.weights.length > 0
-    ? product.weights
-    : [
-        { weight: '250g', price: 150 },
-        { weight: '500g', price: 280 },
-        { weight: '1kg', price: 500 }
-      ],
+  quantityType: product.quantityType || 'Weight',
+  pricePerUnit: Number(product.pricePerUnit) || 0,
+  weights: Array.isArray(product.weights) ? product.weights : [],
   spiceLevel: product.spiceLevel || 'Medium',
   description: product.description || '',
   ingredients: product.ingredients || '',
@@ -521,6 +517,24 @@ const createProductPayload = (product) => ({
   image: product.image || '',
   additionalImages: Array.isArray(product.additionalImages) ? product.additionalImages : []
 });
+
+export const getProductUnitPrice = (product) => {
+  if (typeof product.pricePerUnit === 'number' && product.pricePerUnit > 0) {
+    return product.pricePerUnit;
+  }
+  if (Array.isArray(product.weights) && product.weights.length > 0) {
+    return Number(product.weights[0].price) || 0;
+  }
+  return 0;
+};
+
+export const getProductUnitLabel = (product) => {
+  return product.quantityType || 'Unit';
+};
+
+export const isLegacyProduct = (product) => {
+  return Array.isArray(product.weights) && product.weights.length > 0 && !product.pricePerUnit;
+};
 
 const getProductsFromLocal = () => {
   const products = localStorage.getItem('vasuki_products');
@@ -887,15 +901,10 @@ export const toggleOffer = (id) => {
   const offers = getOffersFromLocal();
   const target = offers.find((o) => o.id === id);
   if (target) {
-    target.active = !target.active;
-    syncLocalOffers(offers);
-    fetch(`${OFFERS_API}/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: API_HEADERS,
-      body: JSON.stringify(target),
-    }).catch(() => {
-      // ignore
-    });
+    const updatedOffer = { ...target, active: !target.active };
+    const nextOffers = offers.map((o) => (o.id === id ? updatedOffer : o));
+    syncLocalOffers(nextOffers);
+    saveOffer(updatedOffer);
   }
 };
 

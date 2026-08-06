@@ -4,15 +4,16 @@ import { Link } from 'react-router-dom';
 import { Heart, Star, ShoppingCart, Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { toggleWishlist, isProductInWishlist } from '../../services/dataStore';
+import { toggleWishlist, isProductInWishlist, getProductUnitPrice, getProductUnitLabel, isLegacyProduct } from '../../services/dataStore';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
 
-  const weightOptions = Array.isArray(product.weights) && product.weights.length > 0
+  const isLegacy = isLegacyProduct(product);
+  const weightOptions = isLegacy
     ? product.weights
-    : [{ weight: '250g', price: 0 }];
+    : [{ weight: getProductUnitLabel(product), price: getProductUnitPrice(product) }];
 
   const [selectedWeight, setSelectedWeight] = useState(() => weightOptions[0]);
   const [isWishlisted, setIsWishlisted] = useState(isProductInWishlist(user?.email, product.id));
@@ -28,7 +29,10 @@ const ProductCard = ({ product }) => {
   const handleQuickAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, selectedWeight, 1);
+    const option = isLegacy
+      ? selectedWeight
+      : { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) };
+    addToCart(product, option, 1);
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 2000);
   };
@@ -126,7 +130,7 @@ const ProductCard = ({ product }) => {
           {/* Weight Option Selector */}
           <div className="mb-4">
             <label className="block text-[10px] uppercase font-bold tracking-wider text-[#5C4033]/70 mb-1.5">
-              Select Pack Weight:
+              {isLegacy ? `Select ${product.quantityType || 'Weight'}` : `Price per ${getProductUnitLabel(product)}`}:
             </label>
             <div className="flex gap-2">
               {weightOptions.map((w, idx) => (

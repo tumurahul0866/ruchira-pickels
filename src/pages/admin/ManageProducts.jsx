@@ -10,11 +10,9 @@ const defaultProduct = {
   name: '',
   category: 'Veg',
   productType: '',
-  weights: [
-    { weight: '250g', price: 0 },
-    { weight: '500g', price: 0 },
-    { weight: '1kg', price: 0 }
-  ],
+  quantityType: 'Weight',
+  pricePerUnit: 0,
+  weights: [],
   spiceLevel: 'Medium',
   description: '',
   ingredients: '',
@@ -29,6 +27,8 @@ const defaultProduct = {
   image: '',
   additionalImages: []
 };
+
+const quantityTypes = ['Weight', 'Volume', 'Box/Piece', 'Custom'];
 
 const ManageProducts = () => {
   const [products, setProducts] = useState([]);
@@ -60,7 +60,12 @@ const ManageProducts = () => {
   const refreshProducts = async () => setProducts(await getProducts());
 
   const handleEdit = (product) => {
-    setFormData({ ...product });
+    setFormData({
+      ...product,
+      quantityType: product.quantityType || 'Weight',
+      pricePerUnit: Number(product.pricePerUnit ?? product.weights?.[0]?.price) || 0,
+      weights: Array.isArray(product.weights) ? product.weights : [],
+    });
     setPreviewImages(product.additionalImages || []);
     setIsEditing(true);
   };
@@ -82,8 +87,8 @@ const ManageProducts = () => {
     e.preventDefault();
     setSaveError('');
 
-    if (!formData.name.trim() || !formData.description.trim() || !formData.image.trim()) {
-      setSaveError(emptyMessage);
+    if (!formData.name.trim() || !formData.description.trim() || !formData.image.trim() || Number(formData.pricePerUnit) <= 0) {
+      setSaveError('Please fill in all required product details and set a valid unit price.');
       return;
     }
 
@@ -118,7 +123,7 @@ const ManageProducts = () => {
   const addWeightRow = () => {
     setFormData({
       ...formData,
-      weights: [...formData.weights, { weight: 'Custom', price: 0 }]
+      weights: [...formData.weights, { weight: '', price: 0 }]
     });
   };
 
@@ -276,45 +281,32 @@ const ManageProducts = () => {
           </div>
 
           <div className="space-y-4">
-            {formData.weights.map((w, idx) => (
-              <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-                <div>
-                  <label className="block text-sm text-brand-cream/70 mb-2">Label</label>
-                  <input
-                    type="text"
-                    value={w.weight}
-                    onChange={(e) => handleWeightChange(idx, 'weight', e.target.value)}
-                    placeholder="e.g. 250g, 500ml, 1L, 2 pcs"
-                    className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-brand-cream/70 mb-2">Price</label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    value={w.price}
-                    onChange={(e) => handleWeightChange(idx, 'price', e.target.value)}
-                    className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeWeightRow(idx)}
-                  className="text-xs text-brand-red bg-brand-red/10 rounded-2xl px-4 py-3 font-semibold hover:bg-brand-red/20 transition-colors"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+              <div>
+                <label className="block text-sm text-brand-cream/70 mb-2">Quantity Type</label>
+                <select
+                  value={formData.quantityType}
+                  onChange={(e) => setFormData({ ...formData, quantityType: e.target.value })}
+                  className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
                 >
-                  Remove
-                </button>
+                  {quantityTypes.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
               </div>
-            ))}
-            <button
-              type="button"
-              onClick={addWeightRow}
-              className="inline-flex items-center justify-center rounded-2xl border border-brand-gold/40 bg-brand-gold/10 px-4 py-3 text-sm font-semibold text-brand-gold hover:bg-brand-gold/20 transition-colors"
-            >
-              Add price variant
-            </button>
+              <div>
+                <label className="block text-sm text-brand-cream/70 mb-2">Unit Price</label>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  value={formData.pricePerUnit}
+                  onChange={(e) => setFormData({ ...formData, pricePerUnit: Number(e.target.value) })}
+                  className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-brand-cream/60">New products use a unit-based pricing model. Legacy products with existing variants will continue to work.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -454,7 +446,7 @@ const ManageProducts = () => {
                     {product.category}
                   </span>
                 </td>
-                <td className="px-6 py-4">{Array.isArray(product.weights) && product.weights[0] ? `${product.weights[0].weight} · ₹${product.weights[0].price}` : '—'}</td>
+                <td className="px-6 py-4">{product.pricePerUnit ? `₹${product.pricePerUnit} / ${product.quantityType || 'Unit'}` : Array.isArray(product.weights) && product.weights[0] ? `${product.weights[0].weight} · ₹${product.weights[0].price}` : '—'}</td>
                 <td className="px-6 py-4">{product.stockQuantity}</td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs ${product.visible ? 'bg-brand-gold/10 text-brand-gold' : 'bg-brand-red/10 text-brand-red'}`}>

@@ -8,7 +8,10 @@ import {
   getReviews,
   getStoreSettings,
   toggleWishlist,
-  isProductInWishlist
+  isProductInWishlist,
+  getProductUnitPrice,
+  getProductUnitLabel,
+  isLegacyProduct
 } from '../services/dataStore';
 import {
   ArrowLeft,
@@ -32,6 +35,7 @@ const ProductDetail = () => {
 
   const [product, setProduct] = useState(null);
   const [selectedWeight, setSelectedWeight] = useState({ weight: '250g', price: 0 });
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
@@ -42,8 +46,9 @@ const ProductDetail = () => {
       if (found) {
         const safeWeights = Array.isArray(found.weights) && found.weights.length > 0
           ? found.weights
-          : [{ weight: '250g', price: 0 }];
+          : [{ weight: getProductUnitLabel(found), price: getProductUnitPrice(found) }];
         setSelectedWeight(safeWeights[0]);
+        setSelectedQuantity(1);
         setIsWishlisted(isProductInWishlist(user?.email, found.id));
       }
     };
@@ -75,18 +80,28 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    addToCart(product, selectedWeight, 1);
+    const addItem = isLegacyProduct(product)
+      ? { product, option: selectedWeight, quantity: 1 }
+      : { product, option: { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) }, quantity: selectedQuantity };
+    addToCart(addItem.product, addItem.option, addItem.quantity);
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 2000);
   };
 
   const handleBuyNow = () => {
-    addToCart(product, selectedWeight, 1);
+    const addItem = isLegacyProduct(product)
+      ? { product, option: selectedWeight, quantity: 1 }
+      : { product, option: { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) }, quantity: selectedQuantity };
+    addToCart(addItem.product, addItem.option, addItem.quantity);
     navigate('/checkout');
   };
 
   const handleWhatsAppOrder = () => {
-    const text = `Hi Vasuki Pickles! I would like to order *${product.name}* (${selectedWeight.weight} jar for ₹${selectedWeight.price}).`;
+    const quantityType = product.quantityType || 'Weight';
+    const isLegacy = isLegacyProduct(product);
+    const quantityLabel = isLegacy ? selectedWeight.weight : `${selectedQuantity} ${quantityType}`;
+    const unitPrice = isLegacy ? selectedWeight.price : getProductUnitPrice(product);
+    const text = `Hi Vasuki Pickles! I would like to order *${product.name}* (${quantityType}: ${quantityLabel} for ₹${unitPrice}${isLegacy ? '' : ` each`}).`;
     const encoded = encodeURIComponent(text);
     const phone = storeSettings.whatsappNumber || '918885473903';
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');
@@ -165,35 +180,70 @@ const ProductDetail = () => {
 
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{product.description}</p>
 
-                {/* Weight Selector */}
-                <div className="pt-3 border-t border-slate-100">
-                  <label className="block text-xs uppercase font-bold tracking-wider text-slate-500 mb-2">
-                    Select Jar Weight:
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(Array.isArray(product.weights) ? product.weights : [{ weight: '250g', price: 0 }]).map((w, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedWeight(w)}
-                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border text-center ${
-                          selectedWeight.weight === w.weight
-                            ? 'border-brand-gold bg-brand-gold/15 text-brand-black shadow-sm'
-                            : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300'
-                        }`}
-                      >
-                        <div>{w.weight}</div>
-                        <div className="text-[11px] text-slate-500">₹{w.price}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {isLegacyProduct(product) ? (
+                  <div className="pt-3 border-t border-slate-100">
+                    <label className="block text-xs uppercase font-bold tracking-wider text-slate-500 mb-2">
+                      Select {product.quantityType || 'Weight'}:
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {product.weights.map((w, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedWeight(w)}
+                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border text-center ${
+                            selectedWeight.weight === w.weight
+                              ? 'border-brand-gold bg-brand-gold/15 text-brand-black shadow-sm'
+                              : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300'
+                          }`}
+                        >
+                          <div>{w.weight}</div>
+                          <div className="text-[11px] text-slate-500">₹{w.price}</div>
+                        </button>
+                      ))}
+                    </div>
 
-                {/* Price Display */}
-                <div className="flex items-baseline gap-2 pt-2">
-                  <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total:</span>
-                  <span className="text-3xl font-bold font-mono text-slate-900">₹{selectedWeight.price}</span>
-                  <span className="text-xs text-slate-500 font-medium">({selectedWeight.weight} Pack)</span>
-                </div>
+                    <div className="flex items-baseline gap-2 pt-2">
+                      <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total:</span>
+                      <span className="text-3xl font-bold font-mono text-slate-900">₹{selectedWeight.price}</span>
+                      <span className="text-xs text-slate-500 font-medium">({product.quantityType || 'Weight'}: {selectedWeight.weight})</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pt-3 border-t border-slate-100">
+                    <label className="block text-xs uppercase font-bold tracking-wider text-slate-500 mb-2">
+                      Quantity ({product.quantityType || 'Unit'})
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedQuantity(Math.max(1, selectedQuantity - 1))}
+                        className="h-10 w-10 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={selectedQuantity}
+                        onChange={(e) => setSelectedQuantity(Math.max(1, Number(e.target.value) || 1))}
+                        className="w-20 text-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-900"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSelectedQuantity(selectedQuantity + 1)}
+                        className="h-10 w-10 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold"
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <div className="flex items-baseline gap-2 pt-4">
+                      <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total:</span>
+                      <span className="text-3xl font-bold font-mono text-slate-900">₹{getProductUnitPrice(product) * selectedQuantity}</span>
+                      <span className="text-xs text-slate-500 font-medium">({product.quantityType || 'Unit'} @ ₹{getProductUnitPrice(product)} each)</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="space-y-2.5 pt-2">

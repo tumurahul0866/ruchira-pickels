@@ -15,9 +15,17 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('vasuki_cart', JSON.stringify(items));
   };
 
+  const getCartItemKey = (product, weightOption) => {
+    if (product.pricePerUnit) {
+      return `${product.id}::${product.quantityType || 'Unit'}`;
+    }
+    return `${product.id}::${weightOption.weight}`;
+  };
+
   const addToCart = (product, weightOption, quantity) => {
+    const itemKey = getCartItemKey(product, weightOption);
     const existingIndex = cartItems.findIndex(
-      item => item.product.id === product.id && item.weightOption.weight === weightOption.weight
+      item => getCartItemKey(item.product, item.weightOption) === itemKey
     );
 
     let newCart = [...cartItems];
@@ -29,17 +37,25 @@ export const CartProvider = ({ children }) => {
     saveCart(newCart);
   };
 
-  const removeFromCart = (productId, weight) => {
-    const newCart = cartItems.filter(
-      item => !(item.product.id === productId && item.weightOption.weight === weight)
-    );
+  const removeFromCart = (productId, weightOptionOrType) => {
+    const newCart = cartItems.filter((item) => {
+      const key = getCartItemKey(item.product, item.weightOption);
+      const matchKey = item.product.pricePerUnit
+        ? `${productId}::${item.product.quantityType || 'Unit'}`
+        : `${productId}::${weightOptionOrType}`;
+      return key !== matchKey;
+    });
     saveCart(newCart);
   };
 
-  const updateQuantity = (productId, weight, quantity) => {
-    if (quantity <= 0) return removeFromCart(productId, weight);
-    const newCart = cartItems.map(item => {
-      if (item.product.id === productId && item.weightOption.weight === weight) {
+  const updateQuantity = (productId, weightOptionOrType, quantity) => {
+    if (quantity <= 0) return removeFromCart(productId, weightOptionOrType);
+    const newCart = cartItems.map((item) => {
+      const key = getCartItemKey(item.product, item.weightOption);
+      const matchKey = item.product.pricePerUnit
+        ? `${productId}::${item.product.quantityType || 'Unit'}`
+        : `${productId}::${weightOptionOrType}`;
+      if (key === matchKey) {
         return { ...item, quantity };
       }
       return item;

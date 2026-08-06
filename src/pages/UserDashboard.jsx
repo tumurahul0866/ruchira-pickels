@@ -382,7 +382,11 @@ const UserDashboard = () => {
                                     <div>
                                       <h4 className="text-sm font-bold text-slate-900">{item.product.name}</h4>
                                       <p className="text-xs text-slate-500">
-                                        Weight: <span className="font-semibold text-slate-700">{item.weightOption?.weight}</span> × {item.quantity}
+                                        {item.product?.pricePerUnit ? (
+                                          <span className="font-semibold text-slate-700">{item.quantity}</span>
+                                        ) : (
+                                          <span className="font-semibold text-slate-700">{item.weightOption?.weight}</span>
+                                        )}
                                       </p>
                                     </div>
                                   </div>

@@ -63,10 +63,11 @@ const ManageOrders = () => {
                   <div className="bg-brand-black px-4 py-2 rounded-lg border border-white/10">
                     <span className="text-xs text-brand-cream/50 uppercase block mb-1">Order Status</span>
                     <select 
-                      value={order.status}
+                      value={order.status || 'Order Placed'}
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
                       className="bg-transparent text-brand-cream text-sm font-bold focus:outline-none cursor-pointer"
                     >
+                      <option className="bg-brand-black">Order Placed</option>
                       <option className="bg-brand-black">Pending</option>
                       <option className="bg-brand-black">Confirmed</option>
                       <option className="bg-brand-black">Preparing</option>
@@ -129,7 +130,11 @@ const ManageOrders = () => {
                           <img src={item.product?.image || ''} className="w-10 h-10 object-cover rounded" alt={item.product?.name || 'Item'} />
                           <div>
                             <p className="text-brand-cream text-sm font-medium">{item.product?.name || 'Item'}</p>
-                            <p className="text-brand-cream/50 text-xs">{item.weightOption?.weight || 'Unit'} x {item.quantity || 1}</p>
+                            {item.product?.pricePerUnit ? (
+                              <p className="text-brand-cream/50 text-xs">{item.product?.quantityType || 'Unit'} x {item.quantity || 1}</p>
+                            ) : (
+                              <p className="text-brand-cream/50 text-xs">{item.weightOption?.weight || 'Unit'} x {item.quantity || 1}</p>
+                            )}
                           </div>
                         </div>
                         <p className="text-brand-gold font-bold text-sm">₹{(item.weightOption?.price || 0) * (item.quantity || 1)}</p>
