@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getReviews, saveReview } from '../services/dataStore';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import { Star, CheckCircle2, Sparkles, MessageSquarePlus } from 'lucide-react';
 
 const StarRatingDisplay = ({ rating }) => {
@@ -58,16 +60,23 @@ const StarInputInteractive = ({ rating, onChange }) => {
 
 const Reviews = () => {
   const [reviews, setReviews] = useState(() => getReviews().filter((review) => review.visible !== false));
-  const [formState, setFormState] = useState({ name: '', rating: 5, text: '', product: 'Andhra Avakaya Mango Pickle' });
+  const { user } = useAuth();
+  const [formState, setFormState] = useState({ name: user?.name || '', rating: 5, text: '', product: 'Andhra Avakaya Mango Pickle' });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (user?.name) {
+      setFormState((prev) => ({ ...prev, name: user.name }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formState.name.trim()) {
       setError('Please enter your name.');
@@ -83,19 +92,27 @@ const Reviews = () => {
     }
 
     setError('');
-    saveReview({
-      name: formState.name.trim(),
-      rating: formState.rating,
-      text: formState.text.trim(),
-      product: formState.product,
-      date: new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }),
-      visible: true
-    });
 
-    setReviews(getReviews().filter((review) => review.visible !== false));
-    setFormState({ name: '', rating: 5, text: '', product: 'Andhra Avakaya Mango Pickle' });
-    setMessage('🎉 Thank you! Your review has been published.');
-    setTimeout(() => setMessage(''), 4000);
+    try {
+      const review = saveReview({
+        name: formState.name.trim(),
+        rating: formState.rating,
+        text: formState.text.trim(),
+        product: formState.product,
+        date: new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }),
+        visible: true,
+        user_id: user?.id,
+        user_email: user?.email,
+        user_name: user?.name,
+        verifiedBuyer: true,
+      });
+      setReviews(getReviews().filter((review) => review.visible !== false));
+      setFormState({ name: user?.name || '', rating: 5, text: '', product: 'Andhra Avakaya Mango Pickle' });
+      setMessage('🎉 Thank you! Your review has been published.');
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err) {
+      setError('Unable to submit your review right now. Please try again later.');
+    }
   };
 
   return (
@@ -143,7 +160,8 @@ const Reviews = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {user ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Name input */}
               <div>
@@ -158,6 +176,7 @@ const Reviews = () => {
                   onChange={handleChange}
                   placeholder="e.g. Ananya Rao"
                   className="w-full bg-[#F8F3E8]/80 border-2 border-[#5C4033]/15 rounded-2xl px-4 py-3 text-sm text-[#5C4033] font-medium focus:outline-none focus:border-[#8B1E1E] focus:bg-white transition-all"
+                  disabled={!!user}
                 />
               </div>
 
@@ -218,7 +237,13 @@ const Reviews = () => {
             >
               Submit My Review
             </motion.button>
-          </form>
+            </form>
+          ) : (
+            <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+              <p className="mb-3">Please <Link to="/login" className="font-bold text-amber-800 underline">sign in</Link> to submit a review, or <Link to="/register" className="font-bold text-amber-800 underline">create an account</Link>.</p>
+              <p className="text-xs">Only signed-in customers can submit and manage their reviews.</p>
+            </div>
+          )}
         </motion.div>
 
         {/* Existing Customer Reviews Grid */}

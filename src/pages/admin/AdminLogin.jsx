@@ -21,12 +21,12 @@ const AdminLogin = () => {
     e.preventDefault();
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
-    const success = await loginAdmin(cleanEmail, cleanPassword);
-    if (success) {
+    const result = await loginAdmin(cleanEmail, cleanPassword);
+    if (result.ok) {
       setError('');
       navigate('/admin');
     } else {
-      setError('Invalid admin email or password. Please try again.');
+      setError(result.message || 'Invalid admin email or password. Please try again.');
     }
   };
 

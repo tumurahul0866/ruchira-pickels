@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
@@ -59,7 +60,14 @@ function App() {
             <Routes>
               {/* Admin Routes */}
               <Route path="/admin-login" element={<AdminLogin />} />
-              <Route path="/admin/*" element={<AdminDashboard />} />
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Customer Routes */}
               <Route path="/" element={<CustomerLayout><Home /></CustomerLayout>} />
@@ -69,10 +77,17 @@ function App() {
               <Route path="/reviews" element={<CustomerLayout><Reviews /></CustomerLayout>} />
               <Route path="/contact" element={<CustomerLayout><Contact /></CustomerLayout>} />
               <Route path="/cart" element={<CustomerLayout><Cart /></CustomerLayout>} />
-              <Route path="/checkout" element={<CustomerLayout><Checkout /></CustomerLayout>} />
+              <Route path="/checkout" element={<ProtectedRoute><CustomerLayout><Checkout /></CustomerLayout></ProtectedRoute>} />
               <Route path="/login" element={<CustomerLayout><Login /></CustomerLayout>} />
               <Route path="/register" element={<CustomerLayout><Register /></CustomerLayout>} />
-              <Route path="/dashboard" element={<CustomerLayout><UserDashboard /></CustomerLayout>} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <CustomerLayout><UserDashboard /></CustomerLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/offers" element={<CustomerLayout><Offers /></CustomerLayout>} />
               <Route path="/our-story" element={<CustomerLayout><OurStory /></CustomerLayout>} />
 

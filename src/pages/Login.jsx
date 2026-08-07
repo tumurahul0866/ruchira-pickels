@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Shield } from 'lucide-react';
 
@@ -8,18 +8,32 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { loginUser } = useAuth();
+  const { user, loginUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const returnPath = location.state?.from?.pathname || '/dashboard';
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (user) {
+      navigate(returnPath, { replace: true });
+    }
+  }, [user, navigate, returnPath]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    if (email && password) {
-      loginUser(email, password);
-      navigate('/dashboard');
-    } else {
+    if (!email || !password) {
       setError('Please fill in all required login fields.');
+      return;
+    }
+    setLoading(true);
+    const result = await loginUser(email.trim(), password);
+    setLoading(false);
+    if (result.ok) {
+      navigate(returnPath, { replace: true });
+    } else {
+      setError(result.message || 'Invalid email or password.');
     }
   };
 
@@ -88,9 +102,10 @@ const Login = () => {
             type="submit"
             whileTap={{ scale: 0.96 }}
             whileHover={{ scale: 1.02 }}
-            className="w-full py-3.5 rounded-full bg-[#8B1E1E] hover:bg-[#D97706] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg"
+            disabled={loading}
+            className={`w-full py-3.5 rounded-full text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg ${loading ? 'bg-[#B66B6B] cursor-not-allowed' : 'bg-[#8B1E1E] hover:bg-[#D97706]'}`}
           >
-            Login to Account
+            {loading ? 'Signing in...' : 'Login to Account'}
           </motion.button>
         </form>
 

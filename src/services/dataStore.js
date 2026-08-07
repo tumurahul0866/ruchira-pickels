@@ -432,12 +432,24 @@ const PRODUCT_TYPES_API = resolveApiUrl('/product-types');
 const USER_PROFILES_API = resolveApiUrl('/user-profiles');
 const CUSTOMERS_API = resolveApiUrl('/customers');
 
-const API_HEADERS = {
-  'Content-Type': 'application/json',
+const getApiHeaders = () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('vasuki_token') : null;
+  const base = { 'Content-Type': 'application/json' };
+  if (token) base['Authorization'] = `Bearer ${token}`;
+  return base;
 };
 
 const fetchJson = async (url, options = {}) => {
-  const response = await fetch(url, { headers: API_HEADERS, ...options });
+  const response = await fetch(url, { headers: getApiHeaders(), ...options });
+  if (response.status === 401) {
+    try {
+      // Notify app about auth expiry so AuthContext can logout
+      window.dispatchEvent(new CustomEvent('vasuki:auth-expired'));
+    } catch (e) {
+      // ignore
+    }
+    throw new Error('Unauthorized');
+  }
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
   }
@@ -649,7 +661,7 @@ export const addProductType = (type) => {
     localStorage.setItem('vasuki_product_types', JSON.stringify(nextTypes));
     fetch(PRODUCT_TYPES_API, {
       method: 'POST',
-      headers: API_HEADERS,
+      headers: getApiHeaders(),
       body: JSON.stringify(nextTypes),
     }).catch(() => {
       // continue on local fallback
@@ -665,7 +677,7 @@ export const deleteProduct = async (id) => {
   try {
     const response = await fetch(`${PRODUCTS_API}/${normalizedId}`, {
       method: 'DELETE',
-      headers: API_HEADERS,
+      headers: getApiHeaders(),
     });
     if (!response.ok) {
       const errorBody = await response.text().catch(() => '');
@@ -744,7 +756,7 @@ export const saveOrder = async (order) => {
   try {
     const response = await fetch(ORDERS_API, {
       method: 'POST',
-      headers: API_HEADERS,
+      headers: getApiHeaders(),
       body: JSON.stringify(newOrder),
     });
 
@@ -779,7 +791,7 @@ export const updateOrderStatus = (id, status, paymentStatus) => {
     syncLocalOrders(orders);
     fetch(`${ORDERS_API}/${id}`, {
       method: 'PUT',
-      headers: API_HEADERS,
+      headers: getApiHeaders(),
       body: JSON.stringify({ status, paymentStatus }),
     }).catch(() => {
       // ignore backend failure
@@ -839,10 +851,23 @@ export const saveReview = (review) => {
   const method = normalized.id && existingIndex >= 0 ? 'PUT' : 'POST';
   const url = normalized.id && existingIndex >= 0 ? `${REVIEWS_API}/${normalized.id}` : REVIEWS_API;
 
+  // Attach user metadata if present
+  try {
+    const storedUser = localStorage.getItem('vasuki_user');
+    if (storedUser) {
+      const u = JSON.parse(storedUser);
+      normalized.user_id = normalized.user_id || u.id;
+      normalized.user_email = normalized.user_email || u.email;
+      normalized.user_name = normalized.user_name || u.name;
+    }
+  } catch (e) {
+    // ignore
+  }
+
   fetch(url, {
     method,
-    headers: API_HEADERS,
-    body: JSON.stringify(normalized),
+    headers: getApiHeaders(),
+    body: JSON.stringify({ ...normalized }),
   }).catch(() => {
     // offline fallback
   });
@@ -854,6 +879,7 @@ export const deleteReview = (id) => {
   syncLocalReviews(reviews);
   fetch(`${REVIEWS_API}/${id}`, {
     method: 'DELETE',
+    headers: getApiHeaders(),
   }).catch(() => {
     // ignore
   });
@@ -867,7 +893,7 @@ export const toggleReviewVisibility = (id) => {
     syncLocalReviews(reviews);
     fetch(`${REVIEWS_API}/${id}`, {
       method: 'PUT',
-      headers: API_HEADERS,
+      headers: getApiHeaders(),
       body: JSON.stringify({ visible: target.visible }),
     }).catch(() => {
       // ignore
@@ -917,7 +943,7 @@ export const saveOffer = (offer) => {
 
   fetch(url, {
     method,
-    headers: API_HEADERS,
+    headers: getApiHeaders(),
     body: JSON.stringify(normalized),
   }).catch(() => {
     // offline fallback
@@ -943,7 +969,7 @@ export const toggleOffer = (id) => {
     syncLocalOffers(offers);
     fetch(`${OFFERS_API}/${encodeURIComponent(id)}`, {
       method: 'PUT',
-      headers: API_HEADERS,
+      headers: getApiHeaders(),
       body: JSON.stringify(target),
     }).catch(() => {
       // ignore
@@ -973,7 +999,7 @@ export const updateStoreSettings = (settings) => {
   syncLocalStoreSettings(nextSettings);
   fetch(STORE_SETTINGS_API, {
     method: 'POST',
-    headers: API_HEADERS,
+    headers: getApiHeaders(),
     body: JSON.stringify(nextSettings),
   }).catch(() => {
     // ignore
@@ -1002,7 +1028,7 @@ export const updatePaymentSettings = (settings) => {
   syncLocalPaymentSettings(nextSettings);
   fetch(PAYMENT_SETTINGS_API, {
     method: 'POST',
-    headers: API_HEADERS,
+    headers: getApiHeaders(),
     body: JSON.stringify(nextSettings),
   }).catch(() => {
     // ignore
@@ -1047,7 +1073,7 @@ export const saveUserProfile = (email, profileData) => {
   syncLocalUserProfiles(profiles);
   fetch(`${USER_PROFILES_API}/${encodeURIComponent(email)}`, {
     method: 'POST',
-    headers: API_HEADERS,
+    headers: getApiHeaders(),
     body: JSON.stringify(profiles[email]),
   }).catch(() => {
     // ignore
@@ -1133,7 +1159,7 @@ export const updateAdminProfile = (profile) => {
   localStorage.setItem('vasuki_admin_profile', JSON.stringify(nextProfile));
   fetch(ADMIN_PROFILE_API, {
     method: 'POST',
-    headers: API_HEADERS,
+    headers: getApiHeaders(),
     body: JSON.stringify(nextProfile),
   }).catch(() => {
     // offline fallback

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserPlus } from 'lucide-react';
 
@@ -13,27 +13,38 @@ const Register = () => {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { registerUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnPath = location.state?.from?.pathname || '/dashboard';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
 
-    if (formData.name && formData.email && formData.password) {
-      registerUser(formData);
-      navigate('/dashboard');
-    } else {
+    if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all required registration fields.');
+      return;
+    }
+
+    setLoading(true);
+    const result = await registerUser(formData);
+    setLoading(false);
+
+    if (result.ok) {
+      navigate(returnPath, { replace: true });
+    } else {
+      setError(result.message || 'Unable to register. Please try again.');
     }
   };
 
@@ -139,9 +150,10 @@ const Register = () => {
             type="submit"
             whileTap={{ scale: 0.96 }}
             whileHover={{ scale: 1.02 }}
-            className="w-full py-3.5 rounded-full bg-[#556B2F] hover:bg-[#6B8E23] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg mt-2"
+            disabled={loading}
+            className={`w-full py-3.5 rounded-full text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg mt-2 ${loading ? 'bg-[#7A9151] cursor-not-allowed' : 'bg-[#556B2F] hover:bg-[#6B8E23]'}`}
           >
-            Create My Account
+            {loading ? 'Creating account...' : 'Create My Account'}
           </motion.button>
         </form>
 
