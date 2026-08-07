@@ -16,7 +16,7 @@ export const initialProducts = [
     weights: [
       { weight: '250g', price: 180 },
       { weight: '500g', price: 340 },
-      { weight: '1kg', price: 620 }
+      { weight: '1 kg', price: 620 }
     ],
     spiceLevel: 'Spicy',
     description: 'Authentic Andhra style raw mango pickle crafted with premium cold-pressed groundnut oil, Guntur red chilies, and hand-ground spices.',
@@ -45,7 +45,7 @@ export const initialProducts = [
     weights: [
       { weight: '250g', price: 190 },
       { weight: '500g', price: 360 },
-      { weight: '1kg', price: 650 }
+      { weight: '1 kg', price: 650 }
     ],
     spiceLevel: 'Extra Hot',
     description: 'Iconic Andhra sour sorrel leaves (Gongura) blended with roasted garlic cloves and roasted red chilies. A true staple of Telugu cuisine.',
@@ -73,7 +73,7 @@ export const initialProducts = [
     weights: [
       { weight: '250g', price: 380 },
       { weight: '500g', price: 690 },
-      { weight: '1kg', price: 1290 }
+      { weight: '1 kg', price: 1290 }
     ],
     spiceLevel: 'Spicy',
     description: 'Tender boneless chicken pieces fried to golden perfection, marinated in rich aromatic gravy with freshly roasted whole spices.',
@@ -101,7 +101,7 @@ export const initialProducts = [
     weights: [
       { weight: '250g', price: 440 },
       { weight: '500g', price: 820 },
-      { weight: '1kg', price: 1550 }
+      { weight: '1 kg', price: 1550 }
     ],
     spiceLevel: 'Spicy',
     description: 'Juicy coastal sea prawns cooked in spicy Andhra tangy gravy. Packed with intense ocean flavor and traditional spices.',
@@ -129,7 +129,7 @@ export const initialProducts = [
     weights: [
       { weight: '250g', price: 460 },
       { weight: '500g', price: 860 },
-      { weight: '1kg', price: 1650 }
+      { weight: '1 kg', price: 1650 }
     ],
     spiceLevel: 'Extra Hot',
     description: 'Tender boneless mutton pieces slow-cooked in cold-pressed oil and roasted spice blend. Rich, savory, and extremely delicious.',
@@ -155,7 +155,7 @@ export const initialProducts = [
     weights: [
       { weight: '250g', price: 140 },
       { weight: '500g', price: 260 },
-      { weight: '1kg', price: 490 }
+      { weight: '1 kg', price: 490 }
     ],
     spiceLevel: 'Medium',
     description: 'Aromatic roasted toor dal powder blended with cumin seeds and red chilies. Perfectly pairs with hot rice and melted pure ghee.',
@@ -181,7 +181,7 @@ export const initialProducts = [
     weights: [
       { weight: '250g', price: 150 },
       { weight: '500g', price: 280 },
-      { weight: '1kg', price: 520 }
+      { weight: '1 kg', price: 520 }
     ],
     spiceLevel: 'Mild',
     description: 'Nutritious curry leaf powder enriched with iron and antioxidants. Roasted with black gram, garlic, and cumin.',
@@ -207,7 +207,7 @@ export const initialProducts = [
     weights: [
       { weight: '250g', price: 170 },
       { weight: '500g', price: 320 },
-      { weight: '1kg', price: 600 }
+      { weight: '1  kg', price: 600 }
     ],
     spiceLevel: 'Medium',
     description: 'Delicious sweet & tangy ginger pickle prepared with organic jaggery and tamarind. Essential condiment for MLA Pesarattu Dosa.',
@@ -500,7 +500,12 @@ const createProductPayload = (product) => ({
   productType: product.productType || 'Pickles',
   quantityType: product.quantityType || 'Weight',
   pricePerUnit: Number(product.pricePerUnit) || 0,
-  weights: Array.isArray(product.weights) ? product.weights : [],
+  // Support new `variants` shape while remaining backward compatible with `weights`.
+  weights: Array.isArray(product.variants)
+    ? product.variants.map((v) => ({ weight: v.label ?? v.weight, price: Number(v.price) || 0 }))
+    : Array.isArray(product.weights)
+    ? product.weights
+    : [],
   spiceLevel: product.spiceLevel || 'Medium',
   description: product.description || '',
   ingredients: product.ingredients || '',
@@ -530,6 +535,29 @@ export const getProductUnitPrice = (product) => {
 
 export const getProductUnitLabel = (product) => {
   return product.quantityType || 'Unit';
+};
+
+/**
+ * Return a normalized list of variants for a product.
+ * Each variant has the shape: { label: string, price: number }
+ * Backwards-compatible with legacy `weights` which use { weight, price }.
+ */
+export const getProductVariants = (product) => {
+  if (!product) return [];
+  // Prefer explicit `variants` if provided
+  if (Array.isArray(product.variants) && product.variants.length > 0) {
+    return product.variants.map((v) => ({ label: v.label ?? v.weight ?? String(v), price: Number(v.price) || 0 }));
+  }
+
+  // Fall back to legacy `weights` field
+  if (Array.isArray(product.weights) && product.weights.length > 0) {
+    return product.weights.map((w) => ({ label: w.weight ?? w.label ?? String(w), price: Number(w.price) || 0 }));
+  }
+
+  // Fallback single unit option built from pricePerUnit
+  const unitLabel = getProductUnitLabel(product);
+  const unitPrice = getProductUnitPrice(product);
+  return [{ label: unitLabel, price: unitPrice }];
 };
 
 export const isLegacyProduct = (product) => {
@@ -630,13 +658,23 @@ export const addProductType = (type) => {
 };
 
 export const deleteProduct = async (id) => {
-  const localProducts = getProductsFromLocal().filter((p) => p.id !== id);
+  const normalizedId = String(id);
+  const localProducts = getProductsFromLocal().filter((p) => String(p.id) !== normalizedId);
   syncLocalProducts(localProducts);
-  fetch(`${PRODUCTS_API}/${id}`, {
-    method: 'DELETE',
-  }).catch(() => {
-    // ignore backend failure
-  });
+
+  try {
+    const response = await fetch(`${PRODUCTS_API}/${normalizedId}`, {
+      method: 'DELETE',
+      headers: API_HEADERS,
+    });
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => '');
+      console.error('deleteProduct failed:', response.status, errorBody);
+    }
+  } catch (error) {
+    console.error('deleteProduct network error:', error);
+  }
+
   return true;
 };
 

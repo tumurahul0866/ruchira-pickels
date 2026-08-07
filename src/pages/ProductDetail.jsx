@@ -11,7 +11,8 @@ import {
   isProductInWishlist,
   getProductUnitPrice,
   getProductUnitLabel,
-  isLegacyProduct
+  isLegacyProduct,
+  getProductVariants
 } from '../services/dataStore';
 import {
   ArrowLeft,
@@ -34,7 +35,7 @@ const ProductDetail = () => {
   const storeSettings = getStoreSettings();
 
   const [product, setProduct] = useState(null);
-  const [selectedWeight, setSelectedWeight] = useState({ weight: '250g', price: 0 });
+  const [selectedVariant, setSelectedVariant] = useState({ label: 'Pack', price: 0 });
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -44,10 +45,9 @@ const ProductDetail = () => {
       const found = allProducts.find((item) => item.id === id);
       setProduct(found);
       if (found) {
-        const safeWeights = Array.isArray(found.weights) && found.weights.length > 0
-          ? found.weights
-          : [{ weight: getProductUnitLabel(found), price: getProductUnitPrice(found) }];
-        setSelectedWeight(safeWeights[0]);
+        const variants = getProductVariants(found);
+        const defaultVariant = variants.find((v) => v.label === '500g') || variants[0];
+        setSelectedVariant(defaultVariant);
         setSelectedQuantity(1);
         setIsWishlisted(isProductInWishlist(user?.email, found.id));
       }
@@ -81,7 +81,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     const option = isLegacyProduct(product)
-      ? selectedWeight
+      ? selectedVariant
       : { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) };
     const quantity = isLegacyProduct(product) ? 1 : selectedQuantity;
     addToCart(product, option, quantity);
@@ -91,7 +91,7 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     const option = isLegacyProduct(product)
-      ? selectedWeight
+      ? selectedVariant
       : { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) };
     const quantity = isLegacyProduct(product) ? 1 : selectedQuantity;
     addToCart(product, option, quantity);
@@ -101,9 +101,9 @@ const ProductDetail = () => {
   const handleWhatsAppOrder = () => {
     const quantityType = product.quantityType || 'Weight';
     const isLegacy = isLegacyProduct(product);
-    const quantityLabel = isLegacy ? selectedWeight.weight : `${selectedQuantity} ${quantityType}`;
-    const unitPrice = isLegacy ? selectedWeight.price : getProductUnitPrice(product);
-    const text = `Hi Vasuki Pickles! I would like to order *${product.name}* (${quantityType}: ${quantityLabel} for ₹${unitPrice}${isLegacy ? '' : ` each`}).`;
+    const quantityLabel = isLegacy ? (selectedVariant.weight || selectedVariant.label) : `${selectedQuantity} ${quantityType}`;
+    const unitPrice = isLegacy ? (selectedVariant.price) : getProductUnitPrice(product);
+    const text = `Hi Vasuki Pickles! I would like to order *${product.name}* (Pack: ${selectedVariant.label || selectedVariant.weight} × ${isLegacy ? 1 : selectedQuantity}) = ₹${isLegacy ? selectedVariant.price : getProductUnitPrice(product)} each.`;
     const encoded = encodeURIComponent(text);
     const phone = storeSettings.whatsappNumber || '918885473903';
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');
@@ -191,9 +191,9 @@ const ProductDetail = () => {
                       {product.weights.map((w, idx) => (
                         <button
                           key={idx}
-                          onClick={() => setSelectedWeight(w)}
+                          onClick={() => setSelectedVariant({ label: w.weight, price: w.price })}
                           className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border text-center ${
-                            selectedWeight.weight === w.weight
+                            (selectedVariant.label ?? selectedVariant.weight) === (w.weight ?? w.label)
                               ? 'border-brand-gold bg-brand-gold/15 text-brand-black shadow-sm'
                               : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300'
                           }`}
@@ -206,8 +206,8 @@ const ProductDetail = () => {
 
                     <div className="flex items-baseline gap-2 pt-2">
                       <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total:</span>
-                      <span className="text-3xl font-bold font-mono text-slate-900">₹{selectedWeight.price}</span>
-                      <span className="text-xs text-slate-500 font-medium">({product.quantityType || 'Weight'}: {selectedWeight.weight})</span>
+                      <span className="text-3xl font-bold font-mono text-slate-900">₹{selectedVariant.price}</span>
+                      <span className="text-xs text-slate-500 font-medium">(Pack: {selectedVariant.label || selectedVariant.weight})</span>
                     </div>
                   </div>
                 ) : (

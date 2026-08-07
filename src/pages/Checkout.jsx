@@ -97,13 +97,9 @@ const Checkout = () => {
     ];
 
     cartItems.forEach((item) => {
-      const itemTotal = item.weightOption.price * item.quantity;
-      const quantityType = item.product.quantityType || 'Unit';
-      if (item.product.pricePerUnit) {
-        lines.push(`• *${item.product.name}* (${quantityType}: ${item.quantity}) = ₹${itemTotal}`);
-      } else {
-        lines.push(`• *${item.product.name}* (${quantityType}: ${item.weightOption.weight}) × ${item.quantity} = ₹${itemTotal}`);
-      }
+      const itemTotal = (item.weightOption?.price || 0) * item.quantity;
+      const variantLabel = item.weightOption?.label ?? item.weightOption?.weight ?? 'Unit';
+      lines.push(`• *${item.product.name}* (Pack: ${variantLabel}) × ${item.quantity} — ₹${item.weightOption?.price || 0} each, Total ₹${itemTotal}`);
     });
 
     lines.push('', `💰 *TOTAL AMOUNT:* ₹${getCartTotal()}`);

@@ -4,18 +4,15 @@ import { Link } from 'react-router-dom';
 import { Heart, Star, ShoppingCart, Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { toggleWishlist, isProductInWishlist, getProductUnitPrice, getProductUnitLabel, isLegacyProduct } from '../../services/dataStore';
+import { toggleWishlist, isProductInWishlist, getProductUnitPrice, getProductUnitLabel, isLegacyProduct, getProductVariants } from '../../services/dataStore';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
 
   const isLegacy = isLegacyProduct(product);
-  const weightOptions = isLegacy
-    ? product.weights
-    : [{ weight: getProductUnitLabel(product), price: getProductUnitPrice(product) }];
-
-  const [selectedWeight, setSelectedWeight] = useState(() => weightOptions[0]);
+  const variantOptions = getProductVariants(product);
+  const [selectedWeight, setSelectedWeight] = useState(() => variantOptions[0]);
   const [isWishlisted, setIsWishlisted] = useState(isProductInWishlist(user?.email, product.id));
   const [addedToast, setAddedToast] = useState(false);
 
@@ -133,20 +130,20 @@ const ProductCard = ({ product }) => {
               {isLegacy ? `Select ${product.quantityType || 'Weight'}` : `Price per ${getProductUnitLabel(product)}`}:
             </label>
             <div className="flex gap-2">
-              {weightOptions.map((w, idx) => (
+              {variantOptions.map((v, idx) => (
                 <button
                   key={idx}
                   onClick={(e) => {
                     e.preventDefault();
-                    setSelectedWeight(w);
+                    setSelectedWeight(v);
                   }}
                   className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all border ${
-                    selectedWeight.weight === w.weight
+                    (selectedWeight.label ?? selectedWeight.weight) === (v.label ?? v.weight)
                       ? 'border-[#8B1E1E] bg-[#8B1E1E]/10 text-[#8B1E1E] shadow-sm'
                       : 'border-[#5C4033]/15 bg-[#F8F3E8]/50 text-[#5C4033] hover:border-[#D97706]'
                   }`}
                 >
-                  {w.weight}
+                  {v.label}
                 </button>
               ))}
             </div>

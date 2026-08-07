@@ -3,7 +3,7 @@ import { createContext, useContext, useState } from 'react';
 
 const CartContext = createContext();
 
-const getItemKey = (product, weightOption) => `${product.id}::${weightOption?.weight ?? 'unit'}`;
+const getItemKey = (product, weightOption) => `${product.id}::${weightOption?.label ?? weightOption?.weight ?? 'unit'}`;
 
 const normalizeCartItems = (items) => {
   if (!Array.isArray(items)) return [];
@@ -27,7 +27,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = (product, weightOption, quantity) => {
-    const itemKey = `${product.id}::${weightOption.weight}`;
+    const itemKey = `${product.id}::${weightOption?.label ?? weightOption?.weight}`;
     const existingIndex = cartItems.findIndex(
       item => item.itemKey === itemKey
     );

@@ -12,7 +12,7 @@ const defaultProduct = {
   productType: '',
   quantityType: 'Weight',
   pricePerUnit: 0,
-  weights: [],
+  variants: [],
   spiceLevel: 'Medium',
   description: '',
   ingredients: '',
@@ -28,7 +28,7 @@ const defaultProduct = {
   additionalImages: []
 };
 
-const quantityTypes = ['Weight', 'Volume', 'Box/Piece', 'Custom'];
+const measurementTypes = ['Weight', 'Volume', 'Pieces', 'Box', 'Size', 'Custom'];
 
 const ManageProducts = () => {
   const [products, setProducts] = useState([]);
@@ -64,7 +64,11 @@ const ManageProducts = () => {
       ...product,
       quantityType: product.quantityType || 'Weight',
       pricePerUnit: Number(product.pricePerUnit ?? product.weights?.[0]?.price) || 0,
-      weights: Array.isArray(product.weights) ? product.weights : [],
+      variants: Array.isArray(product.variants)
+        ? product.variants
+        : Array.isArray(product.weights)
+        ? product.weights.map((w) => ({ label: w.weight, price: w.price }))
+        : [],
     });
     setPreviewImages(product.additionalImages || []);
     setIsEditing(true);
@@ -78,8 +82,12 @@ const ManageProducts = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      await deleteProduct(id);
-      await refreshProducts();
+      const success = await deleteProduct(id);
+      if (success) {
+        await refreshProducts();
+      } else {
+        window.alert('Failed to delete product. Please try again.');
+      }
     }
   };
 
@@ -94,10 +102,12 @@ const ManageProducts = () => {
 
     setIsSaving(true);
     try {
+      // Prepare payload: ensure `variants` are present and legacy `weights` are derived
       const payload = {
         ...formData,
         additionalImages: previewImages.filter(Boolean),
-        inStock: Number(formData.stockQuantity) > 0
+        inStock: Number(formData.stockQuantity) > 0,
+        // ensure backend compatibility: map variants -> weights will be handled by dataStore
       };
       await saveProduct(payload);
       await refreshProducts();
@@ -111,25 +121,19 @@ const ManageProducts = () => {
     }
   };
 
-  const handleWeightChange = (index, field, value) => {
-    const newWeights = [...formData.weights];
-    newWeights[index] = {
-      ...newWeights[index],
-      [field]: field === 'price' ? Number(value) : value
-    };
-    setFormData({ ...formData, weights: newWeights });
+  const handleVariantChange = (index, field, value) => {
+    const next = [...(formData.variants || [])];
+    next[index] = { ...(next[index] || {}), [field]: field === 'price' ? Number(value) : value };
+    setFormData({ ...formData, variants: next });
   };
 
-  const addWeightRow = () => {
-    setFormData({
-      ...formData,
-      weights: [...formData.weights, { weight: '', price: 0 }]
-    });
+  const addVariantRow = () => {
+    setFormData({ ...formData, variants: [...(formData.variants || []), { label: '', price: 0 }] });
   };
 
-  const removeWeightRow = (index) => {
-    const newWeights = formData.weights.filter((_, idx) => idx !== index);
-    setFormData({ ...formData, weights: newWeights });
+  const removeVariantRow = (index) => {
+    const next = (formData.variants || []).filter((_, idx) => idx !== index);
+    setFormData({ ...formData, variants: next });
   };
 
   const handleVisibilityToggle = async (id) => {
@@ -283,13 +287,13 @@ const ManageProducts = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
               <div>
-                <label className="block text-sm text-brand-cream/70 mb-2">Quantity Type</label>
+                <label className="block text-sm text-brand-cream/70 mb-2">Measurement Type</label>
                 <select
                   value={formData.quantityType}
                   onChange={(e) => setFormData({ ...formData, quantityType: e.target.value })}
                   className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
                 >
-                  {quantityTypes.map((type) => (
+                  {measurementTypes.map((type) => (
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
@@ -307,6 +311,34 @@ const ManageProducts = () => {
               </div>
             </div>
             <p className="text-xs text-brand-cream/60">New products use a unit-based pricing model. Legacy products with existing variants will continue to work.</p>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm text-brand-cream/70 mb-2">Variants (Pack options)</label>
+            <div className="space-y-2">
+              {(formData.variants || []).map((v, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="Label (e.g. 250g, 500ml, 6 Pieces)"
+                    value={v.label}
+                    onChange={(e) => handleVariantChange(idx, 'label', e.target.value)}
+                    className="flex-1 bg-brand-cream border border-brand-gold/30 rounded-2xl px-3 py-2 text-brand-black"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    value={v.price}
+                    onChange={(e) => handleVariantChange(idx, 'price', e.target.value)}
+                    className="w-28 bg-brand-cream border border-brand-gold/30 rounded-2xl px-3 py-2 text-brand-black"
+                  />
+                  <button type="button" onClick={() => removeVariantRow(idx)} className="text-sm text-rose-600">Remove</button>
+                </div>
+              ))}
+              <div>
+                <button type="button" onClick={addVariantRow} className="px-3 py-2 rounded-2xl bg-brand-gold text-brand-black font-semibold">Add Variant</button>
+              </div>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">

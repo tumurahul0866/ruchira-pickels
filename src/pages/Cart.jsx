@@ -101,21 +101,12 @@ const Cart = () => {
                       {item.product.productType || 'Pickle'}
                     </span>
                     <h3 className="text-base font-serif font-bold text-[#5C4033] mt-0.5">{item.product.name}</h3>
-                    {item.product.pricePerUnit ? (
-                      <>
-                        <p className="text-xs text-[#5C4033]/65 font-medium">
-                          {item.product.quantityType || 'Unit'}: {item.quantity}
-                        </p>
-                        <p className="text-xs font-bold text-[#8B1E1E] mt-1">₹{item.weightOption.price} / {item.product.quantityType || 'unit'}</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-xs text-[#5C4033]/65 font-medium">
-                          {item.product.quantityType || 'Weight'}: {item.weightOption.weight}
-                        </p>
-                        <p className="text-xs font-bold text-[#8B1E1E] mt-1">₹{item.weightOption.price} / {item.product.quantityType || 'pack'}</p>
-                      </>
-                    )}
+                    <>
+                      <p className="text-xs text-[#5C4033]/65 font-medium">
+                        Pack: {item.weightOption?.label ?? item.weightOption?.weight}
+                      </p>
+                      <p className="text-xs font-bold text-[#8B1E1E] mt-1">Unit Price: ₹{item.weightOption.price}</p>
+                    </>
                   </div>
                 </div>
 
