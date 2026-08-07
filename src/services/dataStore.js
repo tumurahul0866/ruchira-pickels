@@ -355,7 +355,7 @@ const defaultPaymentSettings = {
 const defaultAdminProfile = {
   ownerName: 'Konasema Ruchulu Management',
   businessName: 'Konasema Ruchulu',
-  email: 'admin@vasukipickles.com',
+  email: 'ruchira@gmail.com',
   phone: '+91 8885473903',
   whatsapp: '+91 8885473903',
   address: 'Hyderabad, Telangana 500033',

@@ -58,6 +58,21 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('vasuki_token', token);
   };
 
+  const parseErrorMessage = async (resp) => {
+    try {
+      const body = await resp.json();
+      if (body && (body.error || body.message)) return body.error || body.message;
+      return JSON.stringify(body || {});
+    } catch {
+      try {
+        const text = await resp.text();
+        return text || resp.statusText || 'An unknown error occurred.';
+      } catch {
+        return resp.statusText || 'An unknown error occurred.';
+      }
+    }
+  };
+
   const loginUser = async (email, password) => {
     try {
       const resp = await fetch(resolveApiUrl('/auth/login'), {
@@ -66,8 +81,8 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
       if (!resp.ok) {
-        const error = await resp.json().catch(() => ({}));
-        return { ok: false, message: error.error || 'Invalid credentials' };
+        const message = await parseErrorMessage(resp);
+        return { ok: false, message: message || 'Invalid credentials' };
       }
       const data = await resp.json();
       setAuthState({ id: data.id, name: data.name, email: data.email, isAdmin: Boolean(data.isAdmin) }, data.token);
@@ -85,8 +100,8 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify(data),
       });
       if (!resp.ok) {
-        const error = await resp.json().catch(() => ({}));
-        return { ok: false, message: error.error || 'Unable to register' };
+        const message = await parseErrorMessage(resp);
+        return { ok: false, message: message || 'Unable to register' };
       }
       const body = await resp.json();
       setAuthState({ id: body.id, name: body.name, email: body.email, isAdmin: Boolean(body.isAdmin) }, body.token);
