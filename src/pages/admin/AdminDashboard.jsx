@@ -107,13 +107,13 @@ const Sidebar = ({ mobile = false, activeTab, onNav, onClose, onLogout }) => (
                     }}
                     whileHover={{ x: 3 }}
                     whileTap={{ scale: 0.97 }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-medium transition-all ${
+                    className={`w-full flex items-center gap-3 ${mobile ? 'px-4 py-3 text-base' : 'px-3.5 py-2.5 text-sm'} rounded-xl text-left font-medium transition-all ${
                       isActive
                         ? 'bg-gradient-to-r from-brand-gold/15 to-brand-gold/5 text-brand-gold border border-brand-gold/20 shadow-sm'
-                        : 'text-brand-cream/60 hover:bg-white/5 hover:text-brand-cream/90'
+                        : (mobile ? 'text-brand-cream/90 hover:bg-white/5 hover:text-brand-cream' : 'text-brand-cream/60 hover:bg-white/5 hover:text-brand-cream/90')
                     }`}
                   >
-                    <Icon size={15} className={isActive ? 'text-brand-gold' : 'text-brand-cream/40'} />
+                    <Icon size={mobile ? 16 : 15} className={isActive ? 'text-brand-gold' : (mobile ? 'text-brand-cream/70' : 'text-brand-cream/40')} />
                     <span className="truncate">{item.label}</span>
                     {isActive && <ChevronRight size={12} className="ml-auto text-brand-gold/60" />}
                   </motion.button>
@@ -183,6 +183,22 @@ const AdminDashboard = () => {
   const handleLogout = () => { logout(); navigate('/admin-login'); };
   const handleNav = (id) => { setActiveTab(id); };
 
+  // Lock page scroll while mobile sidebar is open
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [sidebarOpen]);
+
   if (!isAdmin) return <Navigate to="/admin-login" replace />;
 
   const statusBadge = (status) => {
@@ -225,13 +241,17 @@ const AdminDashboard = () => {
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/10 z-40 md:hidden"
+              className="fixed inset-0 bg-black/60 z-40 md:hidden"
               onClick={() => setSidebarOpen(false)}
+              aria-hidden="true"
             />
             <motion.aside
               initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed top-0 left-0 h-full w-72 bg-brand-cream border-r border-brand-gold/20 z-50 md:hidden"
+              className="fixed top-0 left-0 h-full w-72 border-r border-brand-gold/20 z-50 md:hidden"
+              style={{ backgroundColor: '#f7eee3' }}
+              role="dialog"
+              aria-modal="true"
             >
               <Sidebar mobile activeTab={activeTab} onNav={handleNav} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
             </motion.aside>
