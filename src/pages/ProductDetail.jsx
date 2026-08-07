@@ -80,9 +80,8 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    const option = isLegacyProduct(product)
-      ? selectedVariant
-      : { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) };
+    // Always persist the selected variant (label + price). Quantity: 1 for legacy fixed packs, otherwise selectedQuantity.
+    const option = selectedVariant ?? { label: getProductUnitLabel(product), price: getProductUnitPrice(product) };
     const quantity = isLegacyProduct(product) ? 1 : selectedQuantity;
     addToCart(product, option, quantity);
     setAddedToast(true);
@@ -90,9 +89,7 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    const option = isLegacyProduct(product)
-      ? selectedVariant
-      : { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) };
+    const option = selectedVariant ?? { label: getProductUnitLabel(product), price: getProductUnitPrice(product) };
     const quantity = isLegacyProduct(product) ? 1 : selectedQuantity;
     addToCart(product, option, quantity);
     navigate('/checkout');
@@ -102,8 +99,8 @@ const ProductDetail = () => {
     const quantityType = product.quantityType || 'Weight';
     const isLegacy = isLegacyProduct(product);
     const quantityLabel = isLegacy ? (selectedVariant.weight || selectedVariant.label) : `${selectedQuantity} ${quantityType}`;
-    const unitPrice = isLegacy ? (selectedVariant.price) : getProductUnitPrice(product);
-    const text = `Hi Vasuki Pickles! I would like to order *${product.name}* (Pack: ${selectedVariant.label || selectedVariant.weight} × ${isLegacy ? 1 : selectedQuantity}) = ₹${isLegacy ? selectedVariant.price : getProductUnitPrice(product)} each.`;
+    const unitPrice = selectedVariant?.price ?? getProductUnitPrice(product);
+    const text = `Hi Vasuki Pickles! I would like to order *${product.name}* (Pack: ${selectedVariant.label || selectedVariant.weight} × ${isLegacy ? 1 : selectedQuantity}) = ₹${unitPrice} each.`;
     const encoded = encodeURIComponent(text);
     const phone = storeSettings.whatsappNumber || '918885473903';
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');
@@ -241,8 +238,8 @@ const ProductDetail = () => {
 
                     <div className="flex items-baseline gap-2 pt-4">
                       <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total:</span>
-                      <span className="text-3xl font-bold font-mono text-slate-900">₹{getProductUnitPrice(product) * selectedQuantity}</span>
-                      <span className="text-xs text-slate-500 font-medium">({product.quantityType || 'Unit'} @ ₹{getProductUnitPrice(product)} each)</span>
+                      <span className="text-3xl font-bold font-mono text-slate-900">₹{(selectedVariant?.price || getProductUnitPrice(product)) * selectedQuantity}</span>
+                        <span className="text-xs text-slate-500 font-medium">({product.quantityType || 'Unit'} @ ₹{selectedVariant?.price ?? getProductUnitPrice(product)} each)</span>
                     </div>
                   </div>
                 )}

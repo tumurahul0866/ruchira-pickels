@@ -26,9 +26,8 @@ const ProductCard = ({ product }) => {
   const handleQuickAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const option = isLegacy
-      ? selectedWeight
-      : { weight: getProductUnitLabel(product), price: getProductUnitPrice(product) };
+    // Always use the selected variant (label + price). Fallback to unit option.
+    const option = selectedWeight ?? { label: getProductUnitLabel(product), price: getProductUnitPrice(product) };
     addToCart(product, option, 1);
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 2000);
