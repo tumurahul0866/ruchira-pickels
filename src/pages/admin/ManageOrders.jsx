@@ -38,8 +38,17 @@ const ManageOrders = () => {
 
   const handleDeleteOrder = async (id) => {
     if (window.confirm('Delete this order permanently?')) {
-      await deleteOrder(id);
-      await refreshOrders();
+      // Optimistically remove from UI immediately
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+      try {
+        await deleteOrder(id);
+        // Re-fetch from backend to confirm server state
+        await refreshOrders();
+      } catch (error) {
+        // Restore orders list from backend on failure
+        await refreshOrders();
+        alert('Failed to delete order: ' + (error?.message || 'Server error. Please try again.'));
+      }
     }
   };
 

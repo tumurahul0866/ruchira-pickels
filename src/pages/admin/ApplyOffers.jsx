@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import { getOffers, saveOffer, deleteOffer, toggleOffer, getProducts } from '../../services/dataStore';
+import { resolveApiUrl } from '../../services/apiConfig';
 import { Trash2, Check, Edit2, Ticket } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const OFFERS_API = resolveApiUrl('/offers');
+
 const ApplyOffers = () => {
-  const [offers, setOffers] = useState(() => getOffers());
+  // Start empty; populated by backend fetch on mount
+  const [offers, setOffers] = useState([]);
   const [products, setProducts] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [code, setCode] = useState('');
   const [title, setTitle] = useState('');
@@ -17,9 +22,32 @@ const ApplyOffers = () => {
   const [productId, setProductId] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Fetch latest offers from backend on every mount
+  const fetchOffersFromBackend = async () => {
+    try {
+      const res = await fetch(OFFERS_API);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setOffers(data);
+          return;
+        }
+      }
+    } catch {
+      // Fall through to local cache
+    }
+    // Fallback to locally cached offers
+    setOffers(getOffers());
+  };
+
   useEffect(() => {
     const loadData = async () => {
-      setProducts(await getProducts());
+      setLoading(true);
+      await Promise.all([
+        fetchOffersFromBackend(),
+        getProducts().then(setProducts),
+      ]);
+      setLoading(false);
     };
     loadData();
   }, []);
@@ -35,7 +63,7 @@ const ApplyOffers = () => {
     setProductId('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
 
@@ -50,7 +78,7 @@ const ApplyOffers = () => {
       productId
     });
 
-    setOffers(getOffers());
+    await fetchOffersFromBackend();
     setSuccessMsg(editingOffer ? 'Coupon offer updated!' : 'New coupon offer added & published!');
     setTimeout(() => setSuccessMsg(''), 3000);
     resetForm();
@@ -67,17 +95,36 @@ const ApplyOffers = () => {
     setProductId(offer.productId || '');
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this coupon offer?')) {
-      deleteOffer(id);
-      setOffers(getOffers());
-      if (editingOffer && editingOffer.id === id) resetForm();
+      // Optimistically remove
+      setOffers((prev) => prev.filter((o) => o.id !== id));
+      try {
+        await deleteOffer(id);
+        // Confirm with backend state
+        await fetchOffersFromBackend();
+        if (editingOffer && editingOffer.id === id) resetForm();
+      } catch (error) {
+        await fetchOffersFromBackend();
+        alert('Failed to delete offer: ' + (error?.message || 'Server error.'));
+      }
     }
   };
 
-  const handleToggle = (id) => {
-    toggleOffer(id);
-    setOffers(getOffers());
+  const handleToggle = async (id) => {
+    // Optimistically update local state
+    setOffers((prev) =>
+      prev.map((o) => o.id === id ? { ...o, active: !o.active } : o)
+    );
+    try {
+      await toggleOffer(id);
+      // Re-fetch from backend to confirm persisted state
+      await fetchOffersFromBackend();
+    } catch (error) {
+      // Revert optimistic update on error
+      await fetchOffersFromBackend();
+      alert('Failed to update offer status: ' + (error?.message || 'Server error.'));
+    }
   };
 
   return (

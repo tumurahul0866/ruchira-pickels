@@ -801,14 +801,23 @@ export const updateOrderStatus = (id, status, paymentStatus) => {
   }
 };
 
-export const deleteOrder = (id) => {
+export const deleteOrder = async (id) => {
   const orders = getOrdersFromLocal().filter((o) => o.id !== id);
   syncLocalOrders(orders);
-  fetch(`${ORDERS_API}/${id}`, {
-    method: 'DELETE',
-  }).catch(() => {
-    // ignore
-  });
+  try {
+    const response = await fetch(`${ORDERS_API}/${id}`, {
+      method: 'DELETE',
+      headers: getApiHeaders(),
+    });
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error(errText || `HTTP ${response.status}`);
+    }
+  } catch (error) {
+    console.error('deleteOrder failed:', error);
+    // Re-throw so the UI can handle gracefully
+    throw error;
+  }
 };
 
 // --- REVIEWS DATABASE ---
@@ -953,29 +962,53 @@ export const saveOffer = (offer) => {
   return normalized;
 };
 
-export const deleteOffer = (id) => {
+export const deleteOffer = async (id) => {
   const offers = getOffersFromLocal().filter((o) => o.id !== id);
   syncLocalOffers(offers);
-  fetch(`${OFFERS_API}/${id}`, {
-    method: 'DELETE',
-  }).catch(() => {
-    // ignore
-  });
+  try {
+    const response = await fetch(`${OFFERS_API}/${id}`, {
+      method: 'DELETE',
+      headers: getApiHeaders(),
+    });
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error(errText || `HTTP ${response.status}`);
+    }
+  } catch (error) {
+    console.error('deleteOffer failed:', error);
+    throw error;
+  }
 };
 
-export const toggleOffer = (id) => {
+export const toggleOffer = async (id) => {
   const offers = getOffersFromLocal();
   const target = offers.find((o) => o.id === id);
-  if (target) {
-    target.active = !target.active;
-    syncLocalOffers(offers);
-    fetch(`${OFFERS_API}/${encodeURIComponent(id)}`, {
-      method: 'PUT',
+  if (!target) return;
+  target.active = !target.active;
+  syncLocalOffers(offers);
+  // Backend only has POST /api/offers (upsert) — no PUT /api/offers/:id route exists.
+  // Use POST which correctly persists active state to the database.
+  try {
+    const response = await fetch(OFFERS_API, {
+      method: 'POST',
       headers: getApiHeaders(),
       body: JSON.stringify(target),
-    }).catch(() => {
-      // ignore
     });
+    if (!response.ok) {
+      // Revert optimistic local update on failure
+      target.active = !target.active;
+      syncLocalOffers(offers);
+      const errText = await response.text().catch(() => '');
+      throw new Error(errText || `HTTP ${response.status}`);
+    }
+    const saved = await response.json();
+    // Sync the server-returned value back to local cache
+    const idx = offers.findIndex((o) => o.id === id);
+    if (idx >= 0) offers[idx] = saved;
+    syncLocalOffers(offers);
+  } catch (error) {
+    console.error('toggleOffer failed:', error);
+    throw error;
   }
 };
 
