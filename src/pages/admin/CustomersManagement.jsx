@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getCustomers } from '../../services/dataStore';
 import { Users } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const CustomersManagement = () => {
   const [customers] = useState(() => getCustomers());
@@ -25,8 +26,14 @@ const CustomersManagement = () => {
           {customers.length === 0 ? (
             <div className="p-6 text-center text-brand-cream/60">No customer records available yet.</div>
           ) : (
-            customers.map((customer) => (
-              <div key={`${customer.email}-${customer.phone}`} className="grid grid-cols-3 gap-6 p-6 hover:bg-white/5 transition-colors">
+            customers.map((customer, index) => (
+              <motion.div 
+                key={`${customer.email}-${customer.phone}`} 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="grid grid-cols-3 gap-6 p-6 hover:bg-white/5 transition-colors"
+              >
                 <div>
                   <p className="font-semibold text-brand-cream">{customer.name || 'Guest'}</p>
                   <p className="text-brand-cream/60 text-sm">Last order: {new Date(customer.lastOrder).toLocaleDateString()}</p>
@@ -35,7 +42,7 @@ const CustomersManagement = () => {
                   {customer.email || customer.phone || 'N/A'}
                 </div>
                 <div className="text-right font-semibold text-brand-gold">{customer.totalOrders}</div>
-              </div>
+              </motion.div>
             ))
           )}
         </div>

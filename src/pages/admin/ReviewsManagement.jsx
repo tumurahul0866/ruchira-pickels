@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { getReviews, saveReview, deleteReview, toggleReviewVisibility } from '../../services/dataStore';
 import Button from '../../components/ui/Button';
 import { Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const ReviewsManagement = () => {
   const [reviews, setReviews] = useState(() => getReviews());
@@ -58,8 +59,14 @@ const ReviewsManagement = () => {
             <span className="text-sm text-brand-cream/60">{reviews.length} reviews</span>
           </div>
           <div className="space-y-4">
-            {reviews.map((review) => (
-              <div key={review.id} className="rounded-3xl border border-white/10 bg-brand-black/50 p-4">
+            {reviews.map((review, index) => (
+              <motion.div 
+                key={review.id} 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="rounded-3xl border border-white/10 bg-brand-black/50 p-4"
+              >
                 <div className="flex items-center justify-between gap-4 mb-3">
                   <div>
                     <p className="font-semibold text-brand-cream">{review.name || 'Guest'}</p>
@@ -90,7 +97,7 @@ const ReviewsManagement = () => {
                 >
                   {review.visible ? 'Hide Review' : 'Show Review'}
                 </button>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

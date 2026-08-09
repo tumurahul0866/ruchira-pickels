@@ -99,24 +99,28 @@ const Sidebar = ({ mobile = false, activeTab, onNav, onClose, onLogout }) => (
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
-                  <motion.button
+                  <button
                     key={item.id}
                     onClick={() => {
                       onNav(item.id);
                       if (mobile) onClose();
                     }}
-                    whileHover={{ x: 3 }}
-                    whileTap={{ scale: 0.97 }}
-                    className={`w-full flex items-center gap-3 ${mobile ? 'px-4 py-3 text-base' : 'px-3.5 py-2.5 text-sm'} rounded-xl text-left font-medium transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-brand-gold/15 to-brand-gold/5 text-brand-gold border border-brand-gold/20 shadow-sm'
-                        : (mobile ? 'text-brand-cream/90 hover:bg-white/5 hover:text-brand-cream' : 'text-brand-cream/60 hover:bg-white/5 hover:text-brand-cream/90')
-                    }`}
+                    className={`relative w-full flex items-center gap-3 ${mobile ? 'px-4 py-3 text-base' : 'px-3.5 py-2.5 text-sm'} rounded-xl text-left font-medium transition-colors z-10 group`}
                   >
-                    <Icon size={mobile ? 16 : 15} className={isActive ? 'text-brand-gold' : (mobile ? 'text-brand-cream/70' : 'text-brand-cream/40')} />
-                    <span className="truncate">{item.label}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 bg-gradient-to-r from-brand-gold/15 to-brand-gold/5 border border-brand-gold/20 shadow-sm rounded-xl -z-10"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                    <Icon size={mobile ? 16 : 15} className={`transition-colors ${isActive ? 'text-brand-gold' : (mobile ? 'text-brand-cream/70 group-hover:text-brand-cream/90' : 'text-brand-cream/40 group-hover:text-brand-cream/70')}`} />
+                    <span className={`truncate transition-colors ${isActive ? 'text-brand-gold' : (mobile ? 'text-brand-cream/90 group-hover:text-brand-cream' : 'text-brand-cream/60 group-hover:text-brand-cream/90')}`}>
+                      {item.label}
+                    </span>
                     {isActive && <ChevronRight size={12} className="ml-auto text-brand-gold/60" />}
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
@@ -390,11 +394,18 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
 
       <div className="grid gap-4 xl:grid-cols-[1.8fr_1fr]">
         <div className="grid gap-4 mb-6 sm:grid-cols-2 xl:grid-cols-3">
-          {activeStats.map((item) => (
-            <div key={item.key} className={`rounded-3xl border ${item.border} bg-brand-cream/95 p-5`}>
+          {activeStats.map((item, index) => (
+            <motion.div
+              key={item.key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
+              whileHover={{ scale: 1.02, y: -4 }}
+              className={`rounded-3xl border ${item.border} bg-brand-cream/95 p-5 shadow-sm hover:shadow-md hover:border-brand-gold/30 transition-all`}
+            >
               <p className={item.textColor + ' text-sm font-semibold'}>{item.label}</p>
               <p className="mt-4 text-3xl font-serif font-bold text-brand-black">{item.prefix}{item.formatter(item.value)}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
         <div className="rounded-3xl border border-brand-gold/20 bg-brand-cream/95 p-6">
@@ -418,22 +429,30 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
                     <stop offset="100%" stopColor="#F59E0B" />
                   </linearGradient>
                 </defs>
-                <path
+                <motion.path
                   d={`M${linePoints}`}
                   fill="none"
                   stroke="url(#lineGradient)"
                   strokeWidth="4"
                   strokeLinecap="round"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
                 />
                 <polyline points={linePoints} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="12" />
                 {monthlySales.map((item, index) => {
                   const x = 40 + index * 45;
                   const y = 140 - (item.value / maxSales) * 110;
                   return (
-                    <g key={item.label}>
+                    <motion.g 
+                      key={item.label}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.8 + index * 0.1, type: "spring" }}
+                    >
                       <circle cx={x} cy={y} r="5" fill="#FACC15" />
                       <circle cx={x} cy={y} r="10" fill="rgba(250, 204, 21, 0.08)" />
-                    </g>
+                    </motion.g>
                   );
                 })}
                 {monthlySales.map((item, index) => (
@@ -474,8 +493,13 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
                         <span className="truncate max-w-[150px]">{item.name}</span>
                         <span className="font-semibold text-brand-cream">{item.count}</span>
                       </div>
-                      <div className="h-3 rounded-full bg-white/5 overflow-hidden">
-                        <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500" style={{ width: `${barWidth}%` }} />
+                      <div className="h-3 rounded-full bg-black/5 overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${barWidth}%` }}
+                          transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                        />
                       </div>
                     </div>
                   );
@@ -493,26 +517,73 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
               <span className="text-xs font-semibold text-brand-black/60">Current Distribution</span>
             </div>
             <div className="flex flex-col gap-5 md:flex-row md:items-center">
-              <div className="h-40 w-40 rounded-full border border-brand-gold/20 bg-brand-cream/95" style={{ background: totalStatus ? `conic-gradient(${statusBackground})` : '#334155' }} />
+              <div className="h-40 w-40 relative flex items-center justify-center">
+                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                  {totalStatus === 0 ? (
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" strokeWidth="20" />
+                  ) : (
+                    statusItems.reduce((acc, item, index) => {
+                      const percentage = (item.value / totalStatus) * 100;
+                      const strokeDasharray = `${percentage} 100`;
+                      const color = item.status === 'Delivered' ? '#22c55e'
+                        : item.status === 'Processing' ? '#38bdf8'
+                        : item.status === 'Cancelled' ? '#f43f5e'
+                        : '#f59e0b';
+                      
+                      const circle = (
+                        <motion.circle
+                          key={item.status}
+                          cx="50" cy="50" r="40"
+                          fill="none"
+                          stroke={color}
+                          strokeWidth="20"
+                          strokeDasharray="100 100"
+                          initial={{ strokeDashoffset: 100 }}
+                          animate={{ strokeDashoffset: 100 - percentage }}
+                          transition={{ duration: 1, delay: 0.3 + index * 0.1, ease: "easeOut" }}
+                          style={{
+                            strokeDasharray,
+                            strokeDashoffset: acc.offset,
+                          }}
+                        />
+                      );
+                      acc.elements.push(circle);
+                      acc.offset -= percentage;
+                      return acc;
+                    }, { elements: [], offset: 0 }).elements
+                  )}
+                </svg>
+              </div>
               <div className="grid gap-3 flex-1">
                 {statusItems.length === 0 ? (
                   <p className="text-sm text-brand-cream/50">No orders placed yet.</p>
                 ) : (
-                  statusItems.map((item) => {
-                    const color = item.status === 'Delivered' ? 'bg-emerald-400/15 text-emerald-300 border-emerald-400/20'
-                      : item.status === 'Processing' ? 'bg-sky-400/15 text-sky-300 border-sky-400/20'
-                      : item.status === 'Cancelled' ? 'bg-rose-400/15 text-rose-300 border-rose-400/20'
-                      : 'bg-amber-400/15 text-amber-300 border-amber-400/20';
+                  statusItems.map((item, index) => {
+                    const color = item.status === 'Delivered' ? 'bg-emerald-400/15 text-emerald-600 border-emerald-400/20'
+                      : item.status === 'Processing' ? 'bg-sky-400/15 text-sky-600 border-sky-400/20'
+                      : item.status === 'Cancelled' ? 'bg-rose-400/15 text-rose-600 border-rose-400/20'
+                      : 'bg-amber-400/15 text-amber-600 border-amber-400/20';
                     return (
-                      <div key={item.status} className={`rounded-3xl border px-4 py-3 ${color}`}>
+                      <motion.div
+                        key={item.status}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + index * 0.1 }}
+                        className={`rounded-3xl border px-4 py-3 ${color}`}
+                      >
                         <div className="flex items-center justify-between gap-3 text-sm font-semibold">
                           <span>{item.status}</span>
                           <span>{item.value}</span>
                         </div>
-                        <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
-                          <div className="h-full rounded-full bg-current" style={{ width: `${totalStatus ? (item.value / totalStatus) * 100 : 0}%` }} />
+                        <div className="mt-2 h-2 rounded-full bg-black/5 overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full bg-current"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${totalStatus ? (item.value / totalStatus) * 100 : 0}%` }}
+                            transition={{ duration: 1, delay: 0.6 + index * 0.1 }}
+                          />
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })
                 )}

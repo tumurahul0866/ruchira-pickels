@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getOrders, updateOrderStatus, deleteOrder } from '../../services/dataStore';
+import { motion } from 'framer-motion';
 
 const ManageOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -50,8 +51,14 @@ const ManageOrders = () => {
         {orders.length === 0 ? (
           <p className="text-brand-cream/50 text-center py-10">No orders found.</p>
         ) : (
-          orders.map((order) => (
-            <div key={order.id} className="bg-brand-matte border border-white/10 rounded-xl p-6">
+          orders.map((order, index) => (
+            <motion.div 
+              key={order.id} 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="bg-brand-matte border border-white/10 rounded-xl p-6 hover:border-brand-gold/20 transition-colors"
+            >
               
               <div className="flex flex-wrap justify-between items-start mb-6 pb-6 border-b border-white/5 gap-4">
                 <div>
@@ -88,13 +95,14 @@ const ManageOrders = () => {
                     </select>
                   </div>
 
-                  <button
+                  <motion.button
                     type="button"
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleDeleteOrder(order.id)}
                     className="rounded-2xl px-4 py-2 text-xs font-semibold text-brand-red bg-brand-red/10 border border-brand-red/20 hover:bg-brand-red/20 transition-colors"
                   >
                     Delete Order
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 
@@ -111,7 +119,7 @@ const ManageOrders = () => {
                     {order.customer?.city || 'City'}, {order.customer?.state || 'State'} - {order.customer?.pincode || 'PIN'}
                   </p>
                   
-                  {order.customer.notes && (
+                  {order.customer?.notes && (
                     <div className="mt-4 p-3 bg-brand-gold/10 border border-brand-gold/20 rounded-lg">
                       <p className="text-xs text-brand-gold font-bold mb-1">Notes:</p>
                       <p className="text-sm text-brand-cream italic">"{order.customer.notes}"</p>
@@ -124,7 +132,7 @@ const ManageOrders = () => {
                   <h4 className="text-sm font-bold text-brand-cream/70 uppercase mb-3 border-b border-white/10 pb-2">Order Items</h4>
                   <div className="space-y-4">
                     {(Array.isArray(order.items) ? order.items : []).map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center bg-brand-black/50 p-2 rounded">
+                      <div key={idx} className="flex justify-between items-center bg-brand-black/50 p-2 rounded hover:bg-brand-black/70 transition-colors">
                         <div className="flex gap-3 items-center">
                           <img src={item.product?.image || ''} className="w-10 h-10 object-cover rounded" alt={item.product?.name || 'Item'} />
                           <div>
@@ -147,7 +155,7 @@ const ManageOrders = () => {
                 </div>
               </div>
 
-            </div>
+            </motion.div>
           ))
         )}
       </div>

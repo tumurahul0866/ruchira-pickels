@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getProducts, saveProduct, deleteProduct, toggleProductVisibility, getProductTypes, addProductType } from '../../services/dataStore';
 import { Edit2, Trash2, Plus, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
 
 const emptyMessage = 'Please fill in the required product details before saving.';
@@ -143,7 +144,12 @@ const ManageProducts = () => {
 
   if (isEditing) {
     return (
-      <div className="bg-brand-cream border border-brand-gold/20 rounded-3xl p-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="bg-brand-cream border border-brand-gold/20 rounded-3xl p-6"
+      >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h2 className="text-3xl font-serif text-brand-black">{formData.id ? 'Edit Product' : 'Add New Product'}</h2>
@@ -437,7 +443,7 @@ const ManageProducts = () => {
             </Button>
           </div>
         </form>
-      </div>
+      </motion.div>
     );
   }
 
@@ -448,9 +454,11 @@ const ManageProducts = () => {
           <h2 className="text-3xl font-serif text-brand-cream">Manage Products</h2>
           <p className="text-brand-cream/60 mt-2">Add, edit, and update all store products with pricing, stock, and visibility settings.</p>
         </div>
-        <Button variant="outline" onClick={handleCreate} className="py-2.5 px-5 bg-brand-gold text-brand-black hover:bg-brand-gold-light font-bold flex items-center gap-2 rounded-2xl shadow-md">
-          <Plus size={18} /> Add New Product
-        </Button>
+        <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
+          <Button variant="outline" onClick={handleCreate} className="py-2.5 px-5 bg-brand-gold text-brand-black hover:bg-brand-gold-light font-bold flex items-center gap-2 rounded-2xl shadow-md">
+            <Plus size={18} /> Add New Product
+          </Button>
+        </motion.div>
       </div>
 
       <div className="overflow-x-auto rounded-3xl border border-white/10 bg-brand-matte">
@@ -467,8 +475,14 @@ const ManageProducts = () => {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
-              <tr key={product.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+            {products.map((product, index) => (
+              <motion.tr 
+                key={product.id} 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="border-b border-white/10 hover:bg-white/5 transition-colors"
+              >
                 <td className="px-6 py-4">
                   <img src={product.image} className="w-14 h-14 object-cover rounded-xl" alt={product.name} />
                 </td>
@@ -486,17 +500,17 @@ const ManageProducts = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right flex flex-wrap justify-end gap-2">
-                  <button onClick={() => handleVisibilityToggle(product.id)} className="rounded-2xl border border-brand-gold/20 bg-brand-gold/10 px-3 py-2 text-xs font-semibold text-brand-black hover:bg-brand-gold/20 transition-colors">
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleVisibilityToggle(product.id)} className="rounded-2xl border border-brand-gold/20 bg-brand-gold/10 px-3 py-2 text-xs font-semibold text-brand-black hover:bg-brand-gold/20 transition-colors">
                     {product.visible ? 'Hide' : 'Show'}
-                  </button>
-                  <button onClick={() => handleEdit(product)} className="rounded-2xl bg-brand-gold/10 px-3 py-2 text-xs font-semibold text-brand-gold hover:bg-brand-gold/20 transition-colors flex items-center gap-2">
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleEdit(product)} className="rounded-2xl bg-brand-gold/10 px-3 py-2 text-xs font-semibold text-brand-gold hover:bg-brand-gold/20 transition-colors flex items-center gap-2">
                     <Edit2 size={14} /> Edit
-                  </button>
-                  <button onClick={() => handleDelete(product.id)} className="rounded-2xl bg-brand-red/10 px-3 py-2 text-xs font-semibold text-brand-red hover:bg-brand-red/20 transition-colors flex items-center gap-2">
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleDelete(product.id)} className="rounded-2xl bg-brand-red/10 px-3 py-2 text-xs font-semibold text-brand-red hover:bg-brand-red/20 transition-colors flex items-center gap-2">
                     <Trash2 size={14} /> Delete
-                  </button>
+                  </motion.button>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
