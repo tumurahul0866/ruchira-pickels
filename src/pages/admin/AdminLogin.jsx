@@ -114,7 +114,7 @@ const AdminLogin = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. ruchira@gmail.com"
+                placeholder="Enter admin email address"
                 required
                 autoComplete="username"
                 autoCapitalize="none"
