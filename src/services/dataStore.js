@@ -431,6 +431,8 @@ const ADMIN_PROFILE_API = resolveApiUrl('/admin-profile');
 const PRODUCT_TYPES_API = resolveApiUrl('/product-types');
 const USER_PROFILES_API = resolveApiUrl('/user-profiles');
 const CUSTOMERS_API = resolveApiUrl('/customers');
+const SHIPPING_RULES_API = resolveApiUrl('/shipping-rules');
+const PINCODE_API_BASE = resolveApiUrl('/pincode');
 
 const getApiHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('vasuki_token') : null;
@@ -1165,4 +1167,68 @@ export const updateAdminProfile = (profile) => {
     // offline fallback
   });
   return nextProfile;
+};
+
+// --- SHIPPING RULES ---
+
+const defaultShippingRules = {
+  defaultCharge: 80,
+  states: {}
+};
+
+const syncLocalShippingRules = (rules) => {
+  localStorage.setItem('vasuki_shipping_rules', JSON.stringify(rules));
+};
+
+export const getShippingRules = async () => {
+  try {
+    const rules = await fetchJson(SHIPPING_RULES_API);
+    if (rules && typeof rules === 'object') {
+      syncLocalShippingRules(rules);
+      return rules;
+    }
+  } catch {
+    // fall back to local cache
+  }
+  const cached = localStorage.getItem('vasuki_shipping_rules');
+  if (cached) {
+    try { return JSON.parse(cached); } catch { /* ignore */ }
+  }
+  return defaultShippingRules;
+};
+
+export const saveShippingRules = async (rules) => {
+  syncLocalShippingRules(rules);
+  const response = await fetch(SHIPPING_RULES_API, {
+    method: 'POST',
+    headers: getApiHeaders(),
+    body: JSON.stringify(rules),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(err || `HTTP ${response.status}`);
+  }
+  const saved = await response.json();
+  syncLocalShippingRules(saved);
+  return saved;
+};
+
+/**
+ * Look up a PIN code via the backend proxy endpoint.
+ * Returns { valid, pin, state, district, postOffice, shippingCharge, error }
+ */
+export const lookupPincode = async (pin) => {
+  if (!/^[0-9]{6}$/.test(String(pin || ''))) {
+    return { valid: false, error: 'Please enter a valid 6-digit Indian PIN code.' };
+  }
+  try {
+    const result = await fetchJson(`${PINCODE_API_BASE}/${pin}`);
+    return result;
+  } catch (err) {
+    const msg = err?.message || '';
+    if (msg.includes('404') || msg.includes('not found')) {
+      return { valid: false, error: "We couldn't identify this PIN code. Please verify it." };
+    }
+    return { valid: false, error: 'Unable to look up PIN code. Please try again.' };
+  }
 };

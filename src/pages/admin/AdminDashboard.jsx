@@ -4,7 +4,7 @@ import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, Package, ShoppingBag, LogOut, Settings,
-  CreditCard, Star, Bell, Globe, User, Key, ChevronRight, Users
+  CreditCard, Star, Bell, Globe, User, Key, ChevronRight, Users, Truck
 } from 'lucide-react';
 import { getProducts, getOrders } from '../../services/dataStore';
 import ManageProducts from './ManageProducts';
@@ -17,6 +17,7 @@ import ApplyOffers from './ApplyOffers';
 import AdminProfile from './AdminProfile';
 import ChangePassword from './ChangePassword';
 import ChangePictures from './ChangePictures';
+import ShippingManagement from './ShippingManagement';
 
 const navItems = [
   { id: 'overview',          label: 'Dashboard',       icon: LayoutDashboard, group: 'main' },
@@ -26,6 +27,7 @@ const navItems = [
   { id: 'offers',            label: 'Coupons & Offers', icon: Bell,            group: 'store' },
   { id: 'reviews',           label: 'Reviews',          icon: Star,            group: 'store' },
   { id: 'customers',         label: 'Customers',        icon: Users,           group: 'store' },
+  { id: 'shipping',          label: 'Shipping',         icon: Truck,           group: 'store' },
   { id: 'website-settings',  label: 'Store Settings',   icon: Settings,        group: 'settings' },
   { id: 'pictures',          label: 'Website Images',   icon: Globe,           group: 'settings' },
   { id: 'admin-profile',     label: 'Admin Profile',    icon: User,            group: 'settings' },
@@ -224,6 +226,7 @@ const AdminDashboard = () => {
       case 'reviews':        return <ReviewsManagement />;
       case 'customers':      return <CustomersManagement />;
       case 'offers':         return <ApplyOffers />;
+      case 'shipping':       return <ShippingManagement />;
       case 'website-settings': return <StoreSettings />;
       case 'pictures':       return <ChangePictures />;
       case 'admin-profile':  return <AdminProfile />;

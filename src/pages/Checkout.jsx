@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -7,7 +7,8 @@ import {
   saveOrder,
   getPaymentSettings,
   getStoreSettings,
-  getUserProfile
+  getUserProfile,
+  lookupPincode,
 } from '../services/dataStore';
 import {
   CheckCircle2,
@@ -15,11 +16,15 @@ import {
   User,
   CreditCard,
   MessageSquare,
-  ChevronRight
+  ChevronRight,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  Truck,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
-const InputField = ({ label, name, type = 'text', required = true, value, onChange, placeholder, ...props }) => (
+const InputField = ({ label, name, type = 'text', required = true, value, onChange, placeholder, readOnly, ...props }) => (
   <div>
     <label className="block text-xs uppercase tracking-wider font-semibold text-slate-700 mb-1.5">{label}</label>
     <input
@@ -29,11 +34,67 @@ const InputField = ({ label, name, type = 'text', required = true, value, onChan
       onChange={onChange}
       required={required}
       placeholder={placeholder}
+      readOnly={readOnly}
       {...props}
-      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all placeholder-slate-400 font-medium"
+      className={`w-full border rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all placeholder-slate-400 font-medium ${
+        readOnly
+          ? 'bg-slate-100 border-slate-200 text-slate-600 cursor-not-allowed'
+          : 'bg-slate-50 border-slate-200 focus:bg-white'
+      }`}
     />
   </div>
 );
+
+// PIN status indicator component
+const PinStatus = ({ status, state, district, charge, message }) => {
+  if (status === 'idle') return null;
+
+  if (status === 'checking') {
+    return (
+      <div className="flex items-center gap-2 text-xs text-slate-500 mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+        <Loader2 size={13} className="animate-spin text-brand-gold" />
+        <span>Checking delivery availability...</span>
+      </div>
+    );
+  }
+
+  if (status === 'success') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl"
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <CheckCircle size={13} className="text-emerald-600 shrink-0" />
+          <span className="text-xs font-bold text-emerald-700">Delivery available</span>
+        </div>
+        <p className="text-xs text-emerald-700 font-medium">
+          {district && <><span className="font-bold">{district}</span>, </>}{state}
+        </p>
+        <p className="text-xs text-emerald-600 mt-0.5 font-semibold">
+          <Truck size={11} className="inline mr-1" />
+          Delivery Charge: ₹{charge}
+        </p>
+      </motion.div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-start gap-2 text-xs text-rose-700 mt-2 p-3 bg-rose-50 rounded-xl border border-rose-200"
+      >
+        <AlertCircle size={13} className="shrink-0 mt-0.5 text-rose-500" />
+        <span>{message}</span>
+      </motion.div>
+    );
+  }
+
+  return null;
+};
 
 const Checkout = () => {
   const { cartItems, getCartTotal, clearCart } = useCart();
@@ -45,13 +106,24 @@ const Checkout = () => {
     phone: '',
     email: '',
     address: '',
-    city: 'Hyderabad',
-    state: 'Telangana',
+    city: '',
     pincode: '',
     paymentMethod: '',
     transactionId: '',
     notes: ''
   });
+
+  // Shipping info derived from PIN lookup
+  const [shippingInfo, setShippingInfo] = useState({
+    status: 'idle',   // 'idle' | 'checking' | 'success' | 'error'
+    state: '',
+    district: '',
+    postOffice: '',
+    charge: null,
+    message: '',
+  });
+
+  const pinTimerRef = useRef(null);
 
   const [savedAddresses] = useState(() => {
     if (!user?.email) return [];
@@ -65,11 +137,14 @@ const Checkout = () => {
   const [paymentSettings] = useState(() => getPaymentSettings());
   const storeSettings = getStoreSettings();
 
-
   if (cartItems.length === 0 && !orderPlaced) {
     navigate('/cart');
     return null;
   }
+
+  const subtotal = getCartTotal();
+  const shippingCharge = shippingInfo.status === 'success' ? shippingInfo.charge : null;
+  const totalPayable = shippingCharge !== null ? subtotal + shippingCharge : null;
 
   const handleSelectSavedAddress = (addr) => {
     setFormData((prev) => ({
@@ -78,18 +153,54 @@ const Checkout = () => {
       phone: addr.phone || prev.phone,
       address: addr.street || prev.address,
       city: addr.city || prev.city,
-      state: addr.state || prev.state,
       pincode: addr.pincode || prev.pincode
     }));
+    if (addr.pincode && /^[0-9]{6}$/.test(addr.pincode)) {
+      triggerPinLookup(addr.pincode);
+    }
   };
 
-  const formatWhatsappMessage = (customer, createdId) => {
+  const triggerPinLookup = (pin) => {
+    if (!/^[0-9]{6}$/.test(pin)) {
+      setShippingInfo({ status: 'idle', state: '', district: '', postOffice: '', charge: null, message: '' });
+      return;
+    }
+    setShippingInfo((prev) => ({ ...prev, status: 'checking', state: '', district: '', postOffice: '', charge: null, message: '' }));
+    if (pinTimerRef.current) clearTimeout(pinTimerRef.current);
+    pinTimerRef.current = setTimeout(async () => {
+      const result = await lookupPincode(pin);
+      if (result.valid) {
+        setShippingInfo({
+          status: 'success',
+          state: result.state || '',
+          district: result.district || '',
+          postOffice: result.postOffice || '',
+          charge: result.shippingCharge,
+          message: '',
+        });
+      } else {
+        setShippingInfo({
+          status: 'error',
+          state: '',
+          district: '',
+          postOffice: '',
+          charge: null,
+          message: result.error || 'Unable to look up this PIN code.',
+        });
+      }
+    }, 500);
+  };
+
+  const formatWhatsappMessage = (customer, createdId, shipping) => {
     const lines = [
       `🥒 *NEW ORDER CONFIRMATION - ACHARRUCHI* 🥒`,
       `*Order ID:* #${createdId}`,
       `*Customer Name:* ${customer.name}`,
       `*Phone Number:* ${customer.phone}`,
-      `*Delivery Address:* ${customer.address}, ${customer.city}, ${customer.state} - ${customer.pincode}`,
+      `*Delivery Address:* ${customer.address}, ${customer.city}`,
+      `*District:* ${customer.district || shipping.district}`,
+      `*State:* ${customer.state || shipping.state}`,
+      `*PIN Code:* ${customer.pincode}`,
       `*Payment Method:* ${customer.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'UPI Digital Payment'}`,
       customer.paymentMethod === 'UPI' && customer.transactionId ? `*UPI Transaction ID / UTR:* ${customer.transactionId}` : '',
       '',
@@ -102,7 +213,10 @@ const Checkout = () => {
       lines.push(`• *${item.product.name}* (Pack: ${variantLabel}) × ${item.quantity} — ₹${item.weightOption?.price || 0} each, Total ₹${itemTotal}`);
     });
 
-    lines.push('', `💰 *TOTAL AMOUNT:* ₹${getCartTotal()}`);
+    lines.push('');
+    lines.push(`🛒 *Items Subtotal:* ₹${subtotal}`);
+    lines.push(`🚚 *Delivery Charge:* ₹${shipping.charge}`);
+    lines.push(`💰 *TOTAL AMOUNT:* ₹${subtotal + shipping.charge}`);
     if (customer.notes) {
       lines.push(`📝 *Notes:* ${customer.notes}`);
     }
@@ -117,12 +231,21 @@ const Checkout = () => {
       ...prevFormData,
       [name]: normalizedValue,
     }));
+    // Trigger PIN lookup when pincode field changes
+    if (name === 'pincode') {
+      const cleaned = value.replace(/\D/g, '');
+      if (/^[0-9]{6}$/.test(cleaned)) {
+        triggerPinLookup(cleaned);
+      } else {
+        setShippingInfo({ status: 'idle', state: '', district: '', postOffice: '', charge: null, message: '' });
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const requiredFields = ['name', 'phone', 'address', 'city', 'state', 'pincode'];
+    const requiredFields = ['name', 'phone', 'address', 'pincode'];
     const missingFields = requiredFields.filter((field) => !formData[field].trim());
 
     if (missingFields.length > 0) {
@@ -135,17 +258,34 @@ const Checkout = () => {
       return;
     }
 
+    if (shippingInfo.status !== 'success') {
+      setErrorMessage('Please enter a valid 6-digit PIN code to determine the delivery charge.');
+      return;
+    }
+
     if (formData.paymentMethod === 'UPI' && !formData.transactionId.trim()) {
       setErrorMessage('UPI Transaction ID / UTR Reference Number is MANDATORY for UPI payments.');
+      return;
+    }
+
+    if (!formData.paymentMethod) {
+      setErrorMessage('Please select a payment method.');
       return;
     }
 
     setErrorMessage('');
 
     const newOrder = {
-      customer: { ...formData },
+      customer: {
+        ...formData,
+        state: shippingInfo.state,
+        district: shippingInfo.district,
+        postOffice: shippingInfo.postOffice,
+        shippingCharge: shippingInfo.charge,
+        itemsSubtotal: subtotal,
+      },
       items: cartItems,
-      totalAmount: getCartTotal(),
+      totalAmount: subtotal + shippingInfo.charge,
       paymentMethod: formData.paymentMethod,
       date: new Date().toISOString()
     };
@@ -159,11 +299,20 @@ const Checkout = () => {
     }
 
     const createdId = createdOrder.id;
+    const verifiedShipping = {
+      state: createdOrder.customer?.state || shippingInfo.state,
+      district: createdOrder.customer?.district || shippingInfo.district,
+      charge: createdOrder.customer?.shippingCharge ?? shippingInfo.charge,
+    };
 
     // Generate WhatsApp direct URL
     const rawPhone = storeSettings.whatsappNumber || '918885473903';
     const targetPhone = rawPhone.replace(/[^0-9]/g, '');
-    const messageText = formatWhatsappMessage(formData, createdId);
+    const messageText = formatWhatsappMessage(
+      { ...formData, state: verifiedShipping.state, district: verifiedShipping.district },
+      createdId,
+      verifiedShipping
+    );
     const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(messageText)}`;
 
     setWhatsappUrl(url);
@@ -329,29 +478,71 @@ const Checkout = () => {
                     onChange={handleChange}
                     placeholder="Flat 302, Green Hills Apartments, Jubilee Hills"
                   />
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <InputField
-                      label="City *"
+                      label="City / Town"
                       name="city"
                       value={formData.city}
                       onChange={handleChange}
                       placeholder="Hyderabad"
+                      required={false}
                     />
-                    <InputField
-                      label="State *"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleChange}
-                      placeholder="Telangana"
-                    />
-                    <InputField
-                      label="Pincode *"
-                      name="pincode"
-                      value={formData.pincode}
-                      onChange={handleChange}
-                      placeholder="500033"
-                    />
+                    {/* PIN Code — triggers auto-lookup */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider font-semibold text-slate-700 mb-1.5">
+                        PIN Code * <span className="normal-case font-normal text-slate-400">(auto-detects location)</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        value={formData.pincode}
+                        onChange={handleChange}
+                        required
+                        placeholder="533101"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={6}
+                        id="checkout-pincode"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold focus:bg-white transition-all placeholder-slate-400 font-medium"
+                      />
+                      {/* PIN Status */}
+                      <PinStatus
+                        status={shippingInfo.status}
+                        state={shippingInfo.state}
+                        district={shippingInfo.district}
+                        charge={shippingInfo.charge}
+                        message={shippingInfo.message}
+                      />
+                    </div>
                   </div>
+
+                  {/* Auto-detected State & District — read only */}
+                  {shippingInfo.status === 'success' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    >
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider font-semibold text-slate-500 mb-1.5">
+                          District <span className="text-emerald-600 font-bold">(Auto-detected)</span>
+                        </label>
+                        <div className="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+                          <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                          {shippingInfo.district || '—'}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider font-semibold text-slate-500 mb-1.5">
+                          State <span className="text-emerald-600 font-bold">(Auto-detected)</span>
+                        </label>
+                        <div className="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+                          <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                          {shippingInfo.state || '—'}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               </div>
 
@@ -509,29 +700,49 @@ const Checkout = () => {
               <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
                 <div className="flex justify-between text-slate-600">
                   <span>Subtotal</span>
-                  <span className="font-bold text-slate-900">₹{getCartTotal()}</span>
+                  <span className="font-bold text-slate-900">₹{subtotal}</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Express Delivery</span>
-                  <span className="font-bold text-emerald-600">
-                    {getCartTotal() >= 999 ? 'FREE' : '₹60'}
+                <div className="flex justify-between text-slate-600 items-center">
+                  <span className="flex items-center gap-1"><Truck size={11} /> Delivery Charge</span>
+                  <span className={`font-bold ${shippingCharge === null ? 'text-slate-400 italic' : 'text-slate-900'}`}>
+                    {shippingInfo.status === 'checking' ? (
+                      <span className="flex items-center gap-1 text-slate-400">
+                        <Loader2 size={10} className="animate-spin" /> Checking...
+                      </span>
+                    ) : shippingCharge !== null ? (
+                      `₹${shippingCharge}`
+                    ) : (
+                      <span className="text-slate-400">Enter PIN code</span>
+                    )}
                   </span>
                 </div>
+                {shippingInfo.status === 'success' && (
+                  <div className="text-[10px] text-emerald-600 flex items-center gap-1">
+                    <CheckCircle size={10} />
+                    {shippingInfo.district}, {shippingInfo.state}
+                  </div>
+                )}
                 <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-100">
                   <span>Total Payable</span>
-                  <span className="text-brand-green font-mono">
-                    ₹{getCartTotal() >= 999 ? getCartTotal() : getCartTotal() + 60}
+                  <span className={`font-mono ${totalPayable !== null ? 'text-brand-green' : 'text-slate-400'}`}>
+                    {totalPayable !== null ? `₹${totalPayable}` : '—'}
                   </span>
                 </div>
+                {totalPayable === null && (
+                  <p className="text-[10px] text-slate-400 text-center">
+                    Enter PIN code above to see delivery charge &amp; final total
+                  </p>
+                )}
               </div>
 
               <Button
                 variant="primary"
                 fullWidth
                 onClick={handleSubmit}
+                disabled={shippingInfo.status === 'checking'}
                 className="py-4 text-sm font-bold flex items-center justify-center gap-2"
               >
-                <MessageSquare size={18} /> Place Order & Launch WhatsApp
+                <MessageSquare size={18} /> Place Order &amp; Launch WhatsApp
               </Button>
 
               <p className="text-[11px] text-slate-400 text-center leading-relaxed">
