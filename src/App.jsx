@@ -23,6 +23,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import UserDashboard from './pages/UserDashboard';
 import Offers from './pages/Offers';
 import OurStory from './pages/OurStory';
@@ -80,6 +81,7 @@ function App() {
               <Route path="/checkout" element={<ProtectedRoute><CustomerLayout><Checkout /></CustomerLayout></ProtectedRoute>} />
               <Route path="/login" element={<CustomerLayout><Login /></CustomerLayout>} />
               <Route path="/register" element={<CustomerLayout><Register /></CustomerLayout>} />
+              <Route path="/forgot-password" element={<CustomerLayout><ForgotPassword /></CustomerLayout>} />
               <Route
                 path="/dashboard"
                 element={
