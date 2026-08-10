@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { auth, RecaptchaVerifier, signInWithPhoneNumber } from '../services/firebase';
+import { auth, RecaptchaVerifier, signInWithPhoneNumber, firebaseConfigError } from '../services/firebase';
 import { Phone, Shield, ArrowLeft, CheckCircle2, RotateCw, User, Mail, Sparkles } from 'lucide-react';
 
 const Login = () => {
@@ -68,15 +68,12 @@ const Login = () => {
   };
 
   const setupRecaptcha = () => {
-    if (recaptchaVerifierRef.current) {
-      try {
-        recaptchaVerifierRef.current.clear();
-      } catch {
-        // ignore
-      }
-      recaptchaVerifierRef.current = null;
+    if (firebaseConfigError || !auth) {
+      console.error('[Login] Firebase not configured:', firebaseConfigError);
+      return null;
     }
-
+    if (recaptchaVerifierRef.current) return recaptchaVerifierRef.current;
+    
     const container = document.getElementById('recaptcha-container');
     if (!container) return null;
 
@@ -101,6 +98,12 @@ const Login = () => {
   const handleSendOTP = async (e) => {
     if (e) e.preventDefault();
     setError('');
+
+    if (firebaseConfigError || !auth) {
+      setError('Phone authentication is not available. Firebase configuration is missing. Please contact the site administrator.');
+      console.error('[Login] Firebase config error:', firebaseConfigError);
+      return;
+    }
 
     if (!validatePhoneNumber(phone)) {
       setError('Please enter a valid 10-digit Indian mobile number.');

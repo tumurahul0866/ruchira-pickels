@@ -10,7 +10,21 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Safe initialization — do NOT crash the entire app if Firebase config is missing.
+// Phone OTP will show a clear error; the rest of the website keeps working.
+let app = null;
+let auth = null;
+let firebaseConfigError = null;
 
-export { app, auth, RecaptchaVerifier, signInWithPhoneNumber };
+try {
+  if (!firebaseConfig.apiKey) {
+    throw new Error('Firebase API key is not configured. Set VITE_FIREBASE_API_KEY in Vercel environment variables.');
+  }
+  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  auth = getAuth(app);
+} catch (err) {
+  firebaseConfigError = err.message || 'Firebase initialization failed.';
+  console.error('[firebase.js] Firebase initialization failed:', firebaseConfigError);
+}
+
+export { app, auth, RecaptchaVerifier, signInWithPhoneNumber, firebaseConfigError };
