@@ -125,15 +125,25 @@ const Login = () => {
       console.error('Send OTP error:', err);
       setLoading(false);
       
-      let errMsg = 'Failed to send OTP. Please check mobile number and try again.';
-      if (err.code === 'auth/invalid-phone-number') {
-        errMsg = 'Invalid mobile number format. Please enter a 10-digit Indian mobile number.';
-      } else if (err.code === 'auth/too-many-requests') {
-        errMsg = 'Too many attempts from this device. Please wait a few minutes before trying again.';
-      } else if (err.code === 'auth/quota-exceeded') {
-        errMsg = 'SMS quota exceeded. Please contact support or try again later.';
-      } else if (err.message && err.message.includes('reCAPTCHA')) {
-        errMsg = err.message;
+      const code = err.code || '';
+      let errMsg = 'Failed to send OTP. Please try again.';
+
+      if (code.includes('invalid-phone-number')) {
+        errMsg = 'Please enter a valid 10-digit Indian mobile number.';
+      } else if (code.includes('too-many-requests')) {
+        errMsg = 'Too many OTP attempts from this device. Please wait a few minutes before trying again.';
+      } else if (code.includes('quota-exceeded')) {
+        errMsg = 'SMS quota limit reached. Please try again later.';
+      } else if (code.includes('api-key-not-valid') || code.includes('invalid-api-key') || code.includes('invalid-app-credential')) {
+        errMsg = 'Firebase authentication configuration error (Invalid API Key). Please verify VITE_FIREBASE_API_KEY in Vercel.';
+      } else if (code.includes('operation-not-allowed')) {
+        errMsg = 'Phone Authentication is not enabled in Firebase Console. Please enable Phone provider in Firebase settings.';
+      } else if (code.includes('app-not-authorized') || code.includes('unauthorized-domain')) {
+        errMsg = 'Domain not authorized in Firebase Console. Please add ruchira-pickels.vercel.app to Authorized Domains.';
+      } else if (code.includes('captcha-check-failed')) {
+        errMsg = 'Security verification failed. Please refresh the page and try again.';
+      } else if (err.message) {
+        errMsg = err.message.replace(/^Firebase:\s*/i, '').replace(/\(auth\/[^)]+\)\.?/i, '').trim();
       }
       
       setError(errMsg);
