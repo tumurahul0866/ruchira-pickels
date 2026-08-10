@@ -92,6 +92,40 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginPhoneOTP = async (idToken, profileData = {}) => {
+    try {
+      const resp = await fetch(resolveApiUrl('/auth/phone-login'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(profileData),
+      });
+      if (!resp.ok) {
+        const message = await parseErrorMessage(resp);
+        return { ok: false, message: message || 'Authentication failed' };
+      }
+      const data = await resp.json();
+      if (data.isNewUser) {
+        return { ok: true, isNewUser: true, phone: data.phone };
+      }
+      setAuthState(
+        {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          phone: data.user.phone,
+          isAdmin: Boolean(data.user.isAdmin),
+        },
+        data.token
+      );
+      return { ok: true, isNewUser: false };
+    } catch {
+      return { ok: false, message: 'Unable to connect to the server.' };
+    }
+  };
+
   const registerUser = async (data) => {
     try {
       const resp = await fetch(resolveApiUrl('/auth/register'), {
@@ -188,6 +222,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin,
         authReady,
         loginUser,
+        loginPhoneOTP,
         registerUser,
         loginAdmin,
         changeAdminPassword,

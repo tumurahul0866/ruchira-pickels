@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -85,7 +85,7 @@ const PinStatus = ({ status, state, district, charge, message }) => {
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-start gap-2 text-xs text-rose-700 mt-2 p-3 bg-rose-50 rounded-xl border border-rose-200"
+        className="mt-2 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700"
       >
         <AlertCircle size={13} className="shrink-0 mt-0.5 text-rose-500" />
         <span>{message}</span>
@@ -112,6 +112,17 @@ const Checkout = () => {
     transactionId: '',
     notes: ''
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || user.name || '',
+        phone: prev.phone || user.phone?.replace(/[^0-9]/g, '').slice(-10) || '',
+        email: prev.email || user.email || '',
+      }));
+    }
+  }, [user]);
 
   // Shipping info derived from PIN lookup
   const [shippingInfo, setShippingInfo] = useState({

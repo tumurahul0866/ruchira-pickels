@@ -78,16 +78,30 @@ const UserDashboard = () => {
       return;
     }
 
-    const ids = getWishlist(user.email);
+    const userKey = user.email || user.phone || user.id;
+    const ids = getWishlist(userKey);
     getProducts().then((allProds) => {
       setWishlistProducts(allProds.filter((p) => ids.includes(p.id)));
     });
 
     const loadOrders = async () => {
       const allOrders = await getOrders();
+      const userPhoneDigits = user.phone ? user.phone.replace(/[^0-9]/g, '').slice(-10) : '';
+      const userEmailLower = user.email ? user.email.toLowerCase() : '';
+      
       setOrders(
         allOrders
-          .filter((o) => o.customer?.email?.toLowerCase() === user.email?.toLowerCase() || !o.customer?.email)
+          .filter((o) => {
+            const cust = o.customer || {};
+            const orderPhoneDigits = cust.phone ? String(cust.phone).replace(/[^0-9]/g, '').slice(-10) : '';
+            const orderEmailLower = cust.email ? String(cust.email).toLowerCase() : '';
+
+            const matchesPhone = userPhoneDigits && orderPhoneDigits && userPhoneDigits === orderPhoneDigits;
+            const matchesEmail = userEmailLower && orderEmailLower && userEmailLower === orderEmailLower;
+            const matchesUserId = cust.userId && cust.userId === user.id;
+
+            return matchesPhone || matchesEmail || matchesUserId;
+          })
           .reverse()
       );
     };
