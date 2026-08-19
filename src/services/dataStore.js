@@ -31,10 +31,10 @@ export const initialProducts = [
     visible: true,
     rating: 4.9,
     reviewsCount: 128,
-    image: 'https://images.unsplash.com/photo-1596503893341-3b764b8a4a58?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     additionalImages: [
-      'https://images.unsplash.com/photo-1596503893341-3b764b8a4a58?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
     ]
   },
   {
@@ -60,9 +60,9 @@ export const initialProducts = [
     visible: true,
     rating: 4.8,
     reviewsCount: 94,
-    image: 'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     additionalImages: [
-      'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
     ]
   },
   {
@@ -310,8 +310,8 @@ const initialOffers = [
 
 const defaultStoreSettings = {
   logoUrl: '/logo.svg',
-  heroBackgroundUrl: 'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-  featureImageUrl: 'https://images.unsplash.com/photo-1596503893341-3b764b8a4a58?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+  heroBackgroundUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+  featureImageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
   aboutImageUrl: 'https://images.unsplash.com/photo-1506544777-64cfb638973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   brandTagline: 'Handcrafted Heritage Pickles & Podis from Konasema Delta.',
   heroTitle: 'KONASEMA RUCHULU',
@@ -433,6 +433,7 @@ const USER_PROFILES_API = resolveApiUrl('/user-profiles');
 const CUSTOMERS_API = resolveApiUrl('/customers');
 const SHIPPING_RULES_API = resolveApiUrl('/shipping-rules');
 const PINCODE_API_BASE = resolveApiUrl('/pincode');
+let productsRequest = null;
 
 const getApiHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('vasuki_token') : null;
@@ -582,26 +583,44 @@ const getProductsFromLocal = () => {
   const products = localStorage.getItem('vasuki_products');
   if (!products) {
     localStorage.setItem('vasuki_products', JSON.stringify(initialProducts));
-    backgroundFetch(PRODUCTS_API, syncLocalProducts);
     return initialProducts;
   }
   const parsed = JSON.parse(products);
-  backgroundFetch(PRODUCTS_API, syncLocalProducts);
   return parsed;
 };
 
 export const getProducts = async () => {
-  try {
-    const products = await fetchJson(PRODUCTS_API);
-    if (Array.isArray(products) && products.length > 0) {
-      syncLocalProducts(products);
-      return products;
+  const cachedProducts = localStorage.getItem('vasuki_products');
+  if (cachedProducts) {
+    if (!productsRequest) {
+      productsRequest = fetchJson(PRODUCTS_API)
+        .then((products) => {
+          if (Array.isArray(products) && products.length > 0) syncLocalProducts(products);
+          return products;
+        })
+        .catch(() => null)
+        .finally(() => {
+          productsRequest = null;
+        });
     }
-  } catch {
-    // fall back to local cache below
+    return getProductsFromLocal();
   }
 
-  return getProductsFromLocal();
+  if (!productsRequest) {
+    productsRequest = fetchJson(PRODUCTS_API)
+      .then((products) => {
+        if (Array.isArray(products) && products.length > 0) {
+          syncLocalProducts(products);
+          return products;
+        }
+        return getProductsFromLocal();
+      })
+      .catch(() => getProductsFromLocal())
+      .finally(() => {
+        productsRequest = null;
+      });
+  }
+  return productsRequest;
 };
 
 export const saveProduct = async (product) => {
@@ -1096,6 +1115,19 @@ export const getUserProfile = (email) => {
     });
   }
   return profile;
+};
+
+export const getUserProfileAsync = async (email) => {
+  if (!email) return getUserProfile('');
+  try {
+    const profile = await fetchJson(`${USER_PROFILES_API}/${encodeURIComponent(email)}`);
+    const profiles = JSON.parse(localStorage.getItem('vasuki_user_profiles') || '{}');
+    profiles[email] = profile;
+    syncLocalUserProfiles(profiles);
+    return profile;
+  } catch {
+    return getUserProfile(email);
+  }
 };
 
 export const saveUserProfile = (email, profileData) => {

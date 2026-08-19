@@ -145,6 +145,18 @@ const Login = () => {
           </button>
         </form>
 
+        <div className="text-center pt-2 border-t border-[#5C4033]/10 relative z-10 space-y-3">
+          <p className="text-xs text-[#5C4033]/70">
+            Checking out without an account?{' '}
+            <Link to="/checkout" className="font-bold text-[#D97706] hover:text-[#B45309] transition-colors">
+              Continue as Guest
+            </Link>
+          </p>
+          <p className="text-[11px] text-[#5C4033]/55">
+            Admin? <Link to="/admin-login" className="font-semibold text-[#5C4033]/75 hover:text-[#D97706]">Admin Login</Link>
+          </p>
+        </div>
+
         {/* REGISTER LINK */}
         <div className="text-center pt-2 border-t border-[#5C4033]/10 relative z-10">
           <p className="text-xs text-[#5C4033]/70">

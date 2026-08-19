@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { saveUserProfile } from '../services/dataStore';
 import { User, Mail, Lock, Eye, EyeOff, UserPlus, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const Register = () => {
@@ -9,6 +10,9 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [pincode, setPincode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -50,6 +54,11 @@ const Register = () => {
       return;
     }
 
+    if (!address.trim() || !city.trim() || !/^\d{6}$/.test(pincode)) {
+      setError('Please enter your delivery address, city, and a valid 6-digit pincode.');
+      return;
+    }
+
     setLoading(true);
     const result = await registerUser({
       name: name.trim(),
@@ -60,6 +69,19 @@ const Register = () => {
 
     if (!result.ok) {
       setError(result.message || 'Registration failed. Email may already be registered.');
+    } else {
+      saveUserProfile(email.trim().toLowerCase(), {
+        name: name.trim(),
+        phone: '',
+        addresses: [{
+          id: Date.now().toString(),
+          label: 'Home',
+          name: name.trim(),
+          street: address.trim(),
+          city: city.trim(),
+          pincode,
+        }],
+      });
     }
   };
 
@@ -125,6 +147,16 @@ const Register = () => {
                 className="w-full bg-[#F8F3E8]/50 border border-[#5C4033]/20 rounded-xl px-4 py-3 pl-11 text-sm focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/20 transition-all text-[#5C4033]"
               />
               <Mail className="w-5 h-5 text-[#5C4033]/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+
+          {/* PASSWORD */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#5C4033]/80">Delivery Address</label>
+            <input type="text" required placeholder="Flat, house no, street" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-[#F8F3E8]/50 border border-[#5C4033]/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/20 transition-all text-[#5C4033]" />
+            <div className="grid grid-cols-2 gap-3">
+              <input type="text" required placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} className="w-full bg-[#F8F3E8]/50 border border-[#5C4033]/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/20 transition-all text-[#5C4033]" />
+              <input type="text" required inputMode="numeric" maxLength={6} placeholder="Pincode" value={pincode} onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))} className="w-full bg-[#F8F3E8]/50 border border-[#5C4033]/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/20 transition-all text-[#5C4033]" />
             </div>
           </div>
 

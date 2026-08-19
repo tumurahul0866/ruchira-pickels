@@ -160,7 +160,8 @@ const AdminDashboard = () => {
     const loadStats = async () => {
       if (!isAdmin) return;
       try {
-        const products = Array.isArray(await getProducts()) ? await getProducts() : [];
+        const rawProducts = await getProducts();
+        const products = Array.isArray(rawProducts) ? rawProducts : [];
         const rawOrders = await getOrders();
         const ordersData = Array.isArray(rawOrders)
           ? [...rawOrders].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))

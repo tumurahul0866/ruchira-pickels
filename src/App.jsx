@@ -78,7 +78,7 @@ function App() {
               <Route path="/reviews" element={<CustomerLayout><Reviews /></CustomerLayout>} />
               <Route path="/contact" element={<CustomerLayout><Contact /></CustomerLayout>} />
               <Route path="/cart" element={<CustomerLayout><Cart /></CustomerLayout>} />
-              <Route path="/checkout" element={<ProtectedRoute><CustomerLayout><Checkout /></CustomerLayout></ProtectedRoute>} />
+              <Route path="/checkout" element={<CustomerLayout><Checkout /></CustomerLayout>} />
               <Route path="/login" element={<CustomerLayout><Login /></CustomerLayout>} />
               <Route path="/register" element={<CustomerLayout><Register /></CustomerLayout>} />
               <Route path="/forgot-password" element={<CustomerLayout><ForgotPassword /></CustomerLayout>} />

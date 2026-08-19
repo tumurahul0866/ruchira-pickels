@@ -206,7 +206,7 @@ const ChangePictures = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://images.unsplash.com/photo-1596503893341-3b764b8a4a58?auto=format&fit=crop&w=600&q=80';
+                      e.target.src = 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80';
                     }}
                   />
                 ) : (

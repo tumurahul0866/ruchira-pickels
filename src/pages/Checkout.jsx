@@ -8,6 +8,8 @@ import {
   getPaymentSettings,
   getStoreSettings,
   getUserProfile,
+  getUserProfileAsync,
+  saveUserProfile,
   lookupPincode,
 } from '../services/dataStore';
 import {
@@ -114,14 +116,16 @@ const Checkout = () => {
   });
 
   useEffect(() => {
-    if (user) {
+    if (!user) return undefined;
+    const timer = setTimeout(() => {
       setFormData((prev) => ({
         ...prev,
         name: prev.name || user.name || '',
         phone: prev.phone || user.phone?.replace(/[^0-9]/g, '').slice(-10) || '',
         email: prev.email || user.email || '',
       }));
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [user]);
 
   // Shipping info derived from PIN lookup
@@ -136,11 +140,8 @@ const Checkout = () => {
 
   const pinTimerRef = useRef(null);
 
-  const [savedAddresses] = useState(() => {
-    if (!user?.email) return [];
-    const profile = getUserProfile(user.email);
-    return profile?.addresses || [];
-  });
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [saveAddress, setSaveAddress] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [whatsappUrl, setWhatsappUrl] = useState('');
@@ -148,12 +149,25 @@ const Checkout = () => {
   const [paymentSettings] = useState(() => getPaymentSettings());
   const storeSettings = getStoreSettings();
 
-  if (cartItems.length === 0 && !orderPlaced) {
-    navigate('/cart');
-    return null;
-  }
+  useEffect(() => {
+    let active = true;
+    if (!user?.email) {
+      return () => { active = false; };
+    }
+    getUserProfileAsync(user.email).then((profile) => {
+      if (active) setSavedAddresses(profile?.addresses || []);
+    });
+    return () => { active = false; };
+  }, [user]);
+
+  useEffect(() => {
+    if (cartItems.length === 0 && !orderPlaced) navigate('/cart');
+  }, [cartItems.length, navigate, orderPlaced]);
+
+  if (cartItems.length === 0 && !orderPlaced) return null;
 
   const subtotal = getCartTotal();
+  const visibleSavedAddresses = user ? savedAddresses : [];
   const shippingCharge = shippingInfo.status === 'success' ? shippingInfo.charge : null;
   const totalPayable = shippingCharge !== null ? subtotal + shippingCharge : null;
 
@@ -301,6 +315,26 @@ const Checkout = () => {
       date: new Date().toISOString()
     };
 
+    if (user?.email && saveAddress) {
+      const existingProfile = getUserProfile(user.email);
+      const address = {
+        id: Date.now().toString(),
+        label: 'Home',
+        name: formData.name,
+        phone: formData.phone,
+        street: formData.address,
+        city: formData.city,
+        state: shippingInfo.state,
+        pincode: formData.pincode,
+      };
+      const existingAddresses = existingProfile.addresses || [];
+      const nextAddresses = [
+        ...existingAddresses.filter((item) => item.street !== address.street || item.pincode !== address.pincode),
+        address,
+      ];
+      saveUserProfile(user.email, { addresses: nextAddresses });
+    }
+
     let createdOrder;
     try {
       createdOrder = await saveOrder(newOrder);
@@ -411,14 +445,21 @@ const Checkout = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Checkout Form */}
           <div className="flex-grow space-y-6">
+            <div className="bg-brand-matte p-5 rounded-3xl border border-white/10 text-sm text-slate-700">
+              {user ? (
+                <p><strong>Signed in:</strong> saved addresses are available below. You can still enter a different address.</p>
+              ) : (
+                <p><strong>Guest checkout:</strong> enter your delivery details below. <button type="button" onClick={() => navigate('/login', { state: { from: { pathname: '/checkout' } } })} className="font-bold text-brand-gold hover:underline">Login to use a saved address</button></p>
+              )}
+            </div>
             {/* Quick Saved Address Autofill */}
-            {savedAddresses.length > 0 && (
+            {visibleSavedAddresses.length > 0 && (
               <div className="bg-brand-matte p-6 rounded-3xl border border-white/10">
                 <h3 className="text-xs uppercase tracking-wider font-bold text-brand-gold mb-3 flex items-center gap-2">
                   <MapPin size={16} /> Quick Select Saved Delivery Address:
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {savedAddresses.map((addr) => (
+                  {visibleSavedAddresses.map((addr) => (
                     <button
                       key={addr.id}
                       type="button"
@@ -472,6 +513,12 @@ const Checkout = () => {
                       onChange={handleChange}
                       placeholder="srikanth@gmail.com"
                     />
+                    {user && (
+                      <label className="flex items-center gap-2 mt-4 text-xs font-semibold text-slate-600">
+                        <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} className="accent-brand-gold" />
+                        Save this address for future orders
+                      </label>
+                    )}
                   </div>
                 </div>
               </div>

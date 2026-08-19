@@ -150,7 +150,7 @@ const Home = () => {
               >
                 <div className="relative rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl bg-white min-h-[400px]">
                   <img
-                    src="https://images.unsplash.com/photo-1626002167669-0268a719f9bb?auto=format&fit=crop&w=800&q=80"
+                    src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80"
                     alt="Authentic Andhra Pickle Jar"
                     className="w-full h-[400px] sm:h-[460px] object-cover"
                     onError={(e) => {

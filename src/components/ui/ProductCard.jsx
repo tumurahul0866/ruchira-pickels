@@ -59,7 +59,7 @@ const ProductCard = ({ product }) => {
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = 'https://images.unsplash.com/photo-1626002167669-0268a719f9bb?auto=format&fit=crop&w=800&q=80';
+                e.target.src = 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80';
               }}
             />
           </Link>
