@@ -110,6 +110,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const forgotAdminPassword = async (email) => {
+    try {
+      const resp = await fetch(resolveApiUrl('/admin/forgot-password'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (!resp.ok) {
+        const message = await parseErrorMessage(resp);
+        return { ok: false, message: message || 'Unable to process request' };
+      }
+      const data = await resp.json();
+      return { ok: true, message: data.message };
+    } catch {
+      return { ok: false, message: 'Unable to connect to the server.' };
+    }
+  };
+
   const verifyResetOtp = async (email, otp) => {
     try {
       const resp = await fetch(resolveApiUrl('/auth/verify-reset-otp'), {
@@ -128,12 +146,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const verifyAdminResetOtp = async (email, otp) => {
+    try {
+      const resp = await fetch(resolveApiUrl('/admin/verify-reset-otp'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp }),
+      });
+      if (!resp.ok) {
+        const message = await parseErrorMessage(resp);
+        return { ok: false, message: message || 'Invalid verification code' };
+      }
+      return { ok: true };
+    } catch {
+      return { ok: false, message: 'Unable to connect to the server.' };
+    }
+  };
+
   const resetPassword = async (email, resetToken, newPassword) => {
     try {
       const resp = await fetch(resolveApiUrl('/auth/reset-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, resetToken, newPassword }),
+      });
+      if (!resp.ok) {
+        const message = await parseErrorMessage(resp);
+        return { ok: false, message: message || 'Unable to reset password' };
+      }
+      const data = await resp.json();
+      return { ok: true, message: data.message };
+    } catch {
+      return { ok: false, message: 'Unable to connect to the server.' };
+    }
+  };
+
+  const resetAdminPassword = async (email, newPassword) => {
+    try {
+      const resp = await fetch(resolveApiUrl('/admin/reset-password'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, newPassword }),
       });
       if (!resp.ok) {
         const message = await parseErrorMessage(resp);
@@ -243,8 +296,11 @@ export const AuthProvider = ({ children }) => {
         authReady,
         loginUser,
         forgotPassword,
+        forgotAdminPassword,
         verifyResetOtp,
+        verifyAdminResetOtp,
         resetPassword,
+        resetAdminPassword,
         registerUser,
         loginAdmin,
         changeAdminPassword,

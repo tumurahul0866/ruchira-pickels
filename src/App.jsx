@@ -61,6 +61,7 @@ function App() {
             <Routes>
               {/* Admin Routes */}
               <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/admin-forgot-password" element={<ForgotPassword adminMode />} />
               <Route
                 path="/admin/*"
                 element={

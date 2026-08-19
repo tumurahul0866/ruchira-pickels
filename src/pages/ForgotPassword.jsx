@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2, RotateCw, KeyRound, Sparkles } from 'lucide-react';
 
-const ForgotPassword = () => {
+const ForgotPassword = ({ adminMode = false }) => {
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password, 4: Success
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -19,7 +19,14 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
-  const { forgotPassword, verifyResetOtp, resetPassword } = useAuth();
+  const {
+    forgotPassword,
+    verifyResetOtp,
+    resetPassword,
+    forgotAdminPassword,
+    verifyAdminResetOtp,
+    resetAdminPassword,
+  } = useAuth();
   const navigate = useNavigate();
   const otpInputsRef = useRef([]);
 
@@ -45,7 +52,7 @@ const ForgotPassword = () => {
     }
 
     setLoading(true);
-    const res = await forgotPassword(email);
+    const res = await (adminMode ? forgotAdminPassword(email) : forgotPassword(email));
     setLoading(false);
 
     if (res.ok) {
@@ -101,11 +108,11 @@ const ForgotPassword = () => {
     }
 
     setLoading(true);
-    const res = await verifyResetOtp(email, fullOtp);
+    const res = await (adminMode ? verifyAdminResetOtp(email, fullOtp) : verifyResetOtp(email, fullOtp));
     setLoading(false);
 
-    if (res.ok && res.resetToken) {
-      setResetToken(res.resetToken);
+    if (res.ok && (adminMode || res.resetToken)) {
+      if (!adminMode) setResetToken(res.resetToken);
       setStep(3);
       setError('');
     } else {
@@ -118,8 +125,9 @@ const ForgotPassword = () => {
     e.preventDefault();
     setError('');
 
-    if (!newPassword || newPassword.length < 6) {
-      setError('New password must be at least 6 characters long.');
+    const minimumPasswordLength = adminMode ? 8 : 6;
+    if (!newPassword || newPassword.length < minimumPasswordLength) {
+      setError(`New password must be at least ${minimumPasswordLength} characters long.`);
       return;
     }
 
@@ -129,7 +137,9 @@ const ForgotPassword = () => {
     }
 
     setLoading(true);
-    const res = await resetPassword(email, resetToken, newPassword);
+    const res = await (adminMode
+      ? resetAdminPassword(email, newPassword)
+      : resetPassword(email, resetToken, newPassword));
     setLoading(false);
 
     if (res.ok) {
@@ -161,9 +171,11 @@ const ForgotPassword = () => {
                 <div className="w-14 h-14 bg-[#F8F3E8] text-[#D97706] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                   <KeyRound className="w-7 h-7" />
                 </div>
-                <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#5C4033]">Forgot Password?</h1>
+                <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#5C4033]">
+                  {adminMode ? 'Admin Forgot Password?' : 'Forgot Password?'}
+                </h1>
                 <p className="text-sm text-[#5C4033]/70">
-                  Enter your registered email address and we&apos;ll send you a 6-digit verification code.
+                  Enter the {adminMode ? 'configured admin' : 'registered customer'} email address and we&apos;ll send a 6-digit verification code.
                 </p>
               </div>
 
@@ -176,7 +188,7 @@ const ForgotPassword = () => {
               <form onSubmit={handleSendOtp} className="space-y-5">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#5C4033]/80">
-                    Email Address
+                    {adminMode ? 'Admin Email Address' : 'Email Address'}
                   </label>
                   <div className="relative">
                     <input
@@ -310,7 +322,7 @@ const ForgotPassword = () => {
                 <div className="w-14 h-14 bg-[#F8F3E8] text-[#D97706] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                   <Lock className="w-7 h-7" />
                 </div>
-                <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#5C4033]">New Password</h1>
+                <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#5C4033]">New {adminMode ? 'Admin ' : ''}Password</h1>
                 <p className="text-xs md:text-sm text-[#5C4033]/70">
                   Choose a secure password for your account.
                 </p>
@@ -406,7 +418,7 @@ const ForgotPassword = () => {
               </div>
 
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate(adminMode ? '/admin-login' : '/login')}
                 className="w-full bg-[#5C4033] text-[#F8F3E8] py-3.5 px-4 rounded-xl font-semibold hover:bg-[#3D2B22] transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
               >
                 <span>Continue to Login</span>

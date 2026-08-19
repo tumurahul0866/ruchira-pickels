@@ -152,6 +152,12 @@ const AdminLogin = () => {
             </motion.button>
           </form>
 
+          <div className="text-center">
+            <Link to="/admin-forgot-password" className="text-[#8B1E1E] hover:underline font-bold text-xs">
+              Forgot admin password?
+            </Link>
+          </div>
+
           {/* Quick Option to Return to Website */}
           <div className="pt-4 border-t border-[#5C4033]/10 text-center flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <Link to="/" className="text-[#8B1E1E] hover:underline font-bold flex items-center gap-1">
