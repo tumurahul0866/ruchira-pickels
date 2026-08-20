@@ -16,7 +16,7 @@ import {
   Check
 } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getStoreSettings, getProducts, getOffers, getProductTypes, getReviews } from '../services/dataStore';
+import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getProductTypes, getReviews } from '../services/dataStore';
 
 const Home = () => {
   const [settings, setSettings] = useState({});
@@ -29,7 +29,7 @@ const Home = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const storeSettings = getStoreSettings();
+      const storeSettings = await refreshStoreSettings().catch(() => getStoreSettings());
       const visibleProducts = (await getProducts()).filter((product) => product.visible);
       const activeOffers = getOffers().filter((offer) => offer.active);
       const types = getProductTypes();
@@ -150,7 +150,7 @@ const Home = () => {
               >
                 <div className="relative rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl bg-white min-h-[400px]">
                   <img
-                    src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80"
+                    src={settings.featureImageUrl || 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80'}
                     alt="Authentic Andhra Pickle Jar"
                     className="w-full h-[400px] sm:h-[460px] object-cover"
                     onError={(e) => {

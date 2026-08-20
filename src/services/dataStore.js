@@ -7,7 +7,7 @@ export const initialProductTypes = [
   'Sweets & Snacks'
 ];
 
-export const initialProducts = [
+export const initialProducts = []; /* Legacy demo product fixture removed.
   {
     id: '1',
     name: 'Andhra Avakaya Mango Pickle',
@@ -251,7 +251,7 @@ export const initialProducts = [
     image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     additionalImages: []
   }
-];
+]; */
 
 const initialReviews = [
   {
@@ -362,8 +362,8 @@ const defaultAdminProfile = {
   instagram: 'https://instagram.com/konasemaruchulu'
 };
 
-// Initial Orders Mock Dataset for Business Management Demo
-const initialOrders = [
+// Orders start empty and are populated only by the backend or a customer checkout.
+const initialOrders = []; /* Legacy demo order fixture removed.
   {
     id: 'ORD884920',
     date: new Date(Date.now() - 86400000).toISOString(),
@@ -419,7 +419,7 @@ const initialOrders = [
       }
     ]
   }
-];
+]; */
 
 const PRODUCTS_API = resolveApiUrl('/products');
 const ORDERS_API = resolveApiUrl('/orders');
@@ -590,22 +590,6 @@ const getProductsFromLocal = () => {
 };
 
 export const getProducts = async () => {
-  const cachedProducts = localStorage.getItem('vasuki_products');
-  if (cachedProducts) {
-    if (!productsRequest) {
-      productsRequest = fetchJson(PRODUCTS_API)
-        .then((products) => {
-          if (Array.isArray(products)) syncLocalProducts(products);
-          return products;
-        })
-        .catch(() => null)
-        .finally(() => {
-          productsRequest = null;
-        });
-    }
-    return getProductsFromLocal();
-  }
-
   if (!productsRequest) {
     productsRequest = fetchJson(PRODUCTS_API)
       .then((products) => {
@@ -615,7 +599,7 @@ export const getProducts = async () => {
         }
         return [];
       })
-      .catch(() => getProductsFromLocal())
+      .catch(() => [])
       .finally(() => {
         productsRequest = null;
       });
@@ -1049,17 +1033,22 @@ const getStoreSettingsFromLocal = () => {
 
 export const getStoreSettings = () => getStoreSettingsFromLocal();
 
-export const updateStoreSettings = (settings) => {
+export const refreshStoreSettings = async () => {
+  const settings = await fetchJson(STORE_SETTINGS_API);
+  syncLocalStoreSettings(settings);
+  return settings;
+};
+
+export const updateStoreSettings = async (settings) => {
   const current = getStoreSettingsFromLocal();
   const nextSettings = { ...current, ...settings };
   syncLocalStoreSettings(nextSettings);
-  fetch(STORE_SETTINGS_API, {
+  const savedSettings = await fetchJson(STORE_SETTINGS_API, {
     method: 'POST',
-    headers: getApiHeaders(),
     body: JSON.stringify(nextSettings),
-  }).catch(() => {
-    // ignore
   });
+  syncLocalStoreSettings(savedSettings);
+  return savedSettings;
 };
 
 export const saveStoreSettings = updateStoreSettings;

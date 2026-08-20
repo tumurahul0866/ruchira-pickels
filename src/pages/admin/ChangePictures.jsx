@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 const ChangePictures = () => {
   const [storeSettings, setStoreSettings] = useState(() => getStoreSettings());
   const [products, setProducts] = useState([]);
+  const [changedProductIds, setChangedProductIds] = useState(() => new Set());
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
@@ -28,12 +29,14 @@ const ChangePictures = () => {
       p.id === id ? { ...p, image: value } : p
     );
     setProducts(updatedProducts);
+    setChangedProductIds((previous) => new Set(previous).add(id));
   };
 
-  const handleSaveAll = (e) => {
+  const handleSaveAll = async (e) => {
     e.preventDefault();
-    saveStoreSettings(storeSettings);
-    products.forEach((p) => saveProduct(p));
+    await saveStoreSettings(storeSettings);
+    await Promise.all(products.filter((product) => changedProductIds.has(product.id)).map((product) => saveProduct(product)));
+    setChangedProductIds(new Set());
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };

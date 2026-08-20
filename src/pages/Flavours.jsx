@@ -203,8 +203,12 @@ const Flavours = () => {
           </div>
         ) : (
           <div className="text-center py-16 bg-white rounded-3xl border border-[#5C4033]/15 space-y-3">
-            <h3 className="text-xl font-serif font-bold text-[#5C4033]">No products match your criteria</h3>
-            <p className="text-xs text-[#5C4033]/70">Try adjusting your search query or reset category filters.</p>
+            <h3 className="text-xl font-serif font-bold text-[#5C4033]">
+              {products.length === 0 ? 'No products available' : 'No products match your criteria'}
+            </h3>
+            <p className="text-xs text-[#5C4033]/70">
+              {products.length === 0 ? 'Products added from the Admin Portal will appear here.' : 'Try adjusting your search query or reset category filters.'}
+            </p>
             <button
               onClick={() => { setSelectedType('All'); setSelectedSpice('All'); setSearchQuery(''); }}
               className="px-6 py-2.5 rounded-full bg-[#8B1E1E] text-white text-xs font-bold"
