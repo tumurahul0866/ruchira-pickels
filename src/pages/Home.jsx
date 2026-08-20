@@ -19,7 +19,7 @@ import ProductCard from '../components/ui/ProductCard';
 import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getProductTypes, getReviews } from '../services/dataStore';
 
 const Home = () => {
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(() => getStoreSettings());
   const [products, setProducts] = useState([]);
   const [offers, setOffers] = useState([]);
   const [productTypes, setProductTypes] = useState([]);
