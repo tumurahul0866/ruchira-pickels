@@ -448,7 +448,7 @@ const fetchJson = async (url, options = {}) => {
     try {
       // Notify app about auth expiry so AuthContext can logout
       window.dispatchEvent(new CustomEvent('vasuki:auth-expired'));
-    } catch (e) {
+    } catch {
       // ignore
     }
     throw new Error('Unauthorized');
@@ -582,8 +582,8 @@ export const isLegacyProduct = (product) => {
 const getProductsFromLocal = () => {
   const products = localStorage.getItem('vasuki_products');
   if (!products) {
-    localStorage.setItem('vasuki_products', JSON.stringify(initialProducts));
-    return initialProducts;
+    localStorage.setItem('vasuki_products', JSON.stringify([]));
+    return [];
   }
   const parsed = JSON.parse(products);
   return parsed;
@@ -595,7 +595,7 @@ export const getProducts = async () => {
     if (!productsRequest) {
       productsRequest = fetchJson(PRODUCTS_API)
         .then((products) => {
-          if (Array.isArray(products) && products.length > 0) syncLocalProducts(products);
+          if (Array.isArray(products)) syncLocalProducts(products);
           return products;
         })
         .catch(() => null)
@@ -609,11 +609,11 @@ export const getProducts = async () => {
   if (!productsRequest) {
     productsRequest = fetchJson(PRODUCTS_API)
       .then((products) => {
-        if (Array.isArray(products) && products.length > 0) {
+        if (Array.isArray(products)) {
           syncLocalProducts(products);
           return products;
         }
-        return getProductsFromLocal();
+        return [];
       })
       .catch(() => getProductsFromLocal())
       .finally(() => {
@@ -631,7 +631,7 @@ export const saveProduct = async (product) => {
   try {
     const response = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getApiHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -692,22 +692,24 @@ export const addProductType = (type) => {
 
 export const deleteProduct = async (id) => {
   const normalizedId = String(id);
-  const localProducts = getProductsFromLocal().filter((p) => String(p.id) !== normalizedId);
-  syncLocalProducts(localProducts);
-
-  try {
-    const response = await fetch(`${PRODUCTS_API}/${normalizedId}`, {
-      method: 'DELETE',
-      headers: getApiHeaders(),
-    });
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => '');
-      console.error('deleteProduct failed:', response.status, errorBody);
+  const response = await fetch(`${PRODUCTS_API}/${normalizedId}`, {
+    method: 'DELETE',
+    headers: getApiHeaders(),
+  });
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    let message = `HTTP ${response.status}`;
+    try {
+      const parsed = JSON.parse(errorBody);
+      message = parsed.error || parsed.message || message;
+    } catch {
+      if (errorBody) message = errorBody;
     }
-  } catch (error) {
-    console.error('deleteProduct network error:', error);
+    throw new Error(message);
   }
 
+  const localProducts = getProductsFromLocal().filter((p) => String(p.id) !== normalizedId);
+  syncLocalProducts(localProducts);
   return true;
 };
 
@@ -890,7 +892,7 @@ export const saveReview = (review) => {
       normalized.user_email = normalized.user_email || u.email;
       normalized.user_name = normalized.user_name || u.name;
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 

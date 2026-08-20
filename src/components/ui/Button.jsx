@@ -9,7 +9,7 @@ const Button = ({
   fullWidth = false,
   disabled = false
 }) => {
-  const baseStyles = "rounded-full font-bold px-6 py-3 transition-all duration-300 inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-[#D97706]/20 shadow-md";
+  const baseStyles = "rounded-full font-bold px-6 py-3 transition-[background-color,color,border-color,box-shadow,transform] duration-200 ease-out inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-[#D97706]/20 shadow-md";
 
   const variants = {
     primary: "bg-[#8B1E1E] hover:bg-[#D97706] text-white hover:shadow-lg",
@@ -24,7 +24,7 @@ const Button = ({
   return (
     <motion.button
       whileHover={disabled ? {} : { scale: 1.02 }}
-      whileTap={disabled ? {} : { scale: 0.98 }}
+      whileTap={disabled ? {} : { scale: 0.985 }}
       type={type}
       className={classes}
       onClick={onClick}

@@ -50,7 +50,7 @@ const Offers = () => {
           className="text-center max-w-3xl mx-auto space-y-4"
         >
           <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#8B1E1E]/10 text-[#8B1E1E] text-xs uppercase font-extrabold tracking-widest border border-[#8B1E1E]/20 shadow-sm">
-            <Sparkles size={14} className="text-[#D97706] animate-pulse" /> Exclusive Deals & Discounts
+            <Sparkles size={14} className="text-[#D97706]" /> Exclusive Deals & Discounts
           </span>
           <h1 className="text-4xl sm:text-5xl font-serif font-bold text-[#5C4033]">
             Active Offers & Coupons
@@ -85,7 +85,7 @@ const Offers = () => {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.45, delay: index * 0.08 }}
-                  whileHover={{ y: -6, scale: 1.02 }}
+                  whileHover={{ y: -2, scale: 1.01 }}
                   className={`rounded-[28px] bg-gradient-to-br ${grad} p-7 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between border-2`}
                 >
                   {/* Background decorative circle */}
@@ -117,7 +117,7 @@ const Offers = () => {
                       </div>
                     </div>
                     <motion.button
-                      whileTap={{ scale: 0.92 }}
+                      whileTap={{ scale: 0.985 }}
                       onClick={() => handleCopyCode(offer.code)}
                       className="px-4 py-2 rounded-full bg-[#FFD700] hover:bg-white text-[#8B1E1E] text-xs font-extrabold transition-all shadow-lg flex items-center gap-1.5"
                     >

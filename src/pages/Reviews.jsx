@@ -122,7 +122,7 @@ const Reviews = () => {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#8B1E1E]/10 text-[#8B1E1E] text-xs uppercase font-bold tracking-widest">
-            <Sparkles size={14} className="text-[#D97706] animate-pulse" /> Genuine Feedback
+            <Sparkles size={14} className="text-[#D97706]" /> Genuine Feedback
           </span>
           <h1 className="text-4xl sm:text-5xl font-serif font-bold text-[#5C4033]">
             Customer Reviews & Ratings

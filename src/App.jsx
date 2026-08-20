@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, MotionConfig } from 'framer-motion';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Context Providers
@@ -53,12 +53,13 @@ const CustomerLayout = ({ children }) => (
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          <ScrollToTop />
-          <AnimatePresence mode="wait">
-            <Routes>
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <ScrollToTop />
+            <AnimatePresence mode="wait">
+              <Routes>
               {/* Admin Routes */}
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/admin-forgot-password" element={<ForgotPassword adminMode />} />
@@ -96,11 +97,12 @@ function App() {
 
               {/* Fallback Catch-All Route */}
               <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AnimatePresence>
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+              </Routes>
+            </AnimatePresence>
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </MotionConfig>
   );
 }
 

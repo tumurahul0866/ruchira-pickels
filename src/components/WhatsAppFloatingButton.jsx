@@ -14,8 +14,8 @@ const WhatsAppFloatingButton = () => {
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50" style={{background: 'var(--color-brand-green)', color: 'white', padding: '1rem', borderRadius: '9999px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)'}} 
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.98 }}
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 260, damping: 20 }}

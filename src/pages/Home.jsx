@@ -86,7 +86,7 @@ const Home = () => {
                 transition={{ duration: 0.5 }}
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#8B1E1E]/20 text-[#8B1E1E] text-xs uppercase tracking-[0.2em] font-bold shadow-sm"
               >
-                <Sparkles size={14} className="text-[#D97706] animate-pulse" /> HERITAGE GRANDMA RECIPES
+                <Sparkles size={14} className="text-[#D97706]" /> HERITAGE GRANDMA RECIPES
               </motion.div>
 
               <motion.h1
@@ -126,14 +126,14 @@ const Home = () => {
               {/* Action Buttons */}
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <Link to="/flavours" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#8B1E1E] hover:bg-[#D97706] text-white font-bold text-sm tracking-wider uppercase transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+                  <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#8B1E1E] hover:bg-[#D97706] text-white font-bold text-sm tracking-wider uppercase transition-[background-color,box-shadow,transform] duration-200 ease-out flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-px">
                     Explore All Pickles <ArrowRight size={18} />
                   </button>
                 </Link>
 
                 <button
                   onClick={handleWhatsAppOrder}
-                  className="w-full sm:w-auto px-6 py-4 rounded-full bg-[#556B2F] hover:bg-[#6B8E23] text-white font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md"
+                  className="w-full sm:w-auto px-6 py-4 rounded-full bg-[#556B2F] hover:bg-[#6B8E23] text-white font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-[background-color,box-shadow,transform] duration-200 ease-out shadow-md hover:-translate-y-px"
                 >
                   <MessageSquare size={18} /> WhatsApp Quick Order
                 </button>
@@ -191,7 +191,7 @@ const Home = () => {
 
               <div className="space-y-2.5 text-center lg:text-left z-10">
                 <span className="px-3 py-1.5 rounded-full bg-[#D97706] text-white text-[10px] uppercase font-extrabold tracking-widest inline-flex items-center gap-1.5 shadow-md">
-                  <Sparkles size={12} className="animate-pulse" /> {featuredOffer.discount}% OFF — Exclusive Deal
+                  <Sparkles size={12} /> {featuredOffer.discount}% OFF — Exclusive Deal
                 </span>
                 <h3 className="text-2xl sm:text-4xl font-serif font-bold text-white leading-snug">
                   {featuredOffer.title}
@@ -327,7 +327,7 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ duration: 0.45, delay: idx * 0.1 }}
-                whileHover={{ y: -4, boxShadow: '0 12px 40px rgba(92,64,51,0.12)' }}
+                whileHover={{ y: -2, boxShadow: '0 12px 40px rgba(92,64,51,0.12)' }}
                 className="p-6 rounded-[18px] bg-[#F8F3E8]/80 border border-[#5C4033]/10 flex flex-col justify-between shadow-sm cursor-default"
               >
                 <div>
@@ -409,7 +409,7 @@ const PromisesSection = () => {
               initial={{ opacity: 0, y: 40 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              whileHover={{ y: -6, scale: 1.02 }}
+              whileHover={{ y: -2, scale: 1.01 }}
               className="group p-6 rounded-[20px] bg-white border border-[#5C4033]/08 flex items-start gap-4 hover:border-[#D97706]/30 hover:shadow-lg transition-all shadow-sm cursor-default"
             >
               <div

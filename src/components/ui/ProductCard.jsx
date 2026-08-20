@@ -46,8 +46,9 @@ const ProductCard = ({ product }) => {
 
   return (
     <motion.div
-      whileHover={{ y: -6 }}
-      className="group rounded-[18px] overflow-hidden bg-white border border-[#5C4033]/10 shadow-md hover:shadow-xl hover:border-[#D97706]/40 transition-all duration-300 flex flex-col justify-between"
+      whileHover={{ y: -2, scale: 1.01 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="group rounded-[18px] overflow-hidden bg-white border border-[#5C4033]/10 shadow-md hover:shadow-lg hover:border-[#D97706]/40 transition-[box-shadow,border-color,transform] duration-300 ease-out flex flex-col justify-between"
     >
       <div>
         {/* Product Image & Badges Container */}
@@ -56,7 +57,7 @@ const ProductCard = ({ product }) => {
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-400 ease-out group-hover:scale-[1.03]"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80';

@@ -72,7 +72,7 @@ const Flavours = () => {
           className="text-center max-w-3xl mx-auto space-y-3"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#556B2F]/15 text-[#556B2F] text-xs uppercase font-bold tracking-widest">
-            <Sparkles size={14} className="text-[#D97706] animate-pulse" /> Handcrafted Menu
+            <Sparkles size={14} className="text-[#D97706]" /> Handcrafted Menu
           </span>
           <h1 className="text-4xl sm:text-5xl font-serif font-bold text-[#5C4033]">
             Explore Our Flavours
@@ -134,8 +134,8 @@ const Flavours = () => {
               {availableTypes.map((type) => (
                 <motion.button
                   key={type}
-                  whileTap={{ scale: 0.94 }}
-                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.985 }}
+                  whileHover={{ scale: 1.02 }}
                   onClick={() => setSelectedType(type)}
                   className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all shadow-sm ${
                     selectedType === type
@@ -158,8 +158,8 @@ const Flavours = () => {
               {spiceLevels.map((spice) => (
                 <motion.button
                   key={spice}
-                  whileTap={{ scale: 0.94 }}
-                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.985 }}
+                  whileHover={{ scale: 1.02 }}
                   onClick={() => setSelectedSpice(spice)}
                   className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
                     selectedSpice === spice
