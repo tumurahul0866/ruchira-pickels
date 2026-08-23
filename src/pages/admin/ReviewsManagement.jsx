@@ -35,10 +35,14 @@ const ReviewsManagement = () => {
     setTimeout(() => setMessage(''), 3000);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Delete this review?')) {
-      deleteReview(id);
-      refresh();
+      try {
+        await deleteReview(id);
+        refresh();
+      } catch {
+        setMessage('Review could not be deleted. Please try again.');
+      }
     }
   };
 

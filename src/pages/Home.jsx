@@ -29,8 +29,11 @@ const Home = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const storeSettings = await refreshStoreSettings().catch(() => getStoreSettings());
-      const visibleProducts = (await getProducts()).filter((product) => product.visible);
+      const [storeSettings, fetchedProducts] = await Promise.all([
+        refreshStoreSettings().catch(() => getStoreSettings()),
+        getProducts(),
+      ]);
+      const visibleProducts = fetchedProducts.filter((product) => product.visible);
       const activeOffers = getOffers().filter((offer) => offer.active);
       const types = getProductTypes();
       const allReviews = getReviews().filter((r) => r.visible);

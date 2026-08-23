@@ -253,48 +253,7 @@ export const initialProducts = []; /* Legacy demo product fixture removed.
   }
 ]; */
 
-const initialReviews = [
-  {
-    id: 'r1',
-    name: 'Srikanth Reddy (Hyderabad)',
-    product: 'Gongura Garlic Pickle',
-    rating: 5,
-    date: '02 Aug 2026',
-    text: 'The Gongura Garlic pickle tastes exactly like my grandmother used to make in Guntur! Perfect tanginess, bold garlic cloves, and genuine cold-pressed oil aroma. Superb leak-proof packaging.',
-    visible: true,
-    verifiedBuyer: true
-  },
-  {
-    id: 'r2',
-    name: 'Priyanka Sharma (Bengaluru)',
-    product: 'Andhra Avakaya Mango Pickle',
-    rating: 5,
-    date: '31 Jul 2026',
-    text: 'Living in Bangalore, I missed authentic Andhra Avakaya. Ordered the 500g jar from Vasuki Pickles and it exceeded my expectations. Spice level is spot on!',
-    visible: true,
-    verifiedBuyer: true
-  },
-  {
-    id: 'r3',
-    name: 'Ramesh Raju (Vijayawada)',
-    product: 'Boneless Chicken Pickle',
-    rating: 5,
-    date: '27 Jul 2026',
-    text: 'The Boneless Chicken pickle is unbelievable! Juicy, massive chicken pieces with authentic roasted spice gravy. Ordering 1kg jar for my office colleagues too.',
-    visible: true,
-    verifiedBuyer: true
-  },
-  {
-    id: 'r4',
-    name: 'Kavitha Rao (Chennai)',
-    product: 'Kandi Podi (Gunpowder)',
-    rating: 5,
-    date: '22 Jul 2026',
-    text: 'Kandi Podi with hot rice and homemade ghee is pure bliss. Fragrant toor dal aroma and perfectly balanced red chili heat. Highly recommended!',
-    visible: true,
-    verifiedBuyer: true
-  }
-];
+const initialReviews = [];
 
 const initialOffers = [
   {
@@ -590,6 +549,8 @@ const getProductsFromLocal = () => {
 };
 
 export const getProducts = async () => {
+  const cachedProducts = getProductsFromLocal();
+
   if (!productsRequest) {
     productsRequest = fetchJson(PRODUCTS_API)
       .then((products) => {
@@ -604,6 +565,9 @@ export const getProducts = async () => {
         productsRequest = null;
       });
   }
+
+  // Render the catalog from local storage while the latest data refreshes.
+  if (cachedProducts.length > 0) return cachedProducts;
   return productsRequest;
 };
 
@@ -827,15 +791,23 @@ export const deleteOrder = async (id) => {
 
 // --- REVIEWS DATABASE ---
 
+let reviewsMutationVersion = 0;
+
 const getReviewsFromLocal = () => {
   const reviews = localStorage.getItem('vasuki_reviews');
   if (!reviews) {
     localStorage.setItem('vasuki_reviews', JSON.stringify(initialReviews));
-    backgroundFetch(REVIEWS_API, syncLocalReviews);
+    const requestVersion = reviewsMutationVersion;
+    backgroundFetch(REVIEWS_API, (latestReviews) => {
+      if (requestVersion === reviewsMutationVersion) syncLocalReviews(latestReviews);
+    });
     return initialReviews;
   }
   const parsed = JSON.parse(reviews);
-  backgroundFetch(REVIEWS_API, syncLocalReviews);
+  const requestVersion = reviewsMutationVersion;
+  backgroundFetch(REVIEWS_API, (latestReviews) => {
+    if (requestVersion === reviewsMutationVersion) syncLocalReviews(latestReviews);
+  });
   return parsed;
 };
 
@@ -891,13 +863,15 @@ export const saveReview = (review) => {
 };
 
 export const deleteReview = (id) => {
+  reviewsMutationVersion += 1;
   const reviews = getReviewsFromLocal().filter((r) => r.id !== id);
   syncLocalReviews(reviews);
-  fetch(`${REVIEWS_API}/${id}`, {
+  return fetch(`${REVIEWS_API}/${id}`, {
     method: 'DELETE',
     headers: getApiHeaders(),
-  }).catch(() => {
-    // ignore
+  }).then((response) => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return true;
   });
 };
 
