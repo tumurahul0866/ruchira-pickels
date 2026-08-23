@@ -864,12 +864,14 @@ export const saveReview = (review) => {
 
 export const deleteReview = (id) => {
   reviewsMutationVersion += 1;
-  const reviews = getReviewsFromLocal().filter((r) => r.id !== id);
+  const reviews = getReviewsFromLocal().filter((r) => String(r.id) !== String(id));
   syncLocalReviews(reviews);
   return fetch(`${REVIEWS_API}/${id}`, {
     method: 'DELETE',
     headers: getApiHeaders(),
   }).then((response) => {
+    // A stale local review may already be absent from the backend.
+    if (response.status === 404) return true;
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return true;
   });
