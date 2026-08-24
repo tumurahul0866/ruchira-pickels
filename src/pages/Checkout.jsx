@@ -722,7 +722,7 @@ const Checkout = () => {
                         <button
                           type="button"
                           onClick={handleProceedToPay}
-                          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-gold text-brand-black text-xs font-bold hover:bg-brand-gold-light transition-colors shadow-sm"
+                          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm"
                         >
                           Proceed to Pay
                         </button>
