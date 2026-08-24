@@ -40,8 +40,10 @@ const ReviewsManagement = () => {
       try {
         await deleteReview(id);
         refresh();
-      } catch {
-        setMessage('Review could not be deleted. Please try again.');
+        setMessage('Review deleted successfully.');
+        setTimeout(() => setMessage(''), 3000);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : 'Review could not be deleted. Please try again.');
       }
     }
   };

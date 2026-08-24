@@ -862,19 +862,28 @@ export const saveReview = (review) => {
   return normalized;
 };
 
-export const deleteReview = (id) => {
+export const deleteReview = async (id) => {
   reviewsMutationVersion += 1;
   const reviews = getReviewsFromLocal().filter((r) => String(r.id) !== String(id));
-  syncLocalReviews(reviews);
-  return fetch(`${REVIEWS_API}/${id}`, {
+  const response = await fetch(`${REVIEWS_API}/${id}`, {
     method: 'DELETE',
     headers: getApiHeaders(),
-  }).then((response) => {
-    // A stale local review may already be absent from the backend.
-    if (response.status === 404) return true;
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return true;
   });
+  let payload = {};
+  try {
+    payload = await response.json();
+  } catch {
+    // Preserve the HTTP status when the server does not return JSON.
+  }
+  if (!response.ok) {
+    reviewsMutationVersion += 1;
+    throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
+  }
+
+  // Commit the local deletion only after the backend confirms it.
+  reviewsMutationVersion += 1;
+  syncLocalReviews(reviews);
+  return true;
 };
 
 export const toggleReviewVisibility = (id) => {
