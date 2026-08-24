@@ -47,6 +47,25 @@ const InputField = ({ label, name, type = 'text', required = true, value, onChan
   </div>
 );
 
+const buildUpiQrUrl = ({ upiId, payeeName, finalTotal }) => {
+  if (!upiId?.trim()) return { qrUrl: '', upiUrl: '', error: 'UPI payment is unavailable because the admin has not configured a UPI ID.' };
+  if (!Number.isFinite(finalTotal) || finalTotal <= 0) {
+    return { qrUrl: '', upiUrl: '', error: 'Enter a valid delivery PIN code to calculate the final payable amount.' };
+  }
+
+  const upiUrl =
+    `upi://pay?pa=${encodeURIComponent(upiId.trim())}` +
+    `&pn=${encodeURIComponent(payeeName || '')}` +
+    `&am=${finalTotal.toFixed(2)}` +
+    '&cu=INR';
+
+  return {
+    qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUrl)}`,
+    upiUrl,
+    error: '',
+  };
+};
+
 // PIN status indicator component
 const PinStatus = ({ status, state, district, charge, message }) => {
   if (status === 'idle') return null;
@@ -146,6 +165,7 @@ const Checkout = () => {
   const [orderId, setOrderId] = useState('');
   const [whatsappUrl, setWhatsappUrl] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [upiLaunchMessage, setUpiLaunchMessage] = useState('');
   const [paymentSettings] = useState(() => getPaymentSettings());
   const storeSettings = getStoreSettings();
 
@@ -170,6 +190,17 @@ const Checkout = () => {
   const visibleSavedAddresses = user ? savedAddresses : [];
   const shippingCharge = shippingInfo.status === 'success' ? shippingInfo.charge : null;
   const totalPayable = shippingCharge !== null ? subtotal + shippingCharge : null;
+  const { qrUrl: dynamicQrUrl, upiUrl, error: qrError } = buildUpiQrUrl({
+    upiId: paymentSettings.upiId,
+    payeeName: storeSettings.businessName,
+    finalTotal: totalPayable,
+  });
+
+  const handleProceedToPay = () => {
+    if (!upiUrl) return;
+    setUpiLaunchMessage('If no UPI app opens, use the QR code or continue below after completing payment in your UPI app.');
+    window.location.href = upiUrl;
+  };
 
   const handleSelectSavedAddress = (addr) => {
     setFormData((prev) => ({
@@ -303,6 +334,7 @@ const Checkout = () => {
     const newOrder = {
       customer: {
         ...formData,
+        transactionId: formData.paymentMethod === 'UPI' ? formData.transactionId.trim() : '',
         state: shippingInfo.state,
         district: shippingInfo.district,
         postOffice: shippingInfo.postOffice,
@@ -669,18 +701,36 @@ const Checkout = () => {
                     animate={{ opacity: 1, height: 'auto' }}
                     className="mt-4 p-5 rounded-2xl bg-amber-50/60 border border-amber-200 text-center"
                   >
-                    <p className="text-xs font-bold text-slate-800 mb-3">
-                      Scan QR Code to pay <strong className="text-brand-gold text-sm">₹{getCartTotal()}</strong>:
-                    </p>
-                    <div className="w-44 h-44 bg-white mx-auto p-2 rounded-2xl border border-amber-300 shadow-sm mb-3">
-                      <img
-                        src={paymentSettings.qrImage}
-                        alt="UPI QR Code"
-                        className="w-full h-full object-contain rounded-xl"
-                      />
-                    </div>
-                    <p className="text-xs font-mono font-bold text-slate-700">UPI ID: {paymentSettings.upiId || 'vasukipickles@upi'}</p>
-                    <p className="text-[11px] text-slate-500 mt-1 mb-3">Accepts GPay, PhonePe, Paytm, BHIM</p>
+                    {qrError ? (
+                      <div className="p-3 mb-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                        {qrError}
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-xs font-bold text-slate-800 mb-3">
+                          Scan QR Code to pay <strong className="text-brand-gold text-sm">₹{totalPayable.toFixed(2)}</strong>:
+                        </p>
+                        <div className="w-44 h-44 bg-white mx-auto p-2 rounded-2xl border border-amber-300 shadow-sm mb-3">
+                          <img
+                            src={dynamicQrUrl}
+                            alt="UPI QR Code"
+                            className="w-full h-full object-contain rounded-xl"
+                          />
+                        </div>
+                        <p className="text-xs font-mono font-bold text-slate-700">UPI ID: {paymentSettings.upiId}</p>
+                        <p className="text-[11px] text-slate-500 mt-1 mb-3">Accepts GPay, PhonePe, Paytm, BHIM</p>
+                        <button
+                          type="button"
+                          onClick={handleProceedToPay}
+                          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-gold text-brand-black text-xs font-bold hover:bg-brand-gold-light transition-colors shadow-sm"
+                        >
+                          Proceed to Pay
+                        </button>
+                        {upiLaunchMessage && (
+                          <p className="text-[11px] text-slate-500 mt-2">{upiLaunchMessage}</p>
+                        )}
+                      </>
+                    )}
 
                     {/* Mandatory Transaction ID Input */}
                     <div className="text-left bg-white p-3.5 rounded-xl border border-amber-300 shadow-sm">

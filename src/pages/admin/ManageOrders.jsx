@@ -122,6 +122,12 @@ const ManageOrders = () => {
                   <p className="text-brand-cream font-medium">{order.customer?.name || 'Customer'}</p>
                   <p className="text-brand-cream/70 text-sm">{order.customer?.email || 'N/A'}</p>
                   <p className="text-brand-cream/70 text-sm mb-3">{order.customer?.phone || 'N/A'}</p>
+                  {order.paymentMethod === 'UPI' && (
+                    <p className="text-brand-cream/70 text-sm mb-3">
+                      <span className="text-brand-cream/50">UPI Transaction ID:</span>{' '}
+                      {order.customer?.transactionId || 'Not provided'}
+                    </p>
+                  )}
                   
                   <p className="text-brand-cream/70 text-sm leading-relaxed">
                     {order.customer?.address || 'Address not available'}<br />
