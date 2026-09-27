@@ -8,24 +8,31 @@ import {
   ShieldCheck,
   Award,
   Star,
+  Search,
+  Heart,
+  ShoppingCart,
   ArrowRight,
   MessageSquare,
   Flame,
-  CheckCircle2,
   Copy,
   Check
 } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getProductTypes, getReviews } from '../services/dataStore';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getReviews, getWishlist } from '../services/dataStore';
 
 const Home = () => {
+  const { cartItems } = useCart();
+  const { user } = useAuth();
   const [settings, setSettings] = useState(() => getStoreSettings());
   const [products, setProducts] = useState([]);
   const [offers, setOffers] = useState([]);
-  const [productTypes, setProductTypes] = useState([]);
-  const [selectedType, setSelectedType] = useState('All');
   const [reviews, setReviews] = useState([]);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const wishlistCount = getWishlist(user?.email || user?.phone || user?.id).length;
 
   useEffect(() => {
     const loadData = async () => {
@@ -33,36 +40,45 @@ const Home = () => {
         refreshStoreSettings().catch(() => getStoreSettings()),
         getProducts(),
       ]);
+
       const visibleProducts = fetchedProducts.filter((product) => product.visible);
       const activeOffers = getOffers().filter((offer) => offer.active);
-      const types = getProductTypes();
       const allReviews = getReviews().filter((r) => r.visible);
 
       setSettings(storeSettings);
       setProducts(visibleProducts);
       setOffers(activeOffers);
-      setProductTypes(['All', ...types]);
       setReviews(allReviews.slice(0, 3));
     };
+
     loadData();
   }, []);
 
   const brandTagline = settings?.brandTagline || 'Authentic Andhra Pickles & Podis Handcrafted with Love.';
+  const featuredOffer = offers.find((o) => o.code);
+  const popularProducts = products.slice(0, 3);
+  const categoryShortcuts = products.slice(0, 5).map((product, index) => {
+    const fallbackNames = ['Mango', 'Chilli', 'Lemon', 'Garlic', 'Ginger'];
+    const normalized = product.name
+      .replace(/Pickle|Pickles|Podi|Podis/gi, '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .join(' ');
 
-  const displayedProducts =
-    selectedType === 'All'
-      ? products
-      : products.filter((product) => product.productType === selectedType);
+    return {
+      name: normalized || fallbackNames[index] || 'Special',
+      image: product.image,
+    };
+  });
 
   const handleWhatsAppOrder = () => {
-    const text = `Hi Vasuki Pickles! I would like to inquire about your pickle & podi products.`;
+    const text = 'Hi Vasuki Pickles! I would like to inquire about your pickle & podi products.';
     const encoded = encodeURIComponent(text);
     const phone = settings?.whatsappNumber || '918885473903';
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');
   };
-
-  // Use the first active offer with a code for the Home page banner
-  const featuredOffer = offers.find((o) => o.code);
 
   const copyCouponCode = () => {
     if (!featuredOffer) return;
@@ -72,366 +88,268 @@ const Home = () => {
   };
 
   return (
-    <div className="flex-grow flex flex-col bg-[#F8F3E8] text-[#5C4033]">
-      
-      {/* 🌟 1. HERO SECTION - WARM CREAM & DEEP CHILLI RED HIGHLIGHTS */}
-      <section className="relative py-16 lg:py-24 overflow-hidden bg-[#F8F3E8]">
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#D97706_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left Hero Content */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#8B1E1E]/20 text-[#8B1E1E] text-xs uppercase tracking-[0.2em] font-bold shadow-sm"
-              >
-                <Sparkles size={14} className="text-[#D97706]" /> HERITAGE GRANDMA RECIPES
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-[#5C4033] leading-tight tracking-tight"
-              >
-                Authentic Andhra <br />
-                <span className="text-[#8B1E1E] font-serif">
-                  Pickles & Karam Podis
-                </span>
-              </motion.h1>
-
-              <p className="text-base sm:text-lg text-[#5C4033]/80 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-medium">
-                Crafted to Crave. {brandTagline} Made using cold-pressed groundnut oil, Guntur chilies, and zero preservatives. Taste the true heritage of home!
-              </p>
-
-              {/* Stats Counters */}
-              <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-8 border-t border-[#5C4033]/15">
-                <div>
-                  <p className="text-2xl sm:text-3xl font-bold font-serif text-[#8B1E1E]">10,000+</p>
-                  <p className="text-xs text-[#556B2F] font-semibold">Jars Shipped</p>
+    <div className="flex-grow bg-[#F8F3E8] text-[#5C4033]">
+      <section className="pt-4 pb-5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[26px] border border-[#5C4033]/10 bg-white/80 p-3 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] text-[#F8F3E8] font-serif font-bold text-sm grid place-items-center shadow-sm">
+                  K
                 </div>
-                <div className="h-8 w-px bg-[#5C4033]/15 hidden sm:block" />
-                <div>
-                  <p className="text-2xl sm:text-3xl font-bold font-serif text-[#8B1E1E]">4.9 ★</p>
-                  <p className="text-xs text-[#556B2F] font-semibold">Customer Rating</p>
-                </div>
-                <div className="h-8 w-px bg-[#5C4033]/15 hidden sm:block" />
-                <div>
-                  <p className="text-2xl sm:text-3xl font-bold font-serif text-[#8B1E1E]">100%</p>
-                  <p className="text-xs text-[#556B2F] font-semibold">Cold-Pressed Oil</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#556B2F] font-bold">KONASEMA</p>
+                  <p className="text-[11px] font-serif font-bold text-[#5C4033] truncate">Ruchulu</p>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <Link to="/flavours" className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#8B1E1E] hover:bg-[#D97706] text-white font-bold text-sm tracking-wider uppercase transition-[background-color,box-shadow,transform] duration-200 ease-out flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-px">
-                    Explore All Pickles <ArrowRight size={18} />
-                  </button>
+              <div className="flex items-center gap-2">
+                <Link to="/flavours" className="p-2.5 rounded-full bg-[#F8F3E8] border border-[#5C4033]/10 text-[#5C4033] shadow-sm" aria-label="Search">
+                  <Search size={16} />
                 </Link>
-
-                <button
-                  onClick={handleWhatsAppOrder}
-                  className="w-full sm:w-auto px-6 py-4 rounded-full bg-[#556B2F] hover:bg-[#6B8E23] text-white font-bold text-sm tracking-wider uppercase flex items-center justify-center gap-2 transition-[background-color,box-shadow,transform] duration-200 ease-out shadow-md hover:-translate-y-px"
+                <Link
+                  to={user ? '/dashboard' : '/login'}
+                  className="relative p-2.5 rounded-full bg-[#F8F3E8] border border-[#5C4033]/10 text-[#5C4033] shadow-sm"
+                  aria-label="Wishlist"
                 >
-                  <MessageSquare size={18} /> WhatsApp Quick Order
-                </button>
+                  <Heart size={16} className={wishlistCount > 0 ? 'fill-[#8B1E1E] text-[#8B1E1E]' : 'text-[#5C4033]'} />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#8B1E1E] text-white text-[8px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Link>
+                <Link to="/cart" className="relative p-2.5 rounded-full bg-[#8B1E1E] text-white shadow-sm" aria-label="Cart">
+                  <ShoppingCart size={16} />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#FFD700] text-[#8B1E1E] text-[8px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
               </div>
             </div>
-
-            {/* Right Hero Showcase Image Card */}
-            <div className="lg:col-span-5 relative">
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.6 }}
-                className="relative mx-auto max-w-md lg:max-w-none"
-              >
-                <div className="relative rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl bg-white min-h-[400px]">
-                  {settings?.featureImageUrl ? (
-                    <img
-                      src={settings.featureImageUrl}
-                      alt="Authentic Andhra Pickle Jar"
-                      className="w-full h-[400px] sm:h-[460px] object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-[400px] sm:h-[460px] bg-[#EAE0D0]" aria-label="Home feature image loading" />
-                  )}
-
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#5C4033] via-[#5C4033]/80 to-transparent p-6 text-white">
-                    <span className="px-3 py-1 rounded-full bg-[#8B1E1E] text-white text-[10px] uppercase font-bold tracking-widest inline-flex items-center gap-1 mb-2">
-                      <Flame size={12} className="text-[#D97706]" /> BESTSELLER
-                    </span>
-                    <h3 className="text-xl font-serif font-bold text-white">Andhra Avakaya Mango Pickle</h3>
-                    <p className="text-xs text-[#F8F3E8]/80 mt-1">Sun-dried mangoes in traditional cold-pressed oil</p>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
           </div>
         </div>
       </section>
 
-      {/* 🛡️ 2. CORE PROMISES / TRUST & QUALITY HIGHLIGHTS SECTION */}
-      <PromisesSection />
-
-      {/* 🎁 3. OFFERS HIGHLIGHT BANNER — Dynamic from Admin */}
-      {featuredOffer && (
-        <section className="py-10 bg-[#F8F3E8]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              className="rounded-[28px] bg-gradient-to-r from-[#8B1E1E] to-[#5C4033] text-[#F8F3E8] p-8 sm:p-10 shadow-2xl border-2 border-[#D97706]/50 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6"
-            >
-              {/* Decorative circles */}
-              <div className="absolute -top-10 -right-10 w-52 h-52 rounded-full bg-white/5 pointer-events-none" />
-              <div className="absolute -bottom-8 left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none" />
-
-              <div className="space-y-2.5 text-center lg:text-left z-10">
-                <span className="px-3 py-1.5 rounded-full bg-[#D97706] text-white text-[10px] uppercase font-extrabold tracking-widest inline-flex items-center gap-1.5 shadow-md">
-                  <Sparkles size={12} /> {featuredOffer.discount}% OFF — Exclusive Deal
+      <section className="pb-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="overflow-hidden rounded-[28px] border border-[#5C4033]/10 bg-white shadow-sm"
+          >
+            <div className="p-3 sm:p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#8B1E1E]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#8B1E1E]">
+                  <Sparkles size={12} className="text-[#D97706]" /> Heritage
                 </span>
-                <h3 className="text-2xl sm:text-4xl font-serif font-bold text-white leading-snug">
-                  {featuredOffer.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-[#F8F3E8]/90 leading-relaxed">
-                  {featuredOffer.description}
-                  {featuredOffer.minOrderValue > 0 && (
-                    <> &nbsp;|&nbsp; Min order: ₹{featuredOffer.minOrderValue}</>
-                  )}
-                </p>
+                <span className="rounded-full bg-[#556B2F]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#556B2F]">
+                  Bestseller
+                </span>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-4 z-10">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1.1fr_0.9fr] sm:items-center">
+                <div className="space-y-3">
+                  <h1 className="text-3xl sm:text-4xl font-serif font-bold leading-tight text-[#5C4033]">
+                    Authentic Andhra <span className="text-[#8B1E1E]">Pickles</span>
+                  </h1>
+
+                  <p className="text-sm leading-relaxed text-[#5C4033]/75">
+                    {brandTagline}
+                  </p>
+
+                  <div className="flex items-center gap-3">
+                    <Link to="/flavours" className="flex-1">
+                      <button className="w-full rounded-full bg-[#8B1E1E] px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-md">
+                        Shop Now
+                      </button>
+                    </Link>
+                    <button
+                      onClick={handleWhatsAppOrder}
+                      className="rounded-full bg-[#556B2F] px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm"
+                    >
+                      WhatsApp
+                    </button>
+                  </div>
+                </div>
+
+                <div className="relative overflow-hidden rounded-[22px] bg-[#F8F3E8] border border-[#5C4033]/10">
+                  {settings?.featureImageUrl ? (
+                    <img
+                      src={settings.featureImageUrl}
+                      alt="Featured pickle"
+                      className="h-52 w-full object-cover sm:h-60"
+                    />
+                  ) : (
+                    <div className="h-52 w-full bg-[#EAE0D0] sm:h-60" />
+                  )}
+
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#5C4033]/90 via-[#5C4033]/55 to-transparent p-3 text-white">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-[#F8F3E8]/80">Featured</p>
+                    <p className="mt-1 text-sm font-serif font-bold">Andhra Avakaya Mango Pickle</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="pb-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-serif font-bold text-[#5C4033]">Popular Categories</h2>
+            <Link to="/flavours" className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8B1E1E]">
+              View all
+            </Link>
+          </div>
+
+          <div
+            className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {categoryShortcuts.map((category, idx) => (
+              <div key={`${category.name}-${idx}`} className="min-w-[92px] snap-start">
+                <div className="rounded-[20px] border border-[#5C4033]/10 bg-white p-2 text-center shadow-sm">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="h-16 w-16 rounded-full object-cover mx-auto border-2 border-[#F8F3E8]"
+                  />
+                  <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5C4033]">
+                    {category.name}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {featuredOffer && (
+        <section className="pb-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="rounded-[22px] bg-gradient-to-r from-[#8B1E1E] to-[#5C4033] p-4 text-white shadow-md">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#F8F3E8]/80">Offer</p>
+                  <p className="mt-1 text-base font-serif font-bold">{featuredOffer.title}</p>
+                </div>
+
                 <button
                   onClick={copyCouponCode}
-                  className="px-6 py-3.5 rounded-full bg-[#D97706] hover:bg-white hover:text-[#8B1E1E] text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg border-2 border-transparent hover:border-[#D97706]"
+                  className="rounded-full bg-[#D97706] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white"
                 >
-                  {copiedCode ? (
-                    <><Check size={16} /> Copied!</>
-                  ) : (
-                    <><Copy size={16} /> Copy Code: {featuredOffer.code}</>
-                  )}
-                </button>
-
-                <button
-                  onClick={handleWhatsAppOrder}
-                  className="px-6 py-3.5 rounded-full bg-[#556B2F] hover:bg-[#6B8E23] text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all shadow-md"
-                >
-                  <MessageSquare size={16} /> WhatsApp Order
+                  {copiedCode ? 'Copied' : featuredOffer.code}
                 </button>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
       )}
 
-      {/* 🛍️ 4. PRODUCT CATALOG SHOWCASE */}
-      <section className="py-12 md:py-20 bg-[#F8F3E8]">
+      <section className="pb-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10"
-          >
-            <div>
-              <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#556B2F] block mb-2">
-                Handcrafted Menu
-              </span>
-              <h2 className="text-3xl sm:text-5xl font-serif font-bold text-[#5C4033]">
-                Explore Our Pickle & Podi Varieties
-              </h2>
-            </div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-serif font-bold text-[#5C4033]">Popular Pickles</h2>
+            <Link to="/flavours" className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8B1E1E]">
+              See more
+            </Link>
+          </div>
 
-            {/* Category Filter Buttons */}
-            <div className="flex flex-wrap gap-2">
-              {productTypes.map((type) => (
-                <motion.button
-                  key={type}
-                  whileTap={{ scale: 0.94 }}
-                  whileHover={{ scale: 1.04 }}
-                  onClick={() => setSelectedType(type)}
-                  className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
-                    selectedType === type
-                      ? 'bg-[#8B1E1E] text-white shadow-md'
-                      : 'bg-white border border-[#5C4033]/20 text-[#5C4033] hover:border-[#D97706]'
-                  }`}
-                >
-                  {type}
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayedProducts.map((product, idx) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ duration: 0.45, delay: idx * 0.08 }}
-              >
+          <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {popularProducts.map((product) => (
+              <div key={product.id} className="min-w-[250px] max-w-[260px] snap-start">
                 <ProductCard product={product} offer={offers[0]} />
-              </motion.div>
+              </div>
             ))}
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="mt-12 text-center"
-          >
-            <Link to="/flavours">
-              <button className="px-8 py-3.5 rounded-full border-2 border-[#8B1E1E] text-[#8B1E1E] hover:bg-[#8B1E1E] hover:text-white transition-all text-xs font-bold uppercase tracking-wider shadow-sm">
-                View Full Catalog
-              </button>
-            </Link>
-          </motion.div>
         </div>
       </section>
 
-      {/* ⭐ 5. CUSTOMER REVIEWS SECTION */}
-      <section className="py-16 bg-white border-t border-[#5C4033]/10">
+      <PromisesSection />
+
+      <section className="pb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-            className="text-center max-w-2xl mx-auto mb-12"
-          >
-            <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#556B2F] block mb-2">
-              Loved by Foodies
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#5C4033] mb-3">
-              What Our Customers Say
-            </h2>
-            <p className="text-sm text-[#5C4033]/70">
-              Thousands of homes trust Vasuki Pickles for authentic regional flavor.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {reviews.map((rev, idx) => (
-              <motion.div
-                key={rev.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ duration: 0.45, delay: idx * 0.1 }}
-                whileHover={{ y: -2, boxShadow: '0 12px 40px rgba(92,64,51,0.12)' }}
-                className="p-6 rounded-[18px] bg-[#F8F3E8]/80 border border-[#5C4033]/10 flex flex-col justify-between shadow-sm cursor-default"
-              >
-                <div>
-                  <div className="flex items-center gap-1 text-[#D97706] mb-3">
-                    {[...Array(rev.rating)].map((_, i) => (
-                      <Star key={i} size={16} fill="currentColor" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-[#5C4033] leading-relaxed italic mb-4">"{rev.text}"</p>
-                </div>
-                <div className="pt-4 border-t border-[#5C4033]/15 flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-serif font-bold text-[#5C4033]">{rev.name}</h4>
-                    <p className="text-xs text-[#556B2F] font-semibold">{rev.product}</p>
-                  </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#556B2F]/15 text-[#556B2F] text-[10px] font-bold flex items-center gap-1">
-                    <CheckCircle2 size={12} /> Verified Buyer
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-serif font-bold text-[#5C4033]">What Our Customers Say</h2>
+            <Link to="/reviews" className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8B1E1E]">
+              View all
+            </Link>
           </div>
 
-          <div className="mt-10 text-center">
-            <Link to="/reviews">
-              <button className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border-2 border-[#8B1E1E] text-[#8B1E1E] hover:bg-[#8B1E1E] hover:text-white transition-all text-xs font-bold uppercase tracking-wider shadow-sm cursor-pointer">
-                View All Reviews <ArrowRight size={16} />
-              </button>
-            </Link>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {reviews.map((rev) => (
+              <div key={rev.id} className="rounded-[20px] border border-[#5C4033]/10 bg-white p-4 shadow-sm">
+                <div className="flex items-center gap-1 text-[#D97706] mb-2">
+                  {[...Array(rev.rating || 5)].map((_, index) => (
+                    <Star key={index} size={14} fill="currentColor" />
+                  ))}
+                </div>
+                <p className="text-sm text-[#5C4033]/80 leading-relaxed italic">“{rev.text}”</p>
+                <div className="mt-3 border-t border-[#5C4033]/10 pt-3">
+                  <p className="text-sm font-serif font-bold text-[#5C4033]">{rev.name}</p>
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#556B2F]">Verified Buyer</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
-
     </div>
   );
 };
 
-/* ─── Core Promises sub-component ─── */
 const promises = [
   {
     icon: Leaf,
-    title: '100% Natural Ingredients',
-    desc: 'No artificial preservatives, synthetic colors, or chemicals.',
+    title: '100% Natural',
+    desc: 'No artificial preservatives or colors.',
     gradient: 'from-[#556B2F] to-[#6B8E23]',
   },
   {
     icon: ShieldCheck,
-    title: 'Cold-Pressed Groundnut Oil',
-    desc: 'Prepared in traditional wood-pressed groundnut oil for rich health & aroma.',
+    title: 'Cold-Pressed Oil',
+    desc: 'Prepared in traditional groundnut oil.',
     gradient: 'from-[#D97706] to-[#B45309]',
   },
   {
     icon: Award,
-    title: '100% Hygienic Jar Safety',
-    desc: 'Hygienically vacuum sealed in sterilized glass jars.',
+    title: 'Hygienic Jars',
+    desc: 'Vacuum sealed with food-safe care.',
     gradient: 'from-[#8B1E1E] to-[#A52020]',
   },
   {
     icon: Truck,
-    title: 'Express Doorstep Shipping',
-    desc: 'Fast express delivery across India with unbreakable packing.',
+    title: 'Fast Delivery',
+    desc: 'Express shipping across India.',
     gradient: 'from-[#5C4033] to-[#7A5540]',
   },
 ];
 
 const PromisesSection = () => {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, amount: 0.2 });
+  const inView = useInView(ref, { once: true, amount: 0.3 });
 
   return (
-    <section className="py-14 bg-[#F8F3E8] border-y border-[#5C4033]/10">
+    <section className="py-4 pb-5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={ref}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-10"
-        >
-          <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#D97706] block mb-1">Our Commitment</span>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#5C4033]">Core Promises</h2>
-        </motion.div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {promises.map((item, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              whileHover={{ y: -2, scale: 1.01 }}
-              className="group p-6 rounded-[20px] bg-white border border-[#5C4033]/08 flex items-start gap-4 hover:border-[#D97706]/30 hover:shadow-lg transition-all shadow-sm cursor-default"
+              transition={{ duration: 0.35, delay: idx * 0.06 }}
+              className="rounded-[20px] border border-[#5C4033]/10 bg-white p-3 shadow-sm"
             >
-              <div
-                className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} text-white shrink-0 shadow-md group-hover:scale-110 transition-transform`}
-              >
-                <item.icon size={22} />
+              <div className={`mb-2 inline-flex rounded-xl bg-gradient-to-br ${item.gradient} p-2 text-white`}>
+                <item.icon size={16} />
               </div>
-              <div>
-                <h3 className="font-serif font-bold text-[#5C4033] text-sm mb-1.5">{item.title}</h3>
-                <p className="text-xs text-[#5C4033]/65 leading-relaxed">{item.desc}</p>
-              </div>
+              <h3 className="text-sm font-serif font-bold text-[#5C4033]">{item.title}</h3>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#5C4033]/70">{item.desc}</p>
             </motion.div>
           ))}
         </div>
