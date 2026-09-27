@@ -69,14 +69,6 @@ const Navbar = () => {
               <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] flex items-center justify-center text-[#F8F3E8] font-serif font-bold text-xl shadow-lg group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 border border-[#D97706]/30">
                 K
               </div>
-              <div className="flex flex-col">
-                <span className="text-base font-serif font-bold tracking-wider text-[#5C4033] group-hover:text-[#8B1E1E] transition-colors leading-tight">
-                  KONASEMA RUCHULU
-                </span>
-                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#556B2F] leading-tight">
-                  Heritage Delta Pickles
-                </span>
-              </div>
             </Link>
 
             {/* Middle — Search Bar */}

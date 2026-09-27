@@ -1,38 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
-import {
-  Leaf,
-  Sparkles,
-  Truck,
-  ShieldCheck,
-  Award,
-  Star,
-  Search,
-  Heart,
-  ShoppingCart,
-  ArrowRight,
-  MessageSquare,
-  Flame,
-  Copy,
-  Check
-} from 'lucide-react';
+import { Leaf, Sparkles, Truck, ShieldCheck, Award, Star } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getReviews, getWishlist } from '../services/dataStore';
+import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getProductTypes, getReviews } from '../services/dataStore';
 
 const Home = () => {
-  const { cartItems } = useCart();
-  const { user } = useAuth();
   const [settings, setSettings] = useState(() => getStoreSettings());
   const [products, setProducts] = useState([]);
+  const [productTypes, setProductTypes] = useState([]);
   const [offers, setOffers] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [copiedCode, setCopiedCode] = useState(false);
-
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const wishlistCount = getWishlist(user?.email || user?.phone || user?.id).length;
 
   useEffect(() => {
     const loadData = async () => {
@@ -43,10 +22,12 @@ const Home = () => {
 
       const visibleProducts = fetchedProducts.filter((product) => product.visible);
       const activeOffers = getOffers().filter((offer) => offer.active);
+      const availableTypes = getProductTypes();
       const allReviews = getReviews().filter((r) => r.visible);
 
       setSettings(storeSettings);
       setProducts(visibleProducts);
+      setProductTypes(availableTypes);
       setOffers(activeOffers);
       setReviews(allReviews.slice(0, 3));
     };
@@ -57,21 +38,10 @@ const Home = () => {
   const brandTagline = settings?.brandTagline || 'Authentic Andhra Pickles & Podis Handcrafted with Love.';
   const featuredOffer = offers.find((o) => o.code);
   const popularProducts = products.slice(0, 3);
-  const categoryShortcuts = products.slice(0, 5).map((product, index) => {
-    const fallbackNames = ['Mango', 'Chilli', 'Lemon', 'Garlic', 'Ginger'];
-    const normalized = product.name
-      .replace(/Pickle|Pickles|Podi|Podis/gi, '')
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .join(' ');
-
-    return {
-      name: normalized || fallbackNames[index] || 'Special',
-      image: product.image,
-    };
-  });
+  const categoryShortcuts = productTypes.map((type) => ({
+    name: type,
+    image: products.find((product) => product.productType?.toLowerCase() === type.toLowerCase())?.image || settings?.featureImageUrl,
+  }));
 
   const handleWhatsAppOrder = () => {
     const text = 'Hi Vasuki Pickles! I would like to inquire about your pickle & podi products.';
@@ -89,50 +59,6 @@ const Home = () => {
 
   return (
     <div className="flex-grow bg-[#F8F3E8] text-[#5C4033]">
-      <section className="pt-4 pb-5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[26px] border border-[#5C4033]/10 bg-white/80 p-3 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] text-[#F8F3E8] font-serif font-bold text-sm grid place-items-center shadow-sm">
-                  K
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#556B2F] font-bold">KONASEMA</p>
-                  <p className="text-[11px] font-serif font-bold text-[#5C4033] truncate">Ruchulu</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Link to="/flavours" className="p-2.5 rounded-full bg-[#F8F3E8] border border-[#5C4033]/10 text-[#5C4033] shadow-sm" aria-label="Search">
-                  <Search size={16} />
-                </Link>
-                <Link
-                  to={user ? '/dashboard' : '/login'}
-                  className="relative p-2.5 rounded-full bg-[#F8F3E8] border border-[#5C4033]/10 text-[#5C4033] shadow-sm"
-                  aria-label="Wishlist"
-                >
-                  <Heart size={16} className={wishlistCount > 0 ? 'fill-[#8B1E1E] text-[#8B1E1E]' : 'text-[#5C4033]'} />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#8B1E1E] text-white text-[8px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Link>
-                <Link to="/cart" className="relative p-2.5 rounded-full bg-[#8B1E1E] text-white shadow-sm" aria-label="Cart">
-                  <ShoppingCart size={16} />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#FFD700] text-[#8B1E1E] text-[8px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -211,14 +137,18 @@ const Home = () => {
             className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {categoryShortcuts.map((category, idx) => (
-              <div key={`${category.name}-${idx}`} className="min-w-[92px] snap-start">
+              <div key={`${category.name}-${idx}`} className="min-w-[112px] snap-start">
                 <div className="rounded-[20px] border border-[#5C4033]/10 bg-white p-2 text-center shadow-sm">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="h-16 w-16 rounded-full object-cover mx-auto border-2 border-[#F8F3E8]"
-                  />
-                  <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5C4033]">
+                  {category.image ? (
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="h-16 w-16 rounded-full object-cover mx-auto border-2 border-[#F8F3E8]"
+                    />
+                  ) : (
+                    <div className="h-16 w-16 rounded-full bg-[#556B2F]/10 mx-auto" />
+                  )}
+                  <p className="mt-2 min-h-8 grid place-items-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#5C4033]">
                     {category.name}
                   </p>
                 </div>
