@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Store, Tag, Heart, MessageSquare, ShoppingCart } from 'lucide-react';
+import { Home, Store, Tag, Heart, Star, ShoppingCart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { getWishlist } from '../../services/dataStore';
@@ -44,10 +44,10 @@ const FloatingNavbar = () => {
           (location.state?.tab === 'wishlist' || location.search.includes('tab=wishlist'))),
     },
     {
-      name: 'Messages',
-      path: '/contact',
-      icon: MessageSquare,
-      isActive: location.pathname === '/contact' || location.pathname === '/messages',
+      name: 'Reviews',
+      path: '/reviews',
+      icon: Star,
+      isActive: location.pathname === '/reviews',
     },
     {
       name: 'Cart',

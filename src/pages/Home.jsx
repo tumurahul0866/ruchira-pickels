@@ -353,6 +353,14 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
+
+          <div className="mt-10 text-center">
+            <Link to="/reviews">
+              <button className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border-2 border-[#8B1E1E] text-[#8B1E1E] hover:bg-[#8B1E1E] hover:text-white transition-all text-xs font-bold uppercase tracking-wider shadow-sm cursor-pointer">
+                View All Reviews <ArrowRight size={16} />
+              </button>
+            </Link>
+          </div>
         </div>
       </section>
 

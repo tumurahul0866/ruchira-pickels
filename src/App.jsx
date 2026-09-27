@@ -78,8 +78,8 @@ function App() {
               <Route path="/about" element={<CustomerLayout><About /></CustomerLayout>} />
               <Route path="/product/:id" element={<CustomerLayout><ProductDetail /></CustomerLayout>} />
               <Route path="/reviews" element={<CustomerLayout><Reviews /></CustomerLayout>} />
-              <Route path="/contact" element={<CustomerLayout><Contact /></CustomerLayout>} />
-              <Route path="/messages" element={<CustomerLayout><Contact /></CustomerLayout>} />
+              <Route path="/contact" element={<Navigate to="/reviews" replace />} />
+              <Route path="/messages" element={<Navigate to="/reviews" replace />} />
               <Route path="/cart" element={<CustomerLayout><Cart /></CustomerLayout>} />
               <Route path="/checkout" element={<CustomerLayout><Checkout /></CustomerLayout>} />
               <Route path="/login" element={<CustomerLayout><Login /></CustomerLayout>} />
