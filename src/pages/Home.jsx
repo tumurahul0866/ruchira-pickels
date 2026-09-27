@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
-import { Leaf, Sparkles, Truck, ShieldCheck, Award, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Sparkles, Star } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getProductTypes, getReviews } from '../services/dataStore';
 
@@ -199,8 +199,6 @@ const Home = () => {
         </div>
       </section>
 
-      <PromisesSection />
-
       <section className="pb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-3">
@@ -229,62 +227,6 @@ const Home = () => {
         </div>
       </section>
     </div>
-  );
-};
-
-const promises = [
-  {
-    icon: Leaf,
-    title: '100% Natural',
-    desc: 'No artificial preservatives or colors.',
-    gradient: 'from-[#556B2F] to-[#6B8E23]',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Cold-Pressed Oil',
-    desc: 'Prepared in traditional groundnut oil.',
-    gradient: 'from-[#D97706] to-[#B45309]',
-  },
-  {
-    icon: Award,
-    title: 'Hygienic Jars',
-    desc: 'Vacuum sealed with food-safe care.',
-    gradient: 'from-[#8B1E1E] to-[#A52020]',
-  },
-  {
-    icon: Truck,
-    title: 'Fast Delivery',
-    desc: 'Express shipping across India.',
-    gradient: 'from-[#5C4033] to-[#7A5540]',
-  },
-];
-
-const PromisesSection = () => {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, amount: 0.3 });
-
-  return (
-    <section className="py-4 pb-5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ref={ref}>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {promises.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.35, delay: idx * 0.06 }}
-              className="rounded-[20px] border border-[#5C4033]/10 bg-white p-3 shadow-sm"
-            >
-              <div className={`mb-2 inline-flex rounded-xl bg-gradient-to-br ${item.gradient} p-2 text-white`}>
-                <item.icon size={16} />
-              </div>
-              <h3 className="text-sm font-serif font-bold text-[#5C4033]">{item.title}</h3>
-              <p className="mt-1 text-[11px] leading-relaxed text-[#5C4033]/70">{item.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 };
 

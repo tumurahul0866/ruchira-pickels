@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <footer className="bg-white text-[#5C4033] border-t border-[#5C4033]/15">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-6">
             <Link to="/" className="inline-block">
               <span className="font-serif text-2xl font-bold tracking-wider text-[#8B1E1E]">KONASEMA RUCHULU</span>
@@ -21,41 +21,6 @@ const Footer = () => {
                 <MessageCircle size={18} />
               </a>
             </div>
-          </div>
-
-          <div>
-            <h3 className="font-serif font-bold text-xl text-[#5C4033] mb-6">Explore</h3>
-            <ul className="space-y-4">
-              {[
-                { name: 'Home', path: '/' },
-                { name: 'Flavours', path: '/flavours' },
-                { name: 'Offers', path: '/offers' },
-                { name: 'About Us', path: '/about' },
-                { name: 'Reviews', path: '/reviews' },
-              ].map((item) => (
-                <li key={item.name}>
-                  <Link
-                    to={item.path}
-                    className="text-[#5C4033]/70 hover:text-[#D97706] transition-colors font-medium text-sm"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-serif font-bold text-xl text-[#5C4033] mb-6">Useful Links</h3>
-            <ul className="space-y-4">
-              {['Terms of Service', 'Shipping Info', 'Returns'].map((item) => (
-                <li key={item}>
-                  <Link to="#" className="text-[#5C4033]/70 hover:text-[#D97706] transition-colors font-medium text-sm">
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
           </div>
 
           <div>
