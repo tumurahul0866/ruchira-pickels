@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Star } from 'lucide-react';
+import { ArrowRight, Flame, MessageCircle, Sparkles, Star } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getProductTypes, getReviews } from '../services/dataStore';
 
@@ -59,99 +59,74 @@ const Home = () => {
 
   return (
     <div className="flex-grow bg-[#F8F3E8] text-[#5C4033]">
-      <section className="pb-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="px-3 pb-3 sm:px-4">
+        <div className="max-w-[568px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="overflow-hidden rounded-[28px] border border-[#5C4033]/10 bg-white shadow-sm"
+            className="relative h-[260px] overflow-hidden rounded-[22px] border border-[#5C4033]/10 bg-[#5C4033] shadow-sm sm:h-[280px]"
           >
-            <div className="p-3 sm:p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="inline-flex items-center gap-2 rounded-full bg-[#8B1E1E]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#8B1E1E]">
-                  <Sparkles size={12} className="text-[#D97706]" /> Heritage
-                </span>
-                <span className="rounded-full bg-[#556B2F]/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#556B2F]">
-                  Bestseller
-                </span>
-              </div>
+            {settings?.featureImageUrl ? (
+              <img
+                src={settings.featureImageUrl}
+                alt="Andhra Avakaya Mango Pickle"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-[#EAE0D0]" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#24140F]/90 via-[#24140F]/65 to-transparent" />
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1.1fr_0.9fr] sm:items-center">
-                <div className="space-y-3">
-                  <h1 className="text-3xl sm:text-4xl font-serif font-bold leading-tight text-[#5C4033]">
-                    Authentic Andhra <span className="text-[#8B1E1E]">Pickles</span>
-                  </h1>
-
-                  <p className="text-sm leading-relaxed text-[#5C4033]/75">
-                    {brandTagline}
-                  </p>
-
-                  <div className="flex items-center gap-3">
-                    <Link to="/flavours" className="flex-1">
-                      <button className="w-full rounded-full bg-[#8B1E1E] px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-md">
-                        Shop Now
-                      </button>
-                    </Link>
-                    <button
-                      onClick={handleWhatsAppOrder}
-                      className="rounded-full bg-[#556B2F] px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm"
-                    >
-                      WhatsApp
-                    </button>
-                  </div>
-                </div>
-
-                <div className="relative overflow-hidden rounded-[22px] bg-[#F8F3E8] border border-[#5C4033]/10">
-                  {settings?.featureImageUrl ? (
-                    <img
-                      src={settings.featureImageUrl}
-                      alt="Featured pickle"
-                      className="h-52 w-full object-cover sm:h-60"
-                    />
-                  ) : (
-                    <div className="h-52 w-full bg-[#EAE0D0] sm:h-60" />
-                  )}
-
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#5C4033]/90 via-[#5C4033]/55 to-transparent p-3 text-white">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-[#F8F3E8]/80">Featured</p>
-                    <p className="mt-1 text-sm font-serif font-bold">Andhra Avakaya Mango Pickle</p>
-                  </div>
-                </div>
+            <div className="absolute inset-y-0 left-0 flex max-w-[78%] flex-col items-start justify-center p-4 text-white sm:p-5">
+              <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#8B1E1E] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em]">
+                <Flame size={13} className="text-[#FFD700]" /> Bestseller
+              </span>
+              <h1 className="font-serif text-[25px] font-bold leading-tight sm:text-[28px]">
+                Andhra Avakaya Mango Pickle
+              </h1>
+              <p className="mt-2 max-w-[250px] text-xs leading-relaxed text-white/90 sm:text-sm">
+                {brandTagline}
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Link
+                  to="/flavours"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#556B2F] px-4 py-2.5 text-xs font-bold text-white shadow-sm"
+                >
+                  Shop Now <ArrowRight size={15} />
+                </Link>
+                <button
+                  onClick={handleWhatsAppOrder}
+                  aria-label="Order on WhatsApp"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-white/40 bg-white/15 text-white backdrop-blur-sm"
+                >
+                  <MessageCircle size={17} />
+                </button>
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section className="pb-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-serif font-bold text-[#5C4033]">Popular Categories</h2>
-            <Link to="/flavours" className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8B1E1E]">
-              View all
-            </Link>
-          </div>
-
-          <div
-            className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          >
+      <section className="px-3 pb-4 sm:px-4">
+        <div className="mx-auto max-w-[568px] rounded-[24px] border border-white/70 bg-white/60 p-2.5 shadow-sm">
+          <div className="grid grid-cols-4 gap-1 sm:gap-2">
             {categoryShortcuts.map((category, idx) => (
-              <div key={`${category.name}-${idx}`} className="min-w-[112px] snap-start">
-                <div className="rounded-[20px] border border-[#5C4033]/10 bg-white p-2 text-center shadow-sm">
+              <div key={`${category.name}-${idx}`} className="min-w-0 text-center">
+                <div className="mx-auto grid h-[76px] w-full max-w-[96px] place-items-center rounded-full bg-[#F8F3E8] p-1.5 sm:h-[88px]">
                   {category.image ? (
                     <img
                       src={category.image}
                       alt={category.name}
-                      className="h-16 w-16 rounded-full object-cover mx-auto border-2 border-[#F8F3E8]"
+                      className="h-full w-full rounded-full object-cover"
                     />
                   ) : (
-                    <div className="h-16 w-16 rounded-full bg-[#556B2F]/10 mx-auto" />
+                    <div className="h-full w-full rounded-full bg-[#556B2F]/10" />
                   )}
-                  <p className="mt-2 min-h-8 grid place-items-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#5C4033]">
-                    {category.name}
-                  </p>
                 </div>
+                <p className="mt-1.5 min-h-8 px-0.5 text-[10px] font-bold leading-tight text-[#5C4033] sm:text-[11px]">
+                  {category.name}
+                </p>
               </div>
             ))}
           </div>
@@ -159,8 +134,8 @@ const Home = () => {
       </section>
 
       {featuredOffer && (
-        <section className="pb-4">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="px-3 pb-3 sm:px-4">
+          <div className="mx-auto max-w-[568px]">
             <div className="rounded-[22px] bg-gradient-to-r from-[#8B1E1E] to-[#5C4033] p-4 text-white shadow-md">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -180,27 +155,27 @@ const Home = () => {
         </section>
       )}
 
-      <section className="pb-5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="px-3 pb-4 sm:px-4">
+        <div className="mx-auto max-w-[568px]">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-serif font-bold text-[#5C4033]">Popular Pickles</h2>
-            <Link to="/flavours" className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8B1E1E]">
-              See more
+            <h2 className="text-2xl font-serif font-bold text-[#556B2F]">Popular Pickles</h2>
+            <Link to="/flavours" className="inline-flex items-center gap-1 text-xs font-bold text-[#556B2F]">
+              View All <ArrowRight size={15} />
             </Link>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="grid grid-flow-col auto-cols-[minmax(220px,1fr)] gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[520px]:grid-flow-row min-[520px]:grid-cols-3 min-[520px]:auto-cols-auto min-[520px]:overflow-visible">
             {popularProducts.map((product) => (
-              <div key={product.id} className="min-w-[250px] max-w-[260px] snap-start">
-                <ProductCard product={product} offer={offers[0]} />
+              <div key={product.id} className="min-w-0">
+                <ProductCard product={product} offer={offers[0]} compact />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="pb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="px-3 pb-6 sm:px-4">
+        <div className="mx-auto max-w-[568px]">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-serif font-bold text-[#5C4033]">What Our Customers Say</h2>
             <Link to="/reviews" className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8B1E1E]">
