@@ -14,25 +14,27 @@ const Home = () => {
   const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      const [storeSettings, fetchedProducts] = await Promise.all([
-        refreshStoreSettings().catch(() => getStoreSettings()),
-        getProducts(),
-      ]);
+    let isMounted = true;
 
-      const visibleProducts = fetchedProducts.filter((product) => product.visible);
-      const activeOffers = getOffers().filter((offer) => offer.active);
-      const availableTypes = getProductTypes();
-      const allReviews = getReviews().filter((r) => r.visible);
+    setProductTypes(getProductTypes());
+    setOffers(getOffers().filter((offer) => offer.active));
+    setReviews(getReviews().filter((review) => review.visible).slice(0, 3));
 
-      setSettings(storeSettings);
-      setProducts(visibleProducts);
-      setProductTypes(availableTypes);
-      setOffers(activeOffers);
-      setReviews(allReviews.slice(0, 3));
+    getProducts().then((fetchedProducts) => {
+      if (isMounted) {
+        setProducts(fetchedProducts.filter((product) => product.visible));
+      }
+    });
+
+    refreshStoreSettings()
+      .catch(() => getStoreSettings())
+      .then((storeSettings) => {
+        if (isMounted) setSettings(storeSettings);
+      });
+
+    return () => {
+      isMounted = false;
     };
-
-    loadData();
   }, []);
 
   const brandTagline = settings?.brandTagline || 'Authentic Andhra Pickles & Podis Handcrafted with Love.';
@@ -113,7 +115,7 @@ const Home = () => {
           <div className="grid grid-cols-4 gap-1 sm:gap-2">
             {categoryShortcuts.map((category, idx) => (
               <div key={`${category.name}-${idx}`} className="min-w-0 text-center">
-                <div className="mx-auto grid h-[76px] w-full max-w-[96px] place-items-center rounded-full bg-[#F8F3E8] p-1.5 sm:h-[88px]">
+                <div className="mx-auto grid h-[76px] w-[76px] place-items-center overflow-hidden rounded-full bg-[#F8F3E8] p-1.5 sm:h-[88px] sm:w-[88px]">
                   {category.image ? (
                     <img
                       src={category.image}
