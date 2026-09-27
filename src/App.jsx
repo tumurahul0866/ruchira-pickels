@@ -14,7 +14,6 @@ import Footer from './components/layout/Footer';
 
 // Customer Pages
 import Home from './pages/Home';
-import Flavours from './pages/Flavours';
 import ProductDetail from './pages/ProductDetail';
 import Reviews from './pages/Reviews';
 import About from './pages/About';
@@ -74,7 +73,7 @@ function App() {
 
               {/* Customer Routes */}
               <Route path="/" element={<CustomerLayout><Home /></CustomerLayout>} />
-              <Route path="/flavours" element={<CustomerLayout><Flavours /></CustomerLayout>} />
+              <Route path="/flavours" element={<Navigate to="/" replace />} />
               <Route path="/about" element={<CustomerLayout><About /></CustomerLayout>} />
               <Route path="/product/:id" element={<CustomerLayout><ProductDetail /></CustomerLayout>} />
               <Route path="/reviews" element={<CustomerLayout><Reviews /></CustomerLayout>} />

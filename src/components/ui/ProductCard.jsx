@@ -125,6 +125,26 @@ const ProductCard = ({ product, compact = false }) => {
           {!compact && <p className="text-xs text-[#5C4033]/70 line-clamp-2 mb-4 leading-relaxed">{product.description}</p>}
 
           {/* Weight Option Selector */}
+          {compact && variantOptions.length > 1 && (
+            <div className="mb-2 flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {variantOptions.map((variant, index) => {
+                const selected = (selectedWeight.label ?? selectedWeight.weight) === (variant.label ?? variant.weight);
+                return (
+                  <button
+                    key={`${variant.label}-${index}`}
+                    type="button"
+                    onClick={() => setSelectedWeight(variant)}
+                    aria-pressed={selected}
+                    className={`min-w-[36px] shrink-0 truncate rounded-md border px-1 py-1 text-[9px] font-bold ${
+                      selected ? 'border-[#8B1E1E] bg-[#8B1E1E]/10 text-[#8B1E1E]' : 'border-[#5C4033]/15 text-[#5C4033]'
+                    }`}
+                  >
+                    {variant.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {!compact && <div className="mb-4">
             <label className="block text-[10px] uppercase font-bold tracking-wider text-[#5C4033]/70 mb-1.5">
               {isLegacy ? `Select ${product.quantityType || 'Weight'}` : `Price per ${getProductUnitLabel(product)}`}:

@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Store, Tag, Heart, Star, ShoppingCart } from 'lucide-react';
+import { Home, Tag, Heart, MessageCircle, ShoppingCart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { getWishlist } from '../../services/dataStore';
@@ -21,12 +21,6 @@ const FloatingNavbar = () => {
       isActive: location.pathname === '/',
     },
     {
-      name: 'Products',
-      path: '/flavours',
-      icon: Store,
-      isActive: location.pathname === '/flavours' || location.pathname.startsWith('/product'),
-    },
-    {
       name: 'Offers',
       path: '/offers',
       icon: Tag,
@@ -44,10 +38,10 @@ const FloatingNavbar = () => {
           (location.state?.tab === 'wishlist' || location.search.includes('tab=wishlist'))),
     },
     {
-      name: 'Reviews',
-      path: '/reviews',
-      icon: Star,
-      isActive: location.pathname === '/reviews',
+      name: 'Messages',
+      path: '/messages',
+      icon: MessageCircle,
+      isActive: location.pathname === '/messages' || location.pathname === '/reviews',
     },
     {
       name: 'Cart',
@@ -61,7 +55,7 @@ const FloatingNavbar = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 w-full bg-[#F8F3E8]/96 backdrop-blur-xl border-t border-[#5C4033]/15 shadow-[0_-4px_25px_rgba(92,64,51,0.08)] select-none">
       <div className="max-w-7xl mx-auto px-1 sm:px-4 lg:px-8">
-        <div className="grid grid-cols-6 h-[68px] sm:h-[76px] items-center">
+        <div className="grid grid-cols-5 h-[68px] sm:h-[76px] items-center">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.isActive;
