@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   getOrders,
   getUserProfile,
@@ -29,11 +29,23 @@ import {
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 
-const UserDashboard = () => {
+const UserDashboard = ({ defaultTab }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState(() =>
+    defaultTab || location.state?.tab || new URLSearchParams(location.search).get('tab') || 'orders'
+  );
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    } else if (defaultTab) {
+      setActiveTab(defaultTab);
+    }
+  }, [location.state, defaultTab]);
+
   const [orders, setOrders] = useState([]);
   const [userProfile, setUserProfileState] = useState(() => (user ? getUserProfile(user.email) : {
     name: '',

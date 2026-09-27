@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, Package, ShoppingBag, LogOut, Settings,
@@ -158,7 +158,6 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const loadStats = async () => {
-      if (!isAdmin) return;
       try {
         const rawProducts = await getProducts();
         const products = Array.isArray(rawProducts) ? rawProducts : [];
@@ -187,7 +186,7 @@ const AdminDashboard = () => {
     loadStats();
   }, [isAdmin, activeTab]);
 
-  const handleLogout = () => { logout(); navigate('/admin-login'); };
+  const handleLogout = () => { logout(); navigate('/'); };
   const handleNav = (id) => { setActiveTab(id); };
 
   // Lock page scroll while mobile sidebar is open
@@ -205,8 +204,6 @@ const AdminDashboard = () => {
       document.documentElement.style.overflow = '';
     };
   }, [sidebarOpen]);
-
-  if (!isAdmin) return <Navigate to="/admin-login" replace />;
 
   const statusBadge = (status) => {
     const map = {

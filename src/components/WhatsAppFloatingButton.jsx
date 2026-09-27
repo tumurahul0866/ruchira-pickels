@@ -13,7 +13,7 @@ const WhatsAppFloatingButton = () => {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50" style={{background: 'var(--color-brand-green)', color: 'white', padding: '1rem', borderRadius: '9999px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)'}} 
+      className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-50" style={{background: 'var(--color-brand-green)', color: 'white', padding: '0.85rem', borderRadius: '9999px', boxShadow: '0 4px 16px rgba(0,0,0,0.18)'}} 
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.98 }}
       initial={{ y: 100, opacity: 0 }}

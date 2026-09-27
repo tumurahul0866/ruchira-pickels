@@ -154,9 +154,6 @@ const Login = () => {
             Continue as Guest
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <p className="text-[11px] text-[#5C4033]/55">
-            Admin? <Link to="/admin-login" className="font-semibold text-[#5C4033]/75 hover:text-[#D97706]">Admin Login</Link>
-          </p>
         </div>
 
         {/* REGISTER LINK */}

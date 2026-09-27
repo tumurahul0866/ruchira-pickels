@@ -29,8 +29,8 @@ import Offers from './pages/Offers';
 import OurStory from './pages/OurStory';
 
 // Admin Pages
-import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLogin from './pages/admin/AdminLogin';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -43,7 +43,7 @@ const ScrollToTop = () => {
 
 // Customer Layout Wrapper
 const CustomerLayout = ({ children }) => (
-  <div className="flex flex-col min-h-screen bg-[#F8F3E8] text-[#5C4033] w-full relative">
+  <div className="flex flex-col min-h-screen bg-[#F8F3E8] text-[#5C4033] w-full relative pb-[76px] sm:pb-[80px]">
     <Navbar />
     <FloatingNavbar />
     {children}
@@ -61,8 +61,8 @@ function App() {
             <AnimatePresence mode="wait">
               <Routes>
               {/* Admin Routes */}
-              <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/admin-forgot-password" element={<ForgotPassword adminMode />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
               <Route
                 path="/admin/*"
                 element={
@@ -79,6 +79,7 @@ function App() {
               <Route path="/product/:id" element={<CustomerLayout><ProductDetail /></CustomerLayout>} />
               <Route path="/reviews" element={<CustomerLayout><Reviews /></CustomerLayout>} />
               <Route path="/contact" element={<CustomerLayout><Contact /></CustomerLayout>} />
+              <Route path="/messages" element={<CustomerLayout><Contact /></CustomerLayout>} />
               <Route path="/cart" element={<CustomerLayout><Cart /></CustomerLayout>} />
               <Route path="/checkout" element={<CustomerLayout><Checkout /></CustomerLayout>} />
               <Route path="/login" element={<CustomerLayout><Login /></CustomerLayout>} />
@@ -89,6 +90,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <CustomerLayout><UserDashboard /></CustomerLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/wishlist"
+                element={
+                  <ProtectedRoute>
+                    <CustomerLayout><UserDashboard defaultTab="wishlist" /></CustomerLayout>
                   </ProtectedRoute>
                 }
               />

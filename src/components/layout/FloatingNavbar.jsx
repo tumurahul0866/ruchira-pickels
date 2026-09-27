@@ -1,155 +1,121 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Utensils, Tag, Info, Star, Mail, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Home, Store, Tag, Heart, MessageSquare, ShoppingCart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-
-const navItems = [
-  { name: 'Home', path: '/', icon: Home },
-  { name: 'Flavours', path: '/flavours', icon: Utensils },
-  { name: 'Offers', path: '/offers', icon: Tag },
-  { name: 'About Us', path: '/about', icon: Info },
-  { name: 'Reviews', path: '/reviews', icon: Star },
-  { name: 'Contact', path: '/contact', icon: Mail },
-];
+import { useAuth } from '../../context/AuthContext';
+import { getWishlist } from '../../services/dataStore';
 
 const FloatingNavbar = () => {
+  const location = useLocation();
   const { cartItems } = useCart();
+  const { user } = useAuth();
+
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const [collapsed, setCollapsed] = useState(false);
+  const wishlistCount = getWishlist(user?.email || user?.phone || user?.id).length;
+
+  const navItems = [
+    {
+      name: 'Home',
+      path: '/',
+      icon: Home,
+      isActive: location.pathname === '/',
+    },
+    {
+      name: 'Products',
+      path: '/flavours',
+      icon: Store,
+      isActive: location.pathname === '/flavours' || location.pathname.startsWith('/product'),
+    },
+    {
+      name: 'Offers',
+      path: '/offers',
+      icon: Tag,
+      isActive: location.pathname === '/offers',
+    },
+    {
+      name: 'Wishlist',
+      path: user ? '/dashboard' : '/login',
+      state: user ? { tab: 'wishlist' } : undefined,
+      icon: Heart,
+      badge: wishlistCount > 0 ? wishlistCount : null,
+      isActive:
+        location.pathname === '/wishlist' ||
+        (location.pathname === '/dashboard' &&
+          (location.state?.tab === 'wishlist' || location.search.includes('tab=wishlist'))),
+    },
+    {
+      name: 'Messages',
+      path: '/contact',
+      icon: MessageSquare,
+      isActive: location.pathname === '/contact' || location.pathname === '/messages',
+    },
+    {
+      name: 'Cart',
+      path: '/cart',
+      icon: ShoppingCart,
+      badge: cartCount > 0 ? cartCount : null,
+      isActive: location.pathname === '/cart' || location.pathname === '/checkout',
+    },
+  ];
 
   return (
-    <motion.aside
-      initial={{ x: 80, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
-      className="fixed right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-1 py-2 px-1 rounded-2xl floating-nav-panel"
-      style={{ minWidth: 36 }}
-    >
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="p-1.5 rounded-full text-[#5C4033]/40 hover:text-[#D97706] hover:bg-[#D97706]/10 transition-all mb-1"
-        title={collapsed ? 'Expand' : 'Collapse'}
-      >
-        <AnimatePresence mode="wait">
-          {collapsed
-            ? <motion.div key="expand" initial={{ rotate: -90 }} animate={{ rotate: 0 }} exit={{ rotate: 90 }}><ChevronLeft size={14} /></motion.div>
-            : <motion.div key="collapse" initial={{ rotate: 90 }} animate={{ rotate: 0 }} exit={{ rotate: -90 }}><ChevronRight size={14} /></motion.div>
-          }
-        </AnimatePresence>
-      </button>
-
-      <AnimatePresence>
-        {!collapsed && (
-          <motion.div
-            initial={{ opacity: 0, scaleY: 0.7 }}
-            animate={{ opacity: 1, scaleY: 1 }}
-            exit={{ opacity: 0, scaleY: 0.7 }}
-            transition={{ duration: 0.25 }}
-            className="flex flex-col items-center gap-1.5 origin-top"
-          >
-            {navItems.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.name}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.06 }}
-                >
-                  <NavLink
-                    to={item.path}
-                    className={({ isActive }) =>
-                      `group relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-300 ${
-                        isActive
-                          ? 'bg-gradient-to-br from-[#8B1E1E] to-[#A52020] text-white shadow-lg scale-110'
-                          : 'text-[#5C4033]/60 hover:bg-[#D97706]/12 hover:text-[#D97706] hover:scale-105'
-                      }`
-                    }
-                    title={item.name}
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-                        {/* Tooltip */}
-                        <span className="absolute right-14 whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 delay-100 bg-[#5C4033] text-[#F8F3E8] text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xl">
-                          {item.name}
-                          <span className="absolute top-1/2 -translate-y-1/2 right-[-5px] w-0 h-0 border-y-4 border-y-transparent border-l-[5px] border-l-[#5C4033]" />
-                        </span>
-                      </>
-                    )}
-                  </NavLink>
-                </motion.div>
-              );
-            })}
-
-            {/* Divider */}
-            <div className="w-7 h-px bg-gradient-to-r from-transparent via-[#5C4033]/20 to-transparent my-1" />
-
-            {/* Cart */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: navItems.length * 0.06 }}
-            >
-              <NavLink
-                to="/cart"
-                className={({ isActive }) =>
-                  `group relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-300 ${
-                    isActive
-                      ? 'bg-gradient-to-br from-[#8B1E1E] to-[#A52020] text-white shadow-lg scale-110'
-                      : 'text-[#5C4033]/60 hover:bg-[#D97706]/12 hover:text-[#D97706] hover:scale-105'
-                  }`
-                }
-                title="Cart"
-              >
-                <ShoppingCart size={20} strokeWidth={1.8} />
-                {cartCount > 0 && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 bg-[#8B1E1E] text-white text-[9px] font-bold rounded-full h-4 w-4 grid place-items-center shadow-md"
-                  >
-                    {cartCount}
-                  </motion.span>
-                )}
-                <span className="absolute right-14 whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 delay-100 bg-[#5C4033] text-[#F8F3E8] text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xl">
-                  Cart {cartCount > 0 ? `(${cartCount})` : ''}
-                  <span className="absolute top-1/2 -translate-y-1/2 right-[-5px] w-0 h-0 border-y-4 border-y-transparent border-l-[5px] border-l-[#5C4033]" />
-                </span>
-              </NavLink>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* When collapsed — show only icons without labels */}
-      {collapsed && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col items-center gap-1.5"
-        >
-          {[...navItems, { name: 'Cart', path: '/cart', icon: ShoppingCart }].map((item) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-40 w-full bg-[#F8F3E8]/96 backdrop-blur-xl border-t border-[#5C4033]/15 shadow-[0_-4px_25px_rgba(92,64,51,0.08)] select-none">
+      <div className="max-w-7xl mx-auto px-1 sm:px-4 lg:px-8">
+        <div className="grid grid-cols-6 h-[68px] sm:h-[76px] items-center">
+          {navItems.map((item) => {
             const Icon = item.icon;
+            const active = item.isActive;
             return (
               <NavLink
                 key={item.name}
                 to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 ${
-                    isActive ? 'bg-[#8B1E1E] text-white' : 'text-[#5C4033]/50 hover:text-[#D97706]'
-                  }`
-                }
+                state={item.state}
+                className="relative flex flex-col items-center justify-center h-full py-1 group transition-all"
               >
-                <Icon size={16} />
+                <motion.div
+                  whileTap={{ scale: 0.92 }}
+                  className="flex flex-col items-center justify-center gap-1 w-full"
+                >
+                  <div className="relative flex items-center justify-center">
+                    <Icon
+                      className={`transition-all duration-200 ${
+                        active
+                          ? 'text-[#8B1E1E] scale-110'
+                          : 'text-[#5C4033]/70 group-hover:text-[#8B1E1E] group-hover:scale-105'
+                      }`}
+                      size={22}
+                      strokeWidth={active ? 2.4 : 1.8}
+                    />
+
+                    {item.badge !== null && item.badge !== undefined && (
+                      <span className="absolute -top-1.5 -right-2.5 bg-[#8B1E1E] text-white text-[9px] sm:text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-sm border border-[#F8F3E8] leading-none">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  <span
+                    className={`text-[10px] sm:text-[12px] tracking-tight text-center truncate max-w-full leading-none transition-colors duration-200 ${
+                      active ? 'text-[#8B1E1E] font-bold' : 'text-[#5C4033]/70 group-hover:text-[#8B1E1E]'
+                    }`}
+                  >
+                    {item.name}
+                  </span>
+                </motion.div>
+
+                {active && (
+                  <motion.div
+                    layoutId="bottomNavActiveIndicator"
+                    className="absolute bottom-0 w-8 sm:w-10 h-1 bg-[#8B1E1E] rounded-t-full"
+                    transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  />
+                )}
               </NavLink>
             );
           })}
-        </motion.div>
-      )}
-    </motion.aside>
+        </div>
+      </div>
+    </nav>
   );
 };
 
