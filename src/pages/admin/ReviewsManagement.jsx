@@ -25,14 +25,18 @@ const ReviewsManagement = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    saveReview({ ...formState, rating: Number(formState.rating) });
-    refresh();
-    setMessage('Review saved successfully.');
-    setFormState({ id: '', name: '', rating: 5, text: '', visible: true });
-    setIsEditing(false);
-    setTimeout(() => setMessage(''), 3000);
+    try {
+      await saveReview({ ...formState, rating: Number(formState.rating) });
+      refresh();
+      setMessage('Review saved successfully.');
+      setFormState({ id: '', name: '', rating: 5, text: '', visible: true });
+      setIsEditing(false);
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Review could not be saved. Please try again.');
+    }
   };
 
   const handleDelete = async (id) => {

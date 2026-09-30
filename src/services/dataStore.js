@@ -813,8 +813,8 @@ const getReviewsFromLocal = () => {
 
 export const getReviews = () => getReviewsFromLocal();
 
-export const saveReview = (review) => {
-  const reviews = getReviewsFromLocal();
+export const saveReview = async (review) => {
+  reviewsMutationVersion += 1;
   const normalized = {
     id: review.id || Date.now().toString(),
     name: review.name || 'Valued Customer',
@@ -829,16 +829,6 @@ export const saveReview = (review) => {
     visible: review.visible !== undefined ? review.visible : true,
     verifiedBuyer: review.verifiedBuyer !== undefined ? review.verifiedBuyer : true,
   };
-  const existingIndex = reviews.findIndex((item) => item.id === normalized.id);
-  const nextReviews = existingIndex >= 0 ? [...reviews] : [normalized, ...reviews];
-  if (existingIndex >= 0) {
-    nextReviews[existingIndex] = normalized;
-  }
-  syncLocalReviews(nextReviews);
-
-  const method = normalized.id && existingIndex >= 0 ? 'PUT' : 'POST';
-  const url = normalized.id && existingIndex >= 0 ? `${REVIEWS_API}/${normalized.id}` : REVIEWS_API;
-
   // Attach user metadata if present
   try {
     const storedUser = localStorage.getItem('vasuki_user');
@@ -852,14 +842,35 @@ export const saveReview = (review) => {
     // ignore
   }
 
-  fetch(url, {
+  const method = review.id ? 'PUT' : 'POST';
+  const url = method === 'PUT' ? `${REVIEWS_API}/${normalized.id}` : REVIEWS_API;
+  const response = await fetch(url, {
     method,
     headers: getApiHeaders(),
-    body: JSON.stringify({ ...normalized }),
-  }).catch(() => {
-    // offline fallback
+    body: JSON.stringify(normalized),
   });
-  return normalized;
+
+  let savedReview = normalized;
+  try {
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
+    }
+    savedReview = payload;
+  } catch (error) {
+    if (!response.ok) throw error;
+  }
+
+  reviewsMutationVersion += 1;
+  const cachedReviews = JSON.parse(localStorage.getItem('vasuki_reviews') || '[]');
+  const existingIndex = cachedReviews.findIndex((item) => String(item.id) === String(savedReview.id));
+  if (existingIndex >= 0) {
+    cachedReviews[existingIndex] = savedReview;
+  } else {
+    cachedReviews.unshift(savedReview);
+  }
+  syncLocalReviews(cachedReviews);
+  return savedReview;
 };
 
 export const deleteReview = async (id) => {

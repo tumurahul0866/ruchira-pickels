@@ -118,7 +118,7 @@ const Reviews = () => {
     setSubmitting(true);
 
     try {
-      saveReview({
+      await saveReview({
         name: user.name || user.email || 'Valued Customer',
         rating,
         text: reviewText.trim(),
