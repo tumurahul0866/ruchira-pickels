@@ -1,9 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Tag, Heart, MessageCircle, ShoppingCart } from 'lucide-react';
+import { Home, Tag, UserRound, Star, ShoppingCart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { getWishlist } from '../../services/dataStore';
 
 const FloatingNavbar = () => {
   const location = useLocation();
@@ -11,7 +10,6 @@ const FloatingNavbar = () => {
   const { user } = useAuth();
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const wishlistCount = getWishlist(user?.email || user?.phone || user?.id).length;
 
   const navItems = [
     {
@@ -27,21 +25,19 @@ const FloatingNavbar = () => {
       isActive: location.pathname === '/offers',
     },
     {
-      name: 'Wishlist',
+      name: 'Profile',
       path: user ? '/dashboard' : '/login',
-      state: user ? { tab: 'wishlist' } : undefined,
-      icon: Heart,
-      badge: wishlistCount > 0 ? wishlistCount : null,
-      isActive:
-        location.pathname === '/wishlist' ||
+      state: user ? { tab: 'profile' } : undefined,
+      icon: UserRound,
+      isActive: location.pathname === '/login' ||
         (location.pathname === '/dashboard' &&
-          (location.state?.tab === 'wishlist' || location.search.includes('tab=wishlist'))),
+          (location.state?.tab === 'profile' || location.search.includes('tab=profile'))),
     },
     {
-      name: 'Messages',
-      path: '/messages',
-      icon: MessageCircle,
-      isActive: location.pathname === '/messages' || location.pathname === '/reviews',
+      name: 'Review',
+      path: '/reviews',
+      icon: Star,
+      isActive: location.pathname === '/reviews' || location.pathname === '/messages',
     },
     {
       name: 'Cart',
@@ -70,23 +66,25 @@ const FloatingNavbar = () => {
                   whileTap={{ scale: 0.92 }}
                   className="flex flex-col items-center justify-center gap-1 w-full"
                 >
-                  <div className="relative flex items-center justify-center">
-                    <Icon
-                      className={`transition-all duration-200 ${
-                        active
-                          ? 'text-[#8B1E1E] scale-110'
-                          : 'text-[#5C4033]/70 group-hover:text-[#8B1E1E] group-hover:scale-105'
-                      }`}
-                      size={22}
-                      strokeWidth={active ? 2.4 : 1.8}
-                    />
+                  {Icon && (
+                    <div className="relative flex items-center justify-center">
+                      <Icon
+                        className={`transition-all duration-200 ${
+                          active
+                            ? 'text-[#8B1E1E] scale-110'
+                            : 'text-[#5C4033]/70 group-hover:text-[#8B1E1E] group-hover:scale-105'
+                        }`}
+                        size={22}
+                        strokeWidth={active ? 2.4 : 1.8}
+                      />
 
-                    {item.badge !== null && item.badge !== undefined && (
-                      <span className="absolute -top-1.5 -right-2.5 bg-[#8B1E1E] text-white text-[9px] sm:text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-sm border border-[#F8F3E8] leading-none">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
+                      {item.badge !== null && item.badge !== undefined && (
+                        <span className="absolute -top-1.5 -right-2.5 bg-[#8B1E1E] text-white text-[9px] sm:text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-sm border border-[#F8F3E8] leading-none">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   <span
                     className={`text-[10px] sm:text-[12px] tracking-tight text-center truncate max-w-full leading-none transition-colors duration-200 ${

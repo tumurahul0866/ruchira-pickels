@@ -159,73 +159,6 @@ const Reviews = () => {
           </p>
         </div>
 
-        {/* Existing Customer Reviews Grid (Requirement 4) */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-[#5C4033]/15 pb-4">
-            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#5C4033]">
-              Customer Experiences ({reviews.length})
-            </h2>
-          </div>
-
-          {reviews.length === 0 ? (
-            <div className="text-center py-12 bg-white/60 rounded-3xl border border-[#5C4033]/10 p-8">
-              <p className="text-[#5C4033]/70 text-sm">No reviews published yet. Be the first to write a review below!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reviews.map((rev, idx) => {
-                const initial = (rev.name || 'C').charAt(0).toUpperCase();
-                return (
-                  <motion.div
-                    key={rev.id || idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="p-6 rounded-[22px] bg-white border border-[#5C4033]/15 flex flex-col justify-between shadow-sm hover:shadow-md transition-all space-y-4"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <StarRatingDisplay rating={rev.rating || 5} />
-                        {rev.verifiedBuyer !== false && (
-                          <span className="text-[10px] font-bold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                            <CheckCircle2 size={12} /> Verified Buyer
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-[#5C4033] leading-relaxed italic">
-                        "{rev.text}"
-                      </p>
-                    </div>
-
-                    <div className="pt-4 border-t border-[#5C4033]/10 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] text-[#F8F3E8] font-serif font-bold text-base flex items-center justify-center shrink-0 shadow-sm border border-[#D97706]/30">
-                          {initial}
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-serif font-bold text-[#5C4033] leading-tight">
-                            {rev.name}
-                          </h3>
-                          {rev.product && (
-                            <p className="text-xs text-[#556B2F] font-semibold leading-tight mt-0.5">
-                              {rev.product}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      {rev.date && (
-                        <span className="text-[11px] font-medium text-[#5C4033]/60 shrink-0">
-                          {rev.date}
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
         {/* WRITE A REVIEW Section (Requirement 5, 6, 7, 8) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -324,6 +257,73 @@ const Reviews = () => {
             </div>
           )}
         </motion.div>
+
+        {/* Existing Customer Reviews Grid (Requirement 4) */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-[#5C4033]/15 pb-4">
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#5C4033]">
+              Customer Experiences ({reviews.length})
+            </h2>
+          </div>
+
+          {reviews.length === 0 ? (
+            <div className="text-center py-12 bg-white/60 rounded-3xl border border-[#5C4033]/10 p-8">
+              <p className="text-[#5C4033]/70 text-sm">No reviews published yet. Be the first to write a review below!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {reviews.map((rev, idx) => {
+                const initial = (rev.name || 'C').charAt(0).toUpperCase();
+                return (
+                  <motion.div
+                    key={rev.id || idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="p-6 rounded-[22px] bg-white border border-[#5C4033]/15 flex flex-col justify-between shadow-sm hover:shadow-md transition-all space-y-4"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <StarRatingDisplay rating={rev.rating || 5} />
+                        {rev.verifiedBuyer !== false && (
+                          <span className="text-[10px] font-bold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Verified Buyer
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-[#5C4033] leading-relaxed italic">
+                        "{rev.text}"
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-[#5C4033]/10 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] text-[#F8F3E8] font-serif font-bold text-base flex items-center justify-center shrink-0 shadow-sm border border-[#D97706]/30">
+                          {initial}
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-serif font-bold text-[#5C4033] leading-tight">
+                            {rev.name}
+                          </h3>
+                          {rev.product && (
+                            <p className="text-xs text-[#556B2F] font-semibold leading-tight mt-0.5">
+                              {rev.product}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {rev.date && (
+                        <span className="text-[11px] font-medium text-[#5C4033]/60 shrink-0">
+                          {rev.date}
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
       </div>
     </div>

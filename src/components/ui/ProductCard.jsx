@@ -9,17 +9,18 @@ import { toggleWishlist, isProductInWishlist, getProductUnitPrice, getProductUni
 const ProductCard = ({ product, compact = false }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const wishlistKey = user?.email || user?.phone || user?.id;
 
   const isLegacy = isLegacyProduct(product);
   const variantOptions = getProductVariants(product);
   const [selectedWeight, setSelectedWeight] = useState(() => variantOptions[0]);
-  const [isWishlisted, setIsWishlisted] = useState(isProductInWishlist(user?.email, product.id));
+  const [isWishlisted, setIsWishlisted] = useState(isProductInWishlist(wishlistKey, product.id));
   const [addedToast, setAddedToast] = useState(false);
 
   const handleWishlistToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const updatedList = toggleWishlist(user?.email, product.id);
+    const updatedList = toggleWishlist(wishlistKey, product.id);
     setIsWishlisted(updatedList.includes(product.id));
   };
 

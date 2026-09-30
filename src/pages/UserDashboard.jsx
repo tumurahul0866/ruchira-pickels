@@ -33,6 +33,7 @@ const UserDashboard = ({ defaultTab }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const wishlistKey = user?.email || user?.phone || user?.id;
 
   const [activeTab, setActiveTab] = useState(() =>
     defaultTab || location.state?.tab || new URLSearchParams(location.search).get('tab') || 'orders'
@@ -77,10 +78,10 @@ const UserDashboard = ({ defaultTab }) => {
 
   const storeSettings = getStoreSettings();
 
-  const loadWishlist = async (email) => {
-    const ids = getWishlist(email);
+  const loadWishlist = async (userKey) => {
+    const ids = new Set(getWishlist(userKey).map(String));
     const allProds = await getProducts();
-    const wishProds = allProds.filter((p) => ids.includes(p.id));
+    const wishProds = allProds.filter((p) => ids.has(String(p.id)));
     setWishlistProducts(wishProds);
   };
 
@@ -90,10 +91,9 @@ const UserDashboard = ({ defaultTab }) => {
       return;
     }
 
-    const userKey = user.email || user.phone || user.id;
-    const ids = getWishlist(userKey);
+    const ids = new Set(getWishlist(wishlistKey).map(String));
     getProducts().then((allProds) => {
-      setWishlistProducts(allProds.filter((p) => ids.includes(p.id)));
+      setWishlistProducts(allProds.filter((p) => ids.has(String(p.id))));
     });
 
     const loadOrders = async () => {
@@ -179,8 +179,8 @@ const UserDashboard = ({ defaultTab }) => {
   };
 
   const handleRemoveFromWishlist = (productId) => {
-    toggleWishlist(user.email, productId);
-    loadWishlist(user.email);
+    toggleWishlist(wishlistKey, productId);
+    loadWishlist(wishlistKey);
   };
 
   const handleWhatsAppOrderInquiry = (order) => {

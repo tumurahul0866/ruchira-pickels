@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Flame, MessageCircle, Search, Sparkles, Star, X } from 'lucide-react';
+import { ArrowRight, Flame, MessageCircle, Sparkles, Star } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getReviews } from '../services/dataStore';
 
@@ -39,7 +39,7 @@ const Home = () => {
   const [reviews, setReviews] = useState([]);
   const [copiedCode, setCopiedCode] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
 
   useEffect(() => {
@@ -83,13 +83,6 @@ const Home = () => {
 
     return searchableText.includes(searchQuery.trim().toLowerCase());
   });
-
-  const updateSearch = (value) => {
-    const nextParams = new URLSearchParams(searchParams);
-    if (value.trim()) nextParams.set('search', value);
-    else nextParams.delete('search');
-    setSearchParams(nextParams, { replace: true });
-  };
 
   const handleWhatsAppOrder = () => {
     const text = 'Hi Vasuki Pickles! I would like to inquire about your pickle & podi products.';
@@ -158,30 +151,6 @@ const Home = () => {
 
       <section className="px-3 pb-4 sm:px-4">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-3 flex items-center gap-2 md:hidden">
-            <div className="relative min-w-0 flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#556B2F]" />
-              <input
-                id="home-search"
-                type="search"
-                value={searchQuery}
-                onChange={(event) => updateSearch(event.target.value)}
-                placeholder="Search all products..."
-                aria-label="Search all products"
-                className="w-full rounded-full border border-[#5C4033]/15 bg-white py-2.5 pl-9 pr-9 text-sm text-[#5C4033] shadow-sm focus:border-[#D97706]"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => updateSearch('')}
-                  aria-label="Clear search"
-                  className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-[#5C4033]/65"
-                >
-                  <X size={15} />
-                </button>
-              )}
-            </div>
-          </div>
-
           <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {homeCategories.map((category) => (
               <button

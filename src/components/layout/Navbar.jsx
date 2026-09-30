@@ -1,24 +1,19 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ShoppingCart, User, Shield, Menu, X, LogOut, Search, Heart, Sparkles } from 'lucide-react';
-import { useCart } from '../../context/CartContext';
+import { Search, Heart, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getWishlist, getOffers } from '../../services/dataStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
-  const { cartItems } = useCart();
-  const { user, isAdmin, logout } = useAuth();
+  const { user } = useAuth();
+  const wishlistCount = getWishlist(user?.email || user?.phone || user?.id).length;
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const wishlistCount = getWishlist(user?.email).length;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -35,11 +30,6 @@ const Navbar = () => {
     return activeOffers.length > 0 ? activeOffers[0] : null;
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
   const handleSearchChange = (value) => {
     setSearchQuery(value);
     if (location.pathname === '/') {
@@ -55,7 +45,6 @@ const Navbar = () => {
       e.preventDefault();
       const query = searchQuery.trim();
       navigate(query ? `/?search=${encodeURIComponent(query)}#products` : '/#products');
-      setIsOpen(false);
       setIsSearchOpen(false);
     }
   };
@@ -113,77 +102,29 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Right Side Actions — Cart, Wishlist, User Login & Admin Login */}
-            <div className="hidden md:flex items-center gap-2 lg:gap-3">
-              
-              {/* Wishlist */}
-              {!isAdmin && (
-                <Link
-                  to={user ? '/dashboard' : '/login'}
-                  className="relative p-2.5 rounded-xl text-[#556B2F] hover:text-[#8B1E1E] hover:bg-[#8B1E1E]/08 transition-all"
-                  title="Wishlist"
-                >
-                  <Heart size={20} />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-[#8B1E1E] text-white text-[9px] font-bold rounded-full h-4 w-4 grid place-items-center">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Link>
-              )}
-
-              {/* Cart Button */}
-              {!isAdmin && (
-                <Link
-                  to="/cart"
-                  className="relative flex items-center gap-2 px-4 py-2 rounded-full bg-[#8B1E1E] text-white font-bold hover:bg-[#A52020] transition-all duration-300 shadow-md hover:shadow-lg text-xs tracking-wide"
-                >
-                  <ShoppingCart size={17} className="text-[#FFD700]" />
-                  <span className="text-white font-bold">Cart</span>
-                  {cartCount > 0 ? (
-                    <span className="bg-[#FFD700] text-[#8B1E1E] text-[10px] font-extrabold rounded-full h-4.5 w-4.5 grid place-items-center shadow-sm">
-                      {cartCount}
-                    </span>
-                  ) : (
-                    <span className="text-[#FFD700] font-bold text-xs">(0)</span>
-                  )}
-                </Link>
-              )}
-
-              {/* User Login & Admin Login Buttons */}
-              {isAdmin ? (
-                <div className="flex items-center gap-2">
-                  <Link to="/admin" className="px-3.5 py-1.5 rounded-full bg-[#556B2F] text-white text-xs font-bold hover:bg-[#6B8E23] transition-colors shadow-sm flex items-center gap-1.5">
-                    <Shield size={14} className="text-[#FFD700]" />
-                    Admin Panel
-                  </Link>
-                  <button onClick={handleLogout} className="p-2 text-[#556B2F] hover:text-[#8B1E1E] transition-colors" title="Logout">
-                    <LogOut size={18} />
-                  </button>
-                </div>
-              ) : user ? (
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/dashboard"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#5C4033]/15 hover:border-[#D97706]/50 text-[#5C4033] text-xs font-semibold transition-all shadow-sm"
-                  >
-                    <User size={16} className="text-[#556B2F]" />
-                    <span className="max-w-[70px] truncate">{user.name?.split(' ')[0]}</span>
-                  </Link>
-                  <button onClick={handleLogout} className="p-2 text-[#556B2F] hover:text-[#8B1E1E] transition-colors" title="Logout">
-                    <LogOut size={18} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/login"
-                    className="px-4 py-2 rounded-full border-2 border-[#8B1E1E] text-[#8B1E1E] hover:bg-[#8B1E1E] hover:text-white transition-all text-xs font-bold"
-                  >
-                    Login
-                  </Link>
-                </div>
-              )}
+            <div className="hidden md:flex items-center gap-1">
+              <Link
+                to="/wishlist"
+                className="relative rounded-xl p-2.5 text-[#556B2F] transition-all hover:bg-[#8B1E1E]/[0.08] hover:text-[#8B1E1E]"
+                title="Wishlist"
+                aria-label="Wishlist"
+              >
+                <Heart size={20} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid h-4 w-4 place-items-center rounded-full bg-[#8B1E1E] text-[9px] font-bold text-white">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+              <Link
+                to={user ? '/dashboard' : '/login'}
+                state={user ? { tab: 'profile' } : undefined}
+                className="px-3 py-2 text-xs font-bold uppercase text-[#556B2F] transition-colors hover:text-[#8B1E1E]"
+                title="Profile"
+                aria-label="Profile"
+              >
+                Profile
+              </Link>
             </div>
 
             {/* Mobile right side */}
@@ -195,31 +136,13 @@ const Navbar = () => {
               >
                 <Search size={20} />
               </button>
-              {!isAdmin && (
-                <Link to={user ? '/dashboard' : '/login'} state={user ? { tab: 'wishlist' } : undefined} className="relative p-1.5 rounded-full text-[#5C4033] hover:bg-white/70" aria-label="Wishlist">
-                  <Heart size={20} />
-                  {wishlistCount > 0 && <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#8B1E1E] px-1 text-[9px] font-bold text-white">{wishlistCount}</span>}
-                </Link>
-              )}
-              <Link to={user ? '/dashboard' : '/login'} className="p-1.5 rounded-full text-[#5C4033] hover:bg-white/70" aria-label="Account">
-                <User size={20} />
+              <Link to="/wishlist" className="relative p-1.5 text-[#5C4033] hover:text-[#8B1E1E]" aria-label="Wishlist" title="Wishlist">
+                <Heart size={20} />
+                {wishlistCount > 0 && <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#8B1E1E] px-1 text-[9px] font-bold text-white">{wishlistCount}</span>}
               </Link>
-              <Link to="/cart" className="relative p-1.5 rounded-full bg-[#8B1E1E] text-white" aria-label={`Cart, ${cartCount} items`}>
-                <ShoppingCart size={19} className="text-[#FFD700]" />
-                {cartCount > 0 && <span className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#FFD700] px-1 text-[9px] font-extrabold text-[#8B1E1E]">{cartCount}</span>}
+              <Link to={user ? '/dashboard' : '/login'} state={user ? { tab: 'profile' } : undefined} className="px-2 py-1 text-xs font-bold uppercase text-[#5C4033] hover:text-[#8B1E1E]" aria-label="Profile" title="Profile">
+                Profile
               </Link>
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-1.5 text-[#5C4033] rounded-lg hover:bg-[#5C4033]/08 transition-colors"
-                aria-label="Toggle menu"
-              >
-                <AnimatePresence mode="wait">
-                  {isOpen
-                    ? <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}><X size={24} /></motion.div>
-                    : <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}><Menu size={24} /></motion.div>
-                  }
-                </AnimatePresence>
-              </button>
             </div>
           </div>
         </div>
@@ -249,67 +172,6 @@ const Navbar = () => {
           )}
         </AnimatePresence>
 
-        {/* Mobile Dropdown */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden bg-[#F8F3E8]/98 backdrop-blur-xl border-t border-[#5C4033]/10 px-4 pt-4 pb-6 space-y-3"
-            >
-              <div className="relative">
-                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#556B2F]" />
-                <input
-                  type="text"
-                  placeholder="Search pickles, podis, sweets..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  onKeyDown={handleSearch}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white border border-[#5C4033]/15 text-sm text-[#5C4033] focus:outline-none focus:border-[#D97706]"
-                />
-              </div>
-
-              <div className="pt-2 border-t border-[#5C4033]/10 flex flex-col gap-2">
-                {user ? (
-                  <>
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setIsOpen(false)}
-                      className="w-full text-center py-2.5 rounded-xl bg-white border border-[#5C4033]/15 text-[#5C4033] font-semibold text-sm shadow-sm"
-                    >
-                      My Dashboard & Orders
-                    </Link>
-                    {isAdmin && (
-                      <Link
-                        to="/admin"
-                        onClick={() => setIsOpen(false)}
-                        className="w-full text-center py-2.5 rounded-xl bg-[#556B2F] text-white font-semibold text-sm flex items-center justify-center gap-1.5"
-                      >
-                        <Shield size={16} className="text-[#FFD700]" /> Admin Panel
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => { handleLogout(); setIsOpen(false); }}
-                      className="w-full text-center py-2.5 rounded-xl bg-[#8B1E1E]/08 text-[#8B1E1E] font-semibold text-sm"
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    to="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="w-full text-center py-2.5 rounded-xl border-2 border-[#8B1E1E] text-[#8B1E1E] font-bold text-xs"
-                  >
-                    User Login
-                  </Link>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </nav>
     </header>
   );
