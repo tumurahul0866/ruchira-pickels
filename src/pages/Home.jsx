@@ -113,7 +113,7 @@ const Home = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="relative h-[230px] overflow-hidden rounded-[22px] border border-[#5C4033]/10 bg-[#5C4033] shadow-sm sm:h-[280px] lg:h-[320px]"
+            className="relative h-[230px] overflow-hidden rounded-none border border-[#5C4033]/10 bg-[#5C4033] shadow-sm sm:h-[280px] lg:h-[320px]"
           >
             {settings?.featureImageUrl ? (
               <img
@@ -205,7 +205,7 @@ const Home = () => {
       {featuredOffer && (
         <section className="px-3 pb-3 sm:px-4">
           <div className="mx-auto max-w-7xl">
-            <div className="rounded-[22px] bg-gradient-to-r from-[#8B1E1E] to-[#5C4033] p-4 text-white shadow-md">
+            <div className="rounded-none bg-gradient-to-r from-[#8B1E1E] to-[#5C4033] p-4 text-white shadow-md">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.2em] text-[#F8F3E8]/80">Offer</p>

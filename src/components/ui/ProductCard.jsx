@@ -48,12 +48,12 @@ const ProductCard = ({ product, compact = false }) => {
     <motion.div
       whileHover={{ y: -2, scale: 1.01 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className={`group overflow-hidden bg-white border border-[#5C4033]/10 shadow-md hover:shadow-lg hover:border-[#D97706]/40 transition-[box-shadow,border-color,transform] duration-300 ease-out flex flex-col justify-between ${compact ? 'relative aspect-square min-w-0 rounded-[16px]' : 'rounded-[18px]'}`}
+      className="group overflow-hidden bg-white border border-[#5C4033]/10 shadow-md hover:shadow-lg hover:border-[#D97706]/40 transition-[box-shadow,border-color,transform] duration-300 ease-out flex flex-col justify-between rounded-none"
     >
-      <div className={compact ? 'absolute inset-0' : ''}>
+      <div>
         {/* Product Image & Badges Container */}
-        <div className={`relative overflow-hidden bg-[#F8F3E8] ${compact ? 'absolute inset-0 aspect-square' : 'h-52'}`}>
-          <Link to={`/product/${product.id}`} className={compact ? 'absolute inset-0 block' : ''}>
+        <div className={`relative overflow-hidden bg-[#F8F3E8] ${compact ? 'h-32 sm:h-36' : 'h-52'}`}>
+          <Link to={`/product/${product.id}`}>
             <img
               src={product.image}
               alt={product.name}
@@ -105,7 +105,7 @@ const ProductCard = ({ product, compact = false }) => {
         </div>
 
         {/* Product Details Section */}
-        <div className={compact ? 'absolute inset-x-0 bottom-9 z-10 bg-gradient-to-t from-[#F8F3E8] via-[#F8F3E8]/95 to-transparent p-2.5 pb-1' : 'p-5'}>
+        <div className={compact ? 'p-2.5 pb-2' : 'p-5'}>
           {!compact && <div className="flex items-center justify-between gap-2 mb-1.5">
             <span className="text-[10px] uppercase font-bold tracking-widest text-[#556B2F]">
               {product.productType}
@@ -118,7 +118,7 @@ const ProductCard = ({ product, compact = false }) => {
           </div>}
 
           <Link to={`/product/${product.id}`}>
-            <h3 className={`font-serif font-bold text-[#5C4033] leading-tight group-hover:text-[#D97706] transition-colors line-clamp-2 ${compact ? 'text-xs min-h-9 mb-1 break-words' : 'text-lg mb-2 line-clamp-1'}`}>
+            <h3 className={`font-serif font-bold text-[#5C4033] leading-tight group-hover:text-[#D97706] transition-colors line-clamp-2 ${compact ? 'text-sm min-h-9' : 'text-lg mb-2 line-clamp-1'}`}>
               {product.name}
             </h3>
           </Link>
@@ -126,7 +126,7 @@ const ProductCard = ({ product, compact = false }) => {
 
           {/* Weight Option Selector */}
           {compact && variantOptions.length > 1 && (
-            <div className="mb-1 flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="mb-2 flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {variantOptions.map((variant, index) => {
                 const selected = (selectedWeight.label ?? selectedWeight.weight) === (variant.label ?? variant.weight);
                 return (
@@ -168,13 +168,14 @@ const ProductCard = ({ product, compact = false }) => {
               ))}
             </div>
           </div>}
+
         </div>
       </div>
 
       {/* Footer Price & Add to Cart */}
-      <div className={`${compact ? 'absolute inset-x-0 bottom-0 z-10 items-center gap-1.5 border-t border-[#5C4033]/10 bg-[#F8F3E8]/95 px-2 pb-2 pt-1' : 'p-5 pt-0 border-t border-[#5C4033]/10 mt-2 items-center gap-3'} flex justify-between`}>
+      <div className={`${compact ? 'px-2.5 pb-2.5 pt-0 flex-col items-stretch gap-2' : 'p-5 pt-0 border-t border-[#5C4033]/10 mt-2 items-center gap-3'} flex justify-between`}>
         {compact ? (
-          <p className="min-w-0 truncate whitespace-nowrap text-[10px] font-semibold text-[#5C4033]/75">
+          <p className="text-xs font-semibold text-[#5C4033]/75">
             {selectedWeight.label ?? selectedWeight.weight} <span className="px-1">·</span>
             <span className="font-bold text-[#8B1E1E]">₹{selectedWeight.price}</span>
           </p>
@@ -188,7 +189,7 @@ const ProductCard = ({ product, compact = false }) => {
         <button
           onClick={handleQuickAdd}
           disabled={!product.inStock}
-          className={`${compact ? 'shrink-0 justify-center gap-1 whitespace-nowrap px-1.5 py-1.5 text-[9px]' : 'px-4 py-2.5'} rounded-xl font-bold text-xs flex items-center transition-all shadow-sm ${
+          className={`${compact ? 'w-full justify-center px-2 py-2' : 'px-4 py-2.5'} rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-sm ${
             addedToast
               ? 'bg-[#556B2F] text-white'
               : product.inStock
@@ -202,7 +203,7 @@ const ProductCard = ({ product, compact = false }) => {
             </>
           ) : (
             <>
-              <ShoppingCart size={compact ? 12 : 16} /> Add to Cart
+              <ShoppingCart size={16} /> Add to Cart
             </>
           )}
         </button>
