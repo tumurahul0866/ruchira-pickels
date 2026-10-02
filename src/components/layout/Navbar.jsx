@@ -89,7 +89,7 @@ const Navbar = () => {
                 )}
               </div>
                   <div className="hidden min-[360px]:flex max-w-[86px] flex-col sm:max-w-[160px]">
-                    <span className="text-[9px] font-serif font-bold tracking-wide text-[#5C4033] leading-tight sm:text-sm lg:text-base">
+                    <span className="text-[11px] font-serif font-bold tracking-wide text-[#5C4033] leading-tight sm:text-base lg:text-lg">
                   J&D FOODS
                 </span>
                     <span className="hidden text-[9px] uppercase tracking-[0.16em] font-bold text-[#556B2F] leading-tight sm:block">
