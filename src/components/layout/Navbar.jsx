@@ -1,19 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Heart, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, Heart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { getWishlist, getOffers } from '../../services/dataStore';
+import { getWishlist, getStoreSettings, refreshStoreSettings } from '../../services/dataStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [storeSettings, setStoreSettings] = useState(() => getStoreSettings());
   const [scrolled, setScrolled] = useState(false);
   const { user } = useAuth();
   const wishlistCount = getWishlist(user?.email || user?.phone || user?.id).length;
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -22,12 +23,22 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    setSearchQuery(searchParams.get('search') || '');
-  }, [searchParams]);
-
-  const activeOffer = useMemo(() => {
-    const activeOffers = getOffers().filter((o) => o.active);
-    return activeOffers.length > 0 ? activeOffers[0] : null;
+    let isMounted = true;
+    const handleStoreSettingsUpdated = (event) => {
+      setStoreSettings(event.detail);
+    };
+    window.addEventListener('vasuki:store-settings-updated', handleStoreSettingsUpdated);
+    refreshStoreSettings()
+      .then((settings) => {
+        if (isMounted) setStoreSettings(settings);
+      })
+      .catch(() => {
+        if (isMounted) setStoreSettings(getStoreSettings());
+      });
+    return () => {
+      isMounted = false;
+      window.removeEventListener('vasuki:store-settings-updated', handleStoreSettingsUpdated);
+    };
   }, []);
 
   const handleSearchChange = (value) => {
@@ -50,17 +61,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className={`${location.pathname === '/' ? 'relative' : 'sticky top-0'} z-50 w-full`}>
-      {/* Top Announcement Bar — Render ONLY if active offer exists in Admin Portal */}
-      {activeOffer && (
-        <div className="bg-[#8B1E1E] text-[#F8F3E8] text-xs font-semibold py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2 shadow-sm">
-          <Sparkles size={14} className="text-[#FFD700] animate-pulse shrink-0" />
-          <span>
-            🎉 {activeOffer.title}: {activeOffer.description} | Code: <strong className="text-[#FFD700] font-mono bg-white/15 px-2 py-0.5 rounded-md border border-[#FFD700]/30">{activeOffer.code}</strong>
-          </span>
-        </div>
-      )}
-
+    <header className="sticky top-0 z-50 w-full bg-[#F8F3E8]">
       {/* Main Navbar */}
       <nav
         className={`transition-all duration-300 ${
@@ -74,18 +75,50 @@ const Navbar = () => {
 
             {/* Brand Logo */}
             <Link to="/" className="flex items-center gap-2 group shrink-0 sm:gap-3">
-                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] flex items-center justify-center text-[#F8F3E8] font-serif font-bold text-xl shadow-lg group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 border border-[#D97706]/30">
-                K
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#D97706]/30 bg-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
+                {storeSettings.logoUrl ? (
+                  <img src={storeSettings.logoUrl} alt="JD Foods logo" className="h-full w-full object-contain p-1" />
+                ) : (
+                  <span className="bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] bg-clip-text font-serif text-xl font-bold text-transparent">JD</span>
+                )}
               </div>
                   <div className="hidden min-[360px]:flex max-w-[86px] flex-col sm:max-w-[160px]">
                     <span className="text-[9px] font-serif font-bold tracking-wide text-[#5C4033] leading-tight sm:text-sm lg:text-base">
-                  KONASEMA RUCHULU
+                  JD FOODS
                 </span>
                     <span className="hidden text-[9px] uppercase tracking-[0.16em] font-bold text-[#556B2F] leading-tight sm:block">
                   Heritage Delta Pickles
                 </span>
               </div>
             </Link>
+
+            <nav aria-label="Main navigation" className="hidden items-center gap-3 lg:flex xl:gap-5">
+              {[
+              { label: 'Home', to: '/', end: true },
+              { label: 'Shop', to: '/#products', end: true },
+              { label: 'Offers', to: '/offers' },
+              { label: 'About', to: '/about' },
+              { label: 'Reviews', to: '/reviews' },
+              ].map(({ label, to, end }) => (
+              <NavLink
+                key={label}
+                to={to}
+                end={end}
+                className={({ isActive }) => {
+                  const isCurrentPage = label === 'Shop'
+                    ? isActive && location.hash === '#products'
+                    : label === 'Home'
+                      ? isActive && location.hash !== '#products'
+                      : isActive;
+                  return `whitespace-nowrap text-[10px] font-bold uppercase tracking-wide transition-colors xl:text-xs ${
+                    isCurrentPage ? 'text-[#8B1E1E]' : 'text-[#556B2F] hover:text-[#8B1E1E]'
+                  }`;
+                }}
+              >
+                {label}
+              </NavLink>
+              ))}
+            </nav>
 
             {/* Middle — Search Bar */}
             <div className="flex-1 min-w-0 max-w-xl mx-3 hidden md:block lg:mx-6">
@@ -116,15 +149,6 @@ const Navbar = () => {
                   </span>
                 )}
               </Link>
-              <Link
-                to={user ? '/dashboard' : '/login'}
-                state={user ? { tab: 'profile' } : undefined}
-                className="px-3 py-2 text-xs font-bold uppercase text-[#556B2F] transition-colors hover:text-[#8B1E1E]"
-                title="Profile"
-                aria-label="Profile"
-              >
-                Profile
-              </Link>
             </div>
 
             {/* Mobile right side */}
@@ -139,9 +163,6 @@ const Navbar = () => {
               <Link to="/wishlist" className="relative p-1.5 text-[#5C4033] hover:text-[#8B1E1E]" aria-label="Wishlist" title="Wishlist">
                 <Heart size={20} />
                 {wishlistCount > 0 && <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#8B1E1E] px-1 text-[9px] font-bold text-white">{wishlistCount}</span>}
-              </Link>
-              <Link to={user ? '/dashboard' : '/login'} state={user ? { tab: 'profile' } : undefined} className="px-2 py-1 text-xs font-bold uppercase text-[#5C4033] hover:text-[#8B1E1E]" aria-label="Profile" title="Profile">
-                Profile
               </Link>
             </div>
           </div>
