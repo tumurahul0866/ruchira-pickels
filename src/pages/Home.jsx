@@ -115,7 +115,7 @@ const Home = () => {
             )}
             <div className="absolute inset-0 bg-gradient-to-r from-[#24140F]/90 via-[#24140F]/65 to-transparent" />
 
-            <div className="absolute inset-y-0 left-0 flex max-w-[84%] flex-col items-start justify-center p-4 text-white sm:max-w-[58%] sm:p-6 lg:p-8">
+            <div className="absolute bottom-0 left-0 flex max-w-[84%] items-end p-4 text-white sm:max-w-[58%] sm:p-6 lg:p-8">
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   to="/#products"
