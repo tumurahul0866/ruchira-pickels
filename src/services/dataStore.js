@@ -269,6 +269,9 @@ const initialOffers = [
 
 const defaultStoreSettings = {
   logoUrl: '/logo.svg',
+  logoZoom: 1,
+  logoPositionX: 50,
+  logoPositionY: 50,
   heroBackgroundUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
   featureImageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
   heroDesktopImageUrl: '',

@@ -77,14 +77,15 @@ const Navbar = () => {
 
             {/* Brand Logo */}
             <Link to="/" className="flex items-center gap-2 group shrink-0 sm:gap-3">
-              <div className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#D97706]/30 bg-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl ${
-                hasStoreLogo ? 'h-10 w-32 sm:h-12 sm:w-44' : 'h-12 w-12'
-              }`}>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#D97706]/30 bg-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl sm:h-14 sm:w-14">
                 {hasStoreLogo ? (
                   <img
                     src={storeSettings.logoUrl}
                     alt="J&D Foods logo"
-                    className="h-full w-full object-contain p-1"
+                    className="h-full w-full object-contain"
+                    style={{
+                      transform: `translate(${(storeSettings.logoPositionX ?? 50) - 50}%, ${(storeSettings.logoPositionY ?? 50) - 50}%) scale(${storeSettings.logoZoom ?? 1})`,
+                    }}
                     onError={() => setFailedLogoUrl(storeSettings.logoUrl)}
                   />
                 ) : (

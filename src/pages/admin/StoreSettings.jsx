@@ -21,6 +21,9 @@ const StoreSettings = () => {
     const s = getStoreSettings();
     return {
       logoUrl: s.logoUrl || '',
+      logoZoom: s.logoZoom ?? 1,
+      logoPositionX: s.logoPositionX ?? 50,
+      logoPositionY: s.logoPositionY ?? 50,
       businessName: s.businessName || 'J&D Foods',
       contactNumber: s.contactNumber || '+91 8885473903',
       email: s.email || 'support@konasemaruchulu.com',
@@ -39,7 +42,10 @@ const StoreSettings = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setSettings({ ...settings, [name]: type === 'checkbox' ? checked : value });
+    setSettings({
+      ...settings,
+      [name]: type === 'checkbox' ? checked : type === 'range' ? Number(value) : value,
+    });
   };
 
   const handleSave = async (e) => {
@@ -138,11 +144,18 @@ const StoreSettings = () => {
             Upload a PNG, JPEG, or WebP image up to 500 KB. The logo appears in the storefront navigation.
           </p>
           <div className="flex flex-wrap items-center gap-4">
-            <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-xl border border-white/15 bg-white p-2">
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-2 border-brand-gold/60 bg-white">
               {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt="Current website logo" className="max-h-full max-w-full object-contain" />
+                <img
+                  src={settings.logoUrl}
+                  alt="Current website logo preview"
+                  className="absolute inset-0 h-full w-full object-contain"
+                  style={{
+                    transform: `translate(${settings.logoPositionX - 50}%, ${settings.logoPositionY - 50}%) scale(${settings.logoZoom})`,
+                  }}
+                />
               ) : (
-                <span className="font-serif text-2xl font-bold text-[#8B1E1E]">JD</span>
+                <span className="grid h-full place-items-center font-serif text-2xl font-bold text-[#8B1E1E]">JD</span>
               )}
             </div>
             <div className="flex flex-wrap gap-3">
@@ -178,6 +191,47 @@ const StoreSettings = () => {
               className={inputClass}
             />
           </Field>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label={`Zoom: ${Number(settings.logoZoom).toFixed(1)}x`}>
+              <input
+                type="range"
+                name="logoZoom"
+                min="1"
+                max="3"
+                step="0.1"
+                value={settings.logoZoom}
+                onChange={handleChange}
+                className="w-full accent-brand-gold"
+                aria-label="Logo image zoom"
+              />
+            </Field>
+            <Field label={`Horizontal position: ${settings.logoPositionX}%`}>
+              <input
+                type="range"
+                name="logoPositionX"
+                min="0"
+                max="100"
+                step="1"
+                value={settings.logoPositionX}
+                onChange={handleChange}
+                className="w-full accent-brand-gold"
+                aria-label="Logo image horizontal position"
+              />
+            </Field>
+            <Field label={`Vertical position: ${settings.logoPositionY}%`}>
+              <input
+                type="range"
+                name="logoPositionY"
+                min="0"
+                max="100"
+                step="1"
+                value={settings.logoPositionY}
+                onChange={handleChange}
+                className="w-full accent-brand-gold"
+                aria-label="Logo image vertical position"
+              />
+            </Field>
+          </div>
           {logoError && <p role="alert" className="text-xs font-semibold text-red-300">{logoError}</p>}
         </section>
 
