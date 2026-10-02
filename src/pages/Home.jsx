@@ -102,13 +102,13 @@ const Home = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="relative h-[230px] overflow-hidden rounded-none border border-[#5C4033]/10 bg-[#5C4033] shadow-sm sm:h-[280px] lg:h-[320px]"
+            className="relative h-[230px] overflow-hidden rounded-none border border-[#5C4033]/10 bg-[#EAE0D0] shadow-sm sm:h-[280px] lg:h-[320px]"
           >
             {settings?.featureImageUrl ? (
               <img
                 src={settings.featureImageUrl}
                 alt="Andhra Avakaya Mango Pickle"
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-contain"
               />
             ) : (
               <div className="absolute inset-0 bg-[#EAE0D0]" />

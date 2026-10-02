@@ -157,7 +157,8 @@ export const AuthProvider = ({ children }) => {
         const message = await parseErrorMessage(resp);
         return { ok: false, message: message || 'Invalid verification code' };
       }
-      return { ok: true };
+      const data = await resp.json();
+      return { ok: true, resetToken: data.resetToken };
     } catch {
       return { ok: false, message: 'Unable to connect to the server.' };
     }
@@ -181,12 +182,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const resetAdminPassword = async (email, newPassword) => {
+  const resetAdminPassword = async (email, resetToken, newPassword) => {
     try {
       const resp = await fetch(resolveApiUrl('/admin/reset-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, newPassword }),
+        body: JSON.stringify({ email, resetToken, newPassword }),
       });
       if (!resp.ok) {
         const message = await parseErrorMessage(resp);

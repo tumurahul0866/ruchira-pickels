@@ -27,7 +27,10 @@ const ApplyOffers = () => {
   // Fetch latest offers from backend on every mount
   const fetchOffersFromBackend = async () => {
     try {
-      const res = await fetch(OFFERS_API);
+      const token = localStorage.getItem('vasuki_token');
+      const res = await fetch(OFFERS_API, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {

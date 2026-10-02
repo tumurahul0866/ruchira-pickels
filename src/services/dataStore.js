@@ -854,10 +854,12 @@ export const saveReview = async (review) => {
     verifiedBuyer: review.verifiedBuyer !== undefined ? review.verifiedBuyer : true,
   };
   // Attach user metadata if present
+  let isAdmin = false;
   try {
     const storedUser = localStorage.getItem('vasuki_user');
     if (storedUser) {
       const u = JSON.parse(storedUser);
+      isAdmin = Boolean(u?.isAdmin);
       normalized.user_id = normalized.user_id || u.id;
       normalized.user_email = normalized.user_email || u.email;
       normalized.user_name = normalized.user_name || u.name;
@@ -868,10 +870,17 @@ export const saveReview = async (review) => {
 
   const method = review.id ? 'PUT' : 'POST';
   const url = method === 'PUT' ? `${REVIEWS_API}/${normalized.id}` : REVIEWS_API;
+  const requestBody = method === 'PUT'
+    ? {
+      rating: normalized.rating,
+      text: normalized.text,
+      ...(isAdmin ? { name: normalized.name, visible: normalized.visible } : {}),
+    }
+    : normalized;
   const response = await fetch(url, {
     method,
     headers: getApiHeaders(),
-    body: JSON.stringify(normalized),
+    body: JSON.stringify(requestBody),
   });
 
   let payload;

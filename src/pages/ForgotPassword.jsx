@@ -111,8 +111,8 @@ const ForgotPassword = ({ adminMode = false }) => {
     const res = await (adminMode ? verifyAdminResetOtp(email, fullOtp) : verifyResetOtp(email, fullOtp));
     setLoading(false);
 
-    if (res.ok && (adminMode || res.resetToken)) {
-      if (!adminMode) setResetToken(res.resetToken);
+    if (res.ok && res.resetToken) {
+      setResetToken(res.resetToken);
       setStep(3);
       setError('');
     } else {
@@ -125,7 +125,7 @@ const ForgotPassword = ({ adminMode = false }) => {
     e.preventDefault();
     setError('');
 
-    const minimumPasswordLength = adminMode ? 8 : 6;
+    const minimumPasswordLength = 8;
     if (!newPassword || newPassword.length < minimumPasswordLength) {
       setError(`New password must be at least ${minimumPasswordLength} characters long.`);
       return;
@@ -138,7 +138,7 @@ const ForgotPassword = ({ adminMode = false }) => {
 
     setLoading(true);
     const res = await (adminMode
-      ? resetAdminPassword(email, newPassword)
+      ? resetAdminPassword(email, resetToken, newPassword)
       : resetPassword(email, resetToken, newPassword));
     setLoading(false);
 
