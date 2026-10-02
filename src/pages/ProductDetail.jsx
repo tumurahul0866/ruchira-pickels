@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import {
+  getProducts,
   refreshProducts as fetchLatestProducts,
   getReviews,
   getStoreSettings,
@@ -36,32 +37,73 @@ const ProductDetail = () => {
 
   const [product, setProduct] = useState(null);
   const [comboProducts, setComboProducts] = useState([]);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true);
+  const [productLoadError, setProductLoadError] = useState('');
   const [selectedVariant, setSelectedVariant] = useState({ label: 'Pack', price: 0 });
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
-    const loadProduct = async () => {
-      const allProducts = await fetchLatestProducts();
-      const found = allProducts.find((item) => item.id === id);
+    let isMounted = true;
+
+    const applyProduct = (allProducts) => {
+      const found = allProducts.find((item) => String(item.id) === String(id));
+      if (!found) return false;
+
       setProduct(found);
-      setComboProducts(Array.isArray(found?.comboProducts) && found.comboProducts.length > 0
+      setComboProducts(Array.isArray(found.comboProducts) && found.comboProducts.length > 0
         ? found.comboProducts
-        : Array.isArray(found?.comboProductIds)
+        : Array.isArray(found.comboProductIds)
         ? found.comboProductIds
           .map((comboProductId) => allProducts.find((item) => String(item.id) === String(comboProductId)))
           .filter(Boolean)
-          .map(({ id, name, image, productType, category }) => ({ id, name, image, productType, category }))
+          .map(({ id: productId, name, image, productType, category }) => ({
+            id: productId,
+            name,
+            image,
+            productType,
+            category,
+          }))
         : []);
-      if (found) {
-        const variants = getProductVariants(found);
-        const defaultVariant = variants.find((v) => v.label === '500g') || variants[0];
-        setSelectedVariant(defaultVariant);
-        setSelectedQuantity(1);
-        setIsWishlisted(isProductInWishlist(user?.email, found.id));
+
+      const variants = getProductVariants(found);
+      const defaultVariant = variants.find((variant) => variant.label === '500g') || variants[0];
+      setSelectedVariant(defaultVariant);
+      setSelectedQuantity(1);
+      setIsWishlisted(isProductInWishlist(user?.email, found.id));
+      return true;
+    };
+
+    const loadProduct = async () => {
+      setIsLoadingProduct(true);
+      setProductLoadError('');
+      setProduct(null);
+
+      try {
+        const cachedProducts = await getProducts();
+        if (!isMounted) return;
+        const foundInCache = applyProduct(cachedProducts);
+
+        const latestProducts = await fetchLatestProducts();
+        if (!isMounted) return;
+        const foundInLatest = applyProduct(latestProducts);
+        if (!foundInCache && !foundInLatest) {
+          setProductLoadError('The item you requested could not be located in our catalog.');
+        }
+      } catch (error) {
+        if (isMounted) {
+          setProductLoadError(error instanceof Error ? error.message : 'Unable to load this product right now.');
+        }
+      } finally {
+        if (isMounted) setIsLoadingProduct(false);
       }
     };
+
     loadProduct();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id, user?.email]);
   const [addedToast, setAddedToast] = useState(false);
 
@@ -69,12 +111,25 @@ const ProductDetail = () => {
     (review) => review.visible !== false && (!review.product || review.product === product?.name)
   );
 
+  if (isLoadingProduct) {
+    return (
+      <div className="flex min-h-screen flex-grow items-center justify-center bg-slate-50 px-4 py-20">
+        <div role="status" className="rounded-3xl border border-slate-200 bg-white px-8 py-6 text-center shadow-sm">
+          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-amber-100 border-t-amber-600" />
+          <p className="text-sm font-semibold text-slate-600">Loading product details...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="flex-grow bg-slate-50 min-h-screen flex items-center justify-center px-4 py-20">
         <div className="max-w-xl w-full bg-white rounded-3xl border border-slate-200 p-10 text-center shadow-xl">
-          <h1 className="text-3xl font-serif font-bold text-slate-900 mb-4">Product Not Found</h1>
-          <p className="text-slate-600 mb-6">The item you requested could not be located in our catalog.</p>
+          <h1 className="text-3xl font-serif font-bold text-slate-900 mb-4">
+            {productLoadError.includes('could not be located') ? 'Product Not Found' : 'Unable to Load Product'}
+          </h1>
+          <p className="text-slate-600 mb-6">{productLoadError || 'Unable to load this product right now.'}</p>
           <Button variant="primary" onClick={() => navigate('/flavours')} className="px-8 py-3">
             Explore All Flavours
           </Button>
@@ -195,20 +250,30 @@ const ProductDetail = () => {
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{product.description}</p>
 
                 {isCombo && (
-                  <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                    <h2 className="text-sm font-bold text-slate-800">Products included in this combo</h2>
-                    <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <section className="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 sm:p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-800">Inside your bundle</p>
+                        <h2 className="mt-1 text-base font-bold text-slate-900">Products included in this combo</h2>
+                      </div>
+                      {comboProducts.length > 0 && (
+                        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">
+                          {comboProducts.length} {comboProducts.length === 1 ? 'product' : 'products'}
+                        </span>
+                      )}
+                    </div>
+                    <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                       {comboProducts.map((comboProduct) => (
-                        <li key={comboProduct.id} className="flex min-w-0 items-center gap-2 rounded-xl border border-amber-100 bg-white p-2">
+                        <li key={comboProduct.id} className="flex min-w-0 items-center gap-3 rounded-xl border border-amber-100 bg-white p-3 shadow-sm">
                           <img
                             src={comboProduct.image}
                             alt=""
-                            className="h-10 w-10 shrink-0 rounded-lg object-cover"
-                            loading="lazy"
+                            className="h-14 w-14 shrink-0 rounded-xl border border-amber-100 object-cover"
+                            loading="eager"
                           />
                           <span className="min-w-0">
-                            <span className="block truncate text-sm font-semibold text-slate-800">{comboProduct.name}</span>
-                            <span className="block truncate text-[11px] text-slate-500">
+                            <span className="block whitespace-normal text-sm font-semibold leading-snug text-slate-900">{comboProduct.name}</span>
+                            <span className="mt-1 block truncate text-[11px] font-medium text-amber-800">
                               {[comboProduct.productType, comboProduct.category].filter(Boolean).join(' · ')}
                             </span>
                           </span>
