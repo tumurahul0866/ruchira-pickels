@@ -131,6 +131,8 @@ const ReviewsManagement = () => {
                 name="name"
                 value={formState.name}
                 onChange={handleChange}
+                maxLength={100}
+                required
                 className="w-full rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
                 placeholder="Customer name"
               />
@@ -155,9 +157,12 @@ const ReviewsManagement = () => {
                 rows={5}
                 value={formState.text}
                 onChange={handleChange}
-                className="w-full rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream resize-none"
+                maxLength={2000}
+                required
+                className="min-h-36 w-full resize-y rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
                 placeholder="Customer feedback"
               />
+              <p className="mt-1 text-right text-xs text-brand-cream/50">{formState.text.length}/2000</p>
             </div>
             <label className="flex items-center gap-3 text-brand-cream/70">
               <input

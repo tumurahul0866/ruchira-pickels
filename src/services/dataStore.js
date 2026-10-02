@@ -271,6 +271,8 @@ const defaultStoreSettings = {
   logoUrl: '/logo.svg',
   heroBackgroundUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
   featureImageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+  heroDesktopImageUrl: '',
+  heroMobileImageUrl: '',
   aboutImageUrl: 'https://images.unsplash.com/photo-1506544777-64cfb638973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   brandTagline: 'Handcrafted Heritage Pickles & Podis from Konasema Delta.',
   heroTitle: 'J&D FOODS',
@@ -1313,22 +1315,28 @@ export const getAdminProfile = () => {
   return parsed;
 };
 
-export const updateAdminProfile = (profile) => {
+export const updateAdminProfile = async (profile) => {
   const nextProfile = {
     ...defaultAdminProfile,
     ...profile,
     ownerName: normalizeLegacyBrandName(profile.ownerName),
     businessName: normalizeLegacyBrandName(profile.businessName),
   };
-  localStorage.setItem('vasuki_admin_profile', JSON.stringify(nextProfile));
-  fetch(ADMIN_PROFILE_API, {
+  const response = await fetch(ADMIN_PROFILE_API, {
     method: 'POST',
     headers: getApiHeaders(),
     body: JSON.stringify(nextProfile),
-  }).catch(() => {
-    // offline fallback
   });
-  return nextProfile;
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    if (response.status === 401) {
+      window.dispatchEvent(new CustomEvent('vasuki:auth-expired'));
+    }
+    throw new Error(payload.error || payload.message || `Unable to save admin profile (HTTP ${response.status}).`);
+  }
+  const savedProfile = payload && typeof payload === 'object' ? payload : nextProfile;
+  localStorage.setItem('vasuki_admin_profile', JSON.stringify(savedProfile));
+  return savedProfile;
 };
 
 // --- SHIPPING RULES ---

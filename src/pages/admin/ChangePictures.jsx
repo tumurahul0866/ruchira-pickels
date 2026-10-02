@@ -76,6 +76,49 @@ const ChangePictures = () => {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[
+            { key: 'heroDesktopImageUrl', label: 'Desktop Hero Image', previewAlt: 'Desktop hero banner preview' },
+            { key: 'heroMobileImageUrl', label: 'Mobile Hero Image', previewAlt: 'Mobile hero banner preview' },
+          ].map(({ key, label, previewAlt }) => (
+            <div key={key} className="space-y-3 rounded-2xl border border-white/10 bg-brand-black p-4">
+              <div className="flex items-center justify-between">
+                <label htmlFor={key} className="text-xs font-extrabold uppercase tracking-wider text-brand-gold">
+                  {label}
+                </label>
+                {storeSettings[key] && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveStoreImage(key)}
+                    className="flex items-center gap-1 text-xs font-bold text-rose-400 hover:underline"
+                  >
+                    <Trash2 size={12} /> Remove
+                  </button>
+                )}
+              </div>
+              <input
+                id={key}
+                type="url"
+                value={storeSettings[key] || ''}
+                onChange={(e) => handleStoreImageChange(key, e.target.value)}
+                placeholder="Image URL https://..."
+                className="w-full rounded-xl border-2 border-brand-gold/30 bg-white px-3 py-2 text-xs font-mono font-semibold text-gray-900"
+              />
+              <div className="flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-slate-900">
+                {storeSettings[key] ? (
+                  <img src={storeSettings[key]} alt={previewAlt} className="h-full w-full object-contain" />
+                ) : (
+                  <span className="px-4 text-center text-xs italic text-brand-cream/40">
+                    {key === 'heroMobileImageUrl'
+                      ? 'Optional. Uses the desktop or existing hero image if empty.'
+                      : 'Optional. Uses the existing hero image if empty.'}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 1. Home Page Hero Background Image */}
           <div className="space-y-3 bg-brand-black p-4 rounded-2xl border border-white/10">
             <div className="flex justify-between items-center">

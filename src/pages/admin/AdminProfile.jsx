@@ -1,32 +1,55 @@
 import { useState } from 'react';
-import { getAdminProfile, updateAdminProfile } from '../../services/dataStore';
+import { getAdminProfile, getStoreSettings, saveStoreSettings, updateAdminProfile } from '../../services/dataStore';
 import Button from '../../components/ui/Button';
 import { User } from 'lucide-react';
 
 const AdminProfile = () => {
-  const [profile, setProfile] = useState(() => getAdminProfile() || {
-    ownerName: '',
-    businessName: '',
-    email: '',
-    phone: '',
-    whatsapp: '',
-    address: '',
-    instagram: '',
-    mapLink: '',
-    profileImage: '',
-    logoImage: ''
+  const [profile, setProfile] = useState(() => {
+    const storeSettings = getStoreSettings();
+    return {
+      ...(getAdminProfile() || {
+        ownerName: '',
+        businessName: '',
+        email: '',
+        phone: '',
+        whatsapp: '',
+        address: '',
+        instagram: '',
+        mapLink: '',
+        profileImage: '',
+        logoImage: '',
+      }),
+      heroTitle: storeSettings.heroTitle || '',
+      heroSubtitle: storeSettings.heroSubtitle || '',
+    };
   });
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+  const [saving, setSaving] = useState(false);
 
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    updateAdminProfile(profile);
-    setMessage('Admin profile updated successfully. Customer site sections will reflect the changes immediately.');
-    setTimeout(() => setMessage(''), 4000);
+    setSaving(true);
+    setMessage('');
+    try {
+      await updateAdminProfile(profile);
+      await saveStoreSettings({
+        heroTitle: profile.heroTitle,
+        heroSubtitle: profile.heroSubtitle,
+      });
+      setMessageType('success');
+      setMessage('Admin profile and homepage banner text updated successfully.');
+      setTimeout(() => setMessage(''), 4000);
+    } catch (error) {
+      setMessageType('error');
+      setMessage(error instanceof Error ? error.message : 'Unable to save the admin profile.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -40,8 +63,38 @@ const AdminProfile = () => {
       </div>
 
       <div className="bg-brand-matte border border-white/10 rounded-3xl p-6 max-w-3xl">
-        {message && <div className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-200">{message}</div>}
+        {message && (
+          <div role={messageType === 'error' ? 'alert' : 'status'} className={`mb-6 rounded-2xl border p-4 ${messageType === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-red-500/30 bg-red-500/10 text-red-200'}`}>
+            {message}
+          </div>
+        )}
         <form onSubmit={handleSave} className="space-y-6">
+          <div className="space-y-4 rounded-2xl border border-white/10 p-4">
+            <h3 className="text-lg font-semibold text-brand-cream">Homepage Hero Banner Text</h3>
+            <div>
+              <label className="mb-2 block text-sm text-brand-cream/70">Banner Title</label>
+              <input
+                name="heroTitle"
+                value={profile.heroTitle}
+                onChange={handleChange}
+                maxLength={100}
+                className="w-full rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
+                placeholder="J&D Foods"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-brand-cream/70">Banner Subtitle</label>
+              <textarea
+                name="heroSubtitle"
+                value={profile.heroSubtitle}
+                onChange={handleChange}
+                rows={3}
+                maxLength={300}
+                className="min-h-24 w-full resize-y rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
+                placeholder="Add a short introduction for your homepage banner."
+              />
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm text-brand-cream/70 mb-2">Owner Name</label>
@@ -147,7 +200,9 @@ const AdminProfile = () => {
           </div>
 
           <div className="pt-4 border-t border-white/10 text-right">
-            <Button type="submit" variant="primary">Save Profile</Button>
+            <Button type="submit" variant="primary" disabled={saving}>
+              {saving ? 'Saving...' : 'Save Profile'}
+            </Button>
           </div>
         </form>
       </div>
