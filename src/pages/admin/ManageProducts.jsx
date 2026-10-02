@@ -30,6 +30,12 @@ const defaultProduct = {
 
 const measurementTypes = ['Weight', 'Volume', 'Pieces', 'Box', 'Size', 'Custom'];
 
+const getComboMembers = (combo, products) => {
+  if (Array.isArray(combo.comboProducts) && combo.comboProducts.length > 0) return combo.comboProducts;
+  const selectedIds = Array.isArray(combo.comboProductIds) ? combo.comboProductIds.map(String) : [];
+  return products.filter((product) => selectedIds.includes(String(product.id)));
+};
+
 const ManageProducts = ({ mode = 'products' }) => {
   const [products, setProducts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -601,13 +607,88 @@ const ManageProducts = ({ mode = 'products' }) => {
         </div>
       </div>
 
+      {isCombosPage ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {listedProducts.map((combo) => {
+            const includedProducts = getComboMembers(combo, products);
+            const hasSavedMembers = Array.isArray(combo.comboProducts) && combo.comboProducts.length > 0 ||
+              Array.isArray(combo.comboProductIds) && combo.comboProductIds.length > 0;
+            return (
+              <article key={combo.id} className="overflow-hidden rounded-3xl border border-white/10 bg-brand-matte">
+                <div className="flex gap-4 p-4">
+                  <img
+                    src={combo.image}
+                    alt={combo.name}
+                    className="h-20 w-20 shrink-0 rounded-2xl object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="truncate font-serif text-lg font-bold text-brand-cream">{combo.name}</h3>
+                      <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold ${combo.visible !== false ? 'bg-brand-gold/10 text-brand-gold' : 'bg-brand-red/10 text-brand-red'}`}>
+                        {combo.visible !== false ? 'Visible' : 'Hidden'}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-brand-cream/65">
+                      Combo price: ₹{combo.pricePerUnit || combo.weights?.[0]?.price || 0}
+                    </p>
+                    <p className="mt-1 text-xs text-brand-cream/50">
+                      {includedProducts.length > 0
+                        ? `${includedProducts.length} included ${includedProducts.length === 1 ? 'product' : 'products'}`
+                        : hasSavedMembers
+                        ? 'Saved products could not be matched'
+                        : 'No included products saved'}
+                    </p>
+                  </div>
+                </div>
+                {includedProducts.length > 0 && (
+                  <div className="flex flex-wrap gap-2 px-4 pb-4">
+                    {includedProducts.map((product) => (
+                      <span key={product.id} className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-white/5 py-1 pl-1 pr-2 text-xs text-brand-cream/80">
+                        <img src={product.image} alt="" className="h-6 w-6 rounded-full object-cover" />
+                        <span className="max-w-32 truncate">{product.name || product.productType || product.category}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 border-t border-white/10 p-4">
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(combo)}
+                    className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-gold px-4 py-2 text-sm font-bold text-brand-black hover:bg-brand-gold-light"
+                  >
+                    <Edit2 size={15} /> Edit Combo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(combo.id)}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-brand-red/30 bg-brand-red/10 px-4 py-2 text-sm font-semibold text-brand-red hover:bg-brand-red/20"
+                  >
+                    <Trash2 size={15} /> Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleVisibilityToggle(combo.id)}
+                    className="min-h-10 rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-brand-cream/75 hover:bg-white/5"
+                  >
+                    {combo.visible !== false ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+          {listedProducts.length === 0 && (
+            <div className="col-span-full rounded-3xl border border-white/10 bg-brand-matte px-6 py-12 text-center text-sm text-brand-cream/60">
+              No combos yet. Select Add Combo to create your first bundle.
+            </div>
+          )}
+        </div>
+      ) : (
       <div className="overflow-x-auto rounded-3xl border border-white/10 bg-brand-matte">
         <table className="w-full text-left text-sm text-brand-cream/80">
           <thead className="text-xs uppercase bg-brand-gold/10 border-b border-brand-gold/20 text-brand-black">
             <tr>
               <th className="px-6 py-4">Image</th>
               <th className="px-6 py-4">Name</th>
-              {isCombosPage && <th className="px-6 py-4">Included Products</th>}
               <th className="px-6 py-4">Category</th>
               <th className="px-6 py-4">Primary Price</th>
               <th className="px-6 py-4">Stock</th>
@@ -628,30 +709,6 @@ const ManageProducts = ({ mode = 'products' }) => {
                   <img src={product.image} className="w-14 h-14 object-cover rounded-xl" alt={product.name} />
                 </td>
                 <td className="px-6 py-4 font-medium text-brand-cream">{product.name}</td>
-                {isCombosPage && (
-                  <td className="px-6 py-4">
-                    {(() => {
-                      const selectedIds = Array.isArray(product.comboProductIds)
-                        ? product.comboProductIds.map(String)
-                        : [];
-                      const includedProducts = Array.isArray(product.comboProducts) && product.comboProducts.length > 0
-                        ? product.comboProducts
-                        : products.filter((candidate) => selectedIds.includes(String(candidate.id)));
-                      return includedProducts.length > 0 ? (
-                        <div className="flex min-w-48 flex-wrap gap-1.5">
-                          {includedProducts.map((includedProduct) => (
-                            <span key={includedProduct.id} className="inline-flex items-center gap-1 rounded-full bg-white/5 py-1 pl-1 pr-2 text-xs">
-                              <img src={includedProduct.image} alt="" className="h-6 w-6 rounded-full object-cover" />
-                              <span className="max-w-28 truncate">{includedProduct.name || includedProduct.productType || includedProduct.category}</span>
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-brand-red/80">No included products saved</span>
-                      );
-                    })()}
-                  </td>
-                )}
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.productType === 'Combos' ? 'bg-brand-gold/20 text-brand-gold' : product.category === 'Veg' ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
                     {product.productType === 'Combos' ? 'Combo' : product.category}
@@ -681,10 +738,11 @@ const ManageProducts = ({ mode = 'products' }) => {
         </table>
         {listedProducts.length === 0 && (
           <div className="px-6 py-12 text-center text-sm text-brand-cream/60">
-            {isCombosPage ? 'No combos yet. Select Add Combo to create your first bundle.' : 'No products have been added yet.'}
+            No products have been added yet.
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };
