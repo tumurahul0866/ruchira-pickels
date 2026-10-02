@@ -84,11 +84,13 @@ const ProductDetail = () => {
       setIsLoadingProduct(true);
       setProductLoadError('');
       setProduct(null);
+      let foundInCache = false;
 
       try {
         const cachedProducts = await getProducts();
         if (!isMounted) return;
-        const foundInCache = applyProduct(cachedProducts);
+        foundInCache = applyProduct(cachedProducts);
+        if (foundInCache) setIsLoadingProduct(false);
 
         const latestProducts = await fetchLatestProducts();
         if (!isMounted) return;
@@ -97,7 +99,7 @@ const ProductDetail = () => {
           setProductLoadError('The item you requested could not be located in our catalog.');
         }
       } catch (error) {
-        if (isMounted) {
+        if (isMounted && !foundInCache) {
           setProductLoadError(error instanceof Error ? error.message : 'Unable to load this product right now.');
         }
       } finally {
@@ -275,24 +277,10 @@ const ProductDetail = () => {
                           <button
                             type="button"
                             onClick={() => setSelectedComboProduct(comboProduct)}
-                            className="flex w-full min-w-0 items-center gap-3 rounded-xl border border-amber-100 bg-white p-3 text-left shadow-sm transition hover:border-amber-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                            className="w-full rounded-xl border border-amber-100 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-900 shadow-sm transition hover:border-amber-400 hover:bg-amber-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                             aria-label={`View ${comboProduct.name} included in this combo`}
                           >
-                            <img
-                              src={comboProduct.image}
-                              alt=""
-                              className="h-14 w-14 shrink-0 rounded-xl border border-amber-100 object-cover"
-                              loading="eager"
-                            />
-                            <span className="min-w-0 flex-1">
-                              <span className="block whitespace-normal text-sm font-semibold leading-snug text-slate-900">{comboProduct.name}</span>
-                              <span className="mt-1 block truncate text-[11px] font-medium text-amber-800">
-                                {[comboProduct.productType, comboProduct.category].filter(Boolean).join(' · ')}
-                              </span>
-                            </span>
-                            <span className="shrink-0 text-xs font-bold text-amber-900">
-                              {comboProduct.quantity || 1} {comboProduct.unit || 'units'}
-                            </span>
+                            {comboProduct.name}
                           </button>
                         </li>
                       ))}

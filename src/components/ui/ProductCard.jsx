@@ -167,18 +167,10 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
                     event.stopPropagation();
                     setSelectedComboProduct(comboProduct);
                   }}
-                  className="flex shrink-0 items-center gap-1 rounded-full border border-[#5C4033]/10 bg-[#F8F3E8] pr-2 text-left hover:border-[#D97706] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706]"
+                  className="shrink-0 rounded-full border border-[#5C4033]/10 bg-[#F8F3E8] px-2.5 py-1 text-left text-[9px] font-semibold text-[#5C4033]/75 hover:border-[#D97706] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706]"
                   aria-label={`View ${comboProduct.name} included in this combo`}
                 >
-                  <img
-                    src={comboProduct.image}
-                    alt=""
-                    className={`${compact ? 'h-6 w-6' : 'h-8 w-8'} shrink-0 rounded-full object-cover`}
-                    loading="lazy"
-                  />
-                  <span className={`${compact ? 'max-w-16 text-[8px]' : 'max-w-20 text-[9px]'} truncate font-semibold text-[#5C4033]/75`} title={comboProduct.productType || comboProduct.category || comboProduct.name}>
-                    {comboProduct.productType || comboProduct.category || comboProduct.name}
-                  </span>
+                  {comboProduct.name}
                 </button>
               ))}
             </div>
