@@ -184,7 +184,7 @@ const UserDashboard = ({ defaultTab }) => {
   };
 
   const handleWhatsAppOrderInquiry = (order) => {
-    const text = `Hi Vasuki Pickles! I am inquiring about my Order ID: *${order.id}* placed on ${new Date(order.date).toLocaleDateString()}. Status is currently: *${order.status}*.`;
+    const text = `Hi ${storeSettings.businessName || 'J&D Foods'}! I am inquiring about my Order ID: *${order.id}* placed on ${new Date(order.date).toLocaleDateString()}. Status is currently: *${order.status}*.`;
     const encoded = encodeURIComponent(text);
     const phone = storeSettings.whatsappNumber || '918885473903';
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');

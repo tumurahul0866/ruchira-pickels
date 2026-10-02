@@ -89,7 +89,7 @@ const Home = () => {
   };
 
   const handleWhatsAppOrder = () => {
-    const text = 'Hi Vasuki Pickles! I would like to inquire about your pickle & podi products.';
+    const text = `Hi ${settings?.businessName || 'J&D Foods'}! I would like to inquire about your pickle & podi products.`;
     const encoded = encodeURIComponent(text);
     const phone = settings?.whatsappNumber || '918885473903';
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');

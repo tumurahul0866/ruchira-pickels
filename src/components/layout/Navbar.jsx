@@ -76,15 +76,20 @@ const Navbar = () => {
             {/* Brand Logo */}
             <Link to="/" className="flex items-center gap-2 group shrink-0 sm:gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#D97706]/30 bg-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
-                {storeSettings.logoUrl ? (
-                  <img src={storeSettings.logoUrl} alt="JD Foods logo" className="h-full w-full object-contain p-1" />
+                {storeSettings.logoUrl && failedLogoUrl !== storeSettings.logoUrl ? (
+                  <img
+                    src={storeSettings.logoUrl}
+                    alt="J&D Foods logo"
+                    className="h-full w-full object-contain p-1"
+                    onError={() => setFailedLogoUrl(storeSettings.logoUrl)}
+                  />
                 ) : (
-                  <span className="bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] bg-clip-text font-serif text-xl font-bold text-transparent">JD</span>
+                  <span className="bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] bg-clip-text font-serif text-base font-bold text-transparent">J&amp;D</span>
                 )}
               </div>
                   <div className="hidden min-[360px]:flex max-w-[86px] flex-col sm:max-w-[160px]">
                     <span className="text-[9px] font-serif font-bold tracking-wide text-[#5C4033] leading-tight sm:text-sm lg:text-base">
-                  JD FOODS
+                  J&D FOODS
                 </span>
                     <span className="hidden text-[9px] uppercase tracking-[0.16em] font-bold text-[#556B2F] leading-tight sm:block">
                   Heritage Delta Pickles

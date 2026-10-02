@@ -100,7 +100,7 @@ const ProductDetail = () => {
     const isLegacy = isLegacyProduct(product);
     const quantityLabel = isLegacy ? (selectedVariant.weight || selectedVariant.label) : `${selectedQuantity} ${quantityType}`;
     const unitPrice = selectedVariant?.price ?? getProductUnitPrice(product);
-    const text = `Hi Vasuki Pickles! I would like to order *${product.name}* (Pack: ${selectedVariant.label || selectedVariant.weight} × ${isLegacy ? 1 : selectedQuantity}) = ₹${unitPrice} each.`;
+    const text = `Hi ${storeSettings.businessName || 'J&D Foods'}! I would like to order *${product.name}* (Pack: ${selectedVariant.label || selectedVariant.weight} × ${isLegacy ? 1 : selectedQuantity}) = ₹${unitPrice} each.`;
     const encoded = encodeURIComponent(text);
     const phone = storeSettings.whatsappNumber || '918885473903';
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encoded}`, '_blank');
@@ -310,7 +310,7 @@ const ProductDetail = () => {
             {/* Guarantee Box */}
             <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h3 className="text-base font-serif font-bold text-slate-900 flex items-center gap-2">
-                <Sparkles size={18} className="text-brand-gold" /> Why Vasuki Pickles?
+                <Sparkles size={18} className="text-brand-gold" /> Why {storeSettings.businessName || 'J&D Foods'}?
               </h3>
               <ul className="space-y-3 text-xs text-slate-600">
                 <li className="flex items-center gap-2.5">

@@ -273,9 +273,9 @@ const defaultStoreSettings = {
   featureImageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
   aboutImageUrl: 'https://images.unsplash.com/photo-1506544777-64cfb638973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   brandTagline: 'Handcrafted Heritage Pickles & Podis from Konasema Delta.',
-  heroTitle: 'JD FOODS',
+  heroTitle: 'J&D FOODS',
   heroSubtitle: 'Authentic Andhra & Konasema pickles made with cold-pressed oil and grandma recipes.',
-  whatsappMessage: 'Hi JD Foods! I would like to place an order.',
+  whatsappMessage: 'Hi J&D Foods! I would like to place an order.',
   whatsappNumber: '+918885473903',
   contactNumber: '+91 8885473903',
   email: 'support@konasemaruchulu.com',
@@ -284,7 +284,7 @@ const defaultStoreSettings = {
   mapLink: 'https://maps.google.com',
   deliveryNote: 'Free Express shipping on all orders above ₹999.',
   aboutTitle: 'Preserving Authentic Konasema Pickling Traditions',
-  aboutStory: 'JD Foods is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
+  aboutStory: 'J&D Foods is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
   aboutStory2: 'What started as a family tradition has blossomed into a trusted brand dedicated to preserving the authentic culinary heritage of South India. We believe that a meal is incomplete without that perfect touch of spice, tanginess, and aromatic cold-pressed groundnut oil.',
   aboutReasonTitle: 'The Essence of Konasema',
   aboutReasonText: 'Symbolizes agricultural richness, warmth, and legendary culinary heritage. Like timeless recipes passed through generations, our pickles are bold, memorable, and packaged in food-grade glass jars and sealed pouches without chemical shortcuts.',
@@ -294,7 +294,7 @@ const defaultStoreSettings = {
   aboutPromise2Desc: 'Slow-extracted groundnut oil retains wholesome aroma and natural health benefits without chemical refining.',
   aboutPromise3Title: 'Made with Love',
   aboutPromise3Desc: 'Hand-mixed in hygienic small batches with the same devotion and care as for our own family.',
-  businessName: 'JD Foods',
+  businessName: 'J&D Foods',
   address: '123 Heritage Spice Lane, Jubilee Hills, Hyderabad, Telangana 500033',
   freeShippingEnabled: true,
   minFreeShippingAmount: 999
@@ -312,8 +312,8 @@ const defaultPaymentSettings = {
 };
 
 const defaultAdminProfile = {
-  ownerName: 'JD Foods Management',
-  businessName: 'JD Foods',
+  ownerName: 'J&D Foods Management',
+  businessName: 'J&D Foods',
   email: 'ruchira@gmail.com',
   phone: '+91 8885473903',
   whatsapp: '+91 8885473903',
@@ -444,7 +444,26 @@ const syncLocalOffers = (offers) => {
   localStorage.setItem('vasuki_offers', JSON.stringify(offers));
 };
 
+const normalizeLegacyBrandName = (name) => {
+  const normalized = String(name || '').trim().toLowerCase();
+  if (normalized === 'jd foods') return 'J&D Foods';
+  if (normalized === 'jd foods management') return 'J&D Foods Management';
+  return name;
+};
+
+const normalizeStoreSettings = (settings) => ({
+  ...settings,
+  businessName: normalizeLegacyBrandName(settings.businessName),
+  heroTitle: String(settings.heroTitle || '').trim().toLowerCase() === 'jd foods'
+    ? 'J&D FOODS'
+    : settings.heroTitle,
+  whatsappMessage: String(settings.whatsappMessage || '').replace(/JD Foods/g, 'J&D Foods'),
+  aboutStory: String(settings.aboutStory || '').replace(/JD Foods/g, 'J&D Foods'),
+});
+
 const syncLocalStoreSettings = (settings) => {
+  settings = normalizeStoreSettings(settings);
+  storeSettingsMutationVersion += 1;
   localStorage.setItem('vasuki_settings', JSON.stringify(settings));
   window.dispatchEvent(new CustomEvent('vasuki:store-settings-updated', { detail: settings }));
 };
@@ -454,7 +473,11 @@ const syncLocalPaymentSettings = (settings) => {
 };
 
 const syncLocalAdminProfile = (profile) => {
-  localStorage.setItem('vasuki_admin_profile', JSON.stringify(profile));
+  localStorage.setItem('vasuki_admin_profile', JSON.stringify({
+    ...profile,
+    ownerName: normalizeLegacyBrandName(profile.ownerName),
+    businessName: normalizeLegacyBrandName(profile.businessName),
+  }));
 };
 
 const syncLocalProductTypes = (types) => {
@@ -1099,7 +1122,12 @@ const getPaymentSettingsFromLocal = () => {
     backgroundFetch(PAYMENT_SETTINGS_API, syncLocalPaymentSettings);
     return defaultPaymentSettings;
   }
-  const parsed = JSON.parse(data);
+  const storedProfile = JSON.parse(data);
+  const parsed = {
+    ...storedProfile,
+    ownerName: normalizeLegacyBrandName(storedProfile.ownerName),
+    businessName: normalizeLegacyBrandName(storedProfile.businessName),
+  };
   backgroundFetch(PAYMENT_SETTINGS_API, syncLocalPaymentSettings);
   return parsed;
 };
@@ -1252,7 +1280,12 @@ export const getAdminProfile = () => {
 };
 
 export const updateAdminProfile = (profile) => {
-  const nextProfile = { ...defaultAdminProfile, ...profile };
+  const nextProfile = {
+    ...defaultAdminProfile,
+    ...profile,
+    ownerName: normalizeLegacyBrandName(profile.ownerName),
+    businessName: normalizeLegacyBrandName(profile.businessName),
+  };
   localStorage.setItem('vasuki_admin_profile', JSON.stringify(nextProfile));
   fetch(ADMIN_PROFILE_API, {
     method: 'POST',

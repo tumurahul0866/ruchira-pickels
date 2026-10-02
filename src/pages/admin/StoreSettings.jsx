@@ -22,11 +22,11 @@ const StoreSettings = () => {
     const s = getStoreSettings();
     return {
       logoUrl: s.logoUrl || '',
-      businessName: s.businessName || 'JD Foods',
+      businessName: s.businessName || 'J&D Foods',
       contactNumber: s.contactNumber || '+91 8885473903',
       email: s.email || 'support@konasemaruchulu.com',
       whatsappNumber: s.whatsappNumber || '+918885473903',
-      whatsappMessage: s.whatsappMessage || 'Hi JD Foods! I would like to place an order.',
+      whatsappMessage: s.whatsappMessage || 'Hi J&D Foods! I would like to place an order.',
       address: s.address || '123 Heritage Spice Lane, Jubilee Hills, Hyderabad, Telangana 500033',
       freeShippingEnabled: s.freeShippingEnabled !== false,
       minFreeShippingAmount: s.minFreeShippingAmount || 999,
