@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Flame, MessageCircle, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, Flame, MessageCircle, Star } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getReviews } from '../services/dataStore';
 
@@ -35,8 +35,8 @@ const Home = () => {
   const [settings, setSettings] = useState(() => getStoreSettings());
   const [products, setProducts] = useState([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
-  const [offers, setOffers] = useState([]);
-  const [reviews, setReviews] = useState([]);
+  const [offers] = useState(() => getOffers().filter((offer) => offer.active));
+  const [reviews] = useState(() => getReviews().filter((review) => review.visible).slice(0, 3));
   const [copiedCode, setCopiedCode] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchParams] = useSearchParams();
@@ -44,9 +44,6 @@ const Home = () => {
 
   useEffect(() => {
     let isMounted = true;
-
-    setOffers(getOffers().filter((offer) => offer.active));
-    setReviews(getReviews().filter((review) => review.visible).slice(0, 3));
 
     getProducts().then((fetchedProducts) => {
       if (isMounted) {
@@ -99,7 +96,7 @@ const Home = () => {
   };
 
   return (
-    <div className="flex-grow bg-[#F8F3E8] text-[#5C4033]">
+    <div className="flex-grow bg-[#F8F3E8] pt-4 text-[#5C4033] sm:pt-5">
       <section className="px-3 pb-3 sm:px-4">
         <div className="max-w-7xl mx-auto">
           <motion.div

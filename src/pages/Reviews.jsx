@@ -59,7 +59,7 @@ const StarInputInteractive = ({ rating, onChange }) => {
 };
 
 const Reviews = () => {
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(() => getReviews().filter((r) => r.visible !== false));
   const [productList, setProductList] = useState([]);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -80,7 +80,7 @@ const Reviews = () => {
           setProductList(prods);
           setSelectedProduct(prods[0].name || '');
         }
-      } catch (e) {
+      } catch {
         // fallback
       }
     };
@@ -89,13 +89,8 @@ const Reviews = () => {
 
   const loadReviewsList = () => {
     const allReviews = getReviews();
-    const visibleReviews = allReviews.filter((r) => r.visible !== false);
-    setReviews(visibleReviews);
+    return allReviews.filter((r) => r.visible !== false);
   };
-
-  useEffect(() => {
-    loadReviewsList();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -130,13 +125,13 @@ const Reviews = () => {
         user_email: user.email,
       });
 
+      setReviews(loadReviewsList());
       setSuccessMessage('🎉 Thank you! Your review has been submitted successfully.');
       setReviewText('');
       setRating(5);
-      loadReviewsList();
       setTimeout(() => setSuccessMessage(''), 5000);
-    } catch (err) {
-      setErrorMessage('Failed to submit review. Please try again.');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to submit review. Please try again.');
     } finally {
       setSubmitting(false);
     }

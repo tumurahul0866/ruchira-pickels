@@ -850,17 +850,24 @@ export const saveReview = async (review) => {
     body: JSON.stringify(normalized),
   });
 
-  let savedReview = normalized;
+  let payload;
   try {
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
-    }
-    savedReview = payload;
-  } catch (error) {
-    if (!response.ok) throw error;
+    payload = await response.json();
+  } catch {
+    payload = null;
   }
 
+  if (!response.ok) {
+    if (response.status === 401 && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('vasuki:auth-expired'));
+    }
+    throw new Error(payload?.error || payload?.message || `Unable to submit review (HTTP ${response.status}).`);
+  }
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('The server returned an invalid response while submitting your review.');
+  }
+
+  const savedReview = payload;
   reviewsMutationVersion += 1;
   const cachedReviews = JSON.parse(localStorage.getItem('vasuki_reviews') || '[]');
   const existingIndex = cachedReviews.findIndex((item) => String(item.id) === String(savedReview.id));
