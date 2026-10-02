@@ -50,7 +50,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className={`${location.pathname === '/' ? 'relative' : 'sticky top-0'} z-50 w-full`}>
       {/* Top Announcement Bar — Render ONLY if active offer exists in Admin Portal */}
       {activeOffer && (
         <div className="bg-[#8B1E1E] text-[#F8F3E8] text-xs font-semibold py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2 shadow-sm">
