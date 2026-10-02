@@ -595,9 +595,9 @@ export const getProducts = async () => {
           syncLocalProducts(products);
           return products;
         }
-        return [];
+        return getProductsFromLocal();
       })
-      .catch(() => [])
+      .catch(() => getProductsFromLocal())
       .finally(() => {
         productsRequest = null;
       });
@@ -605,6 +605,25 @@ export const getProducts = async () => {
 
   // Render the catalog from local storage while the latest data refreshes.
   if (cachedProducts.length > 0) return cachedProducts;
+  return productsRequest;
+};
+
+export const refreshProducts = async () => {
+  if (!productsRequest) {
+    productsRequest = fetchJson(PRODUCTS_API)
+      .then((products) => {
+        if (Array.isArray(products)) {
+          syncLocalProducts(products);
+          return products;
+        }
+        return getProductsFromLocal();
+      })
+      .catch(() => getProductsFromLocal())
+      .finally(() => {
+        productsRequest = null;
+      });
+  }
+
   return productsRequest;
 };
 

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import {
-  getProducts,
+  refreshProducts as fetchLatestProducts,
   getReviews,
   getStoreSettings,
   toggleWishlist,
@@ -42,7 +42,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     const loadProduct = async () => {
-      const allProducts = await getProducts();
+      const allProducts = await fetchLatestProducts();
       const found = allProducts.find((item) => item.id === id);
       setProduct(found);
       setComboProducts(Array.isArray(found?.comboProducts)

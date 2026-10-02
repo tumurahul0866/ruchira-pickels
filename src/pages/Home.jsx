@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, MessageCircle, Star } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getReviews } from '../services/dataStore';
+import { getStoreSettings, refreshStoreSettings, getProducts, refreshProducts as fetchLatestProducts, getOffers, getReviews } from '../services/dataStore';
 
 const homeCategories = ['All', 'Pickles', 'Podis', 'Non Veg', 'Sweets', 'Snacks', 'Combos'];
 const snackProductName = /gavvalu|chekkalu|murukku|murukulu|mixture|chips|namkeen|snack|cracker/i;
@@ -47,7 +47,12 @@ const Home = () => {
   useEffect(() => {
     let isMounted = true;
 
-    getProducts().then((fetchedProducts) => {
+    getProducts().then((cachedProducts) => {
+      if (isMounted) {
+        setProducts(cachedProducts.filter((product) => product.visible !== false));
+      }
+    });
+    fetchLatestProducts().then((fetchedProducts) => {
       if (isMounted) {
         setProducts(fetchedProducts.filter((product) => product.visible !== false));
       }

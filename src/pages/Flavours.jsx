@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, X, Sparkles } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getProducts, getProductTypes, getOffers, getProductUnitPrice } from '../services/dataStore';
+import { getProducts, refreshProducts as fetchLatestProducts, getProductTypes, getOffers, getProductUnitPrice } from '../services/dataStore';
 
 const Flavours = () => {
   const [products, setProducts] = useState([]);
@@ -17,7 +17,9 @@ const Flavours = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const fetchedProducts = (await getProducts()).filter((p) => p.visible !== false);
+      const cachedProducts = await getProducts();
+      setProducts(cachedProducts.filter((product) => product.visible !== false));
+      const fetchedProducts = (await fetchLatestProducts()).filter((product) => product.visible !== false);
       const fetchedTypes = getProductTypes();
       const fetchedOffers = getOffers().filter((o) => o.active);
       setProducts(fetchedProducts);
