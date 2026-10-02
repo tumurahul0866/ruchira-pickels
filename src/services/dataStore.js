@@ -394,6 +394,7 @@ const CUSTOMERS_API = resolveApiUrl('/customers');
 const SHIPPING_RULES_API = resolveApiUrl('/shipping-rules');
 const PINCODE_API_BASE = resolveApiUrl('/pincode');
 let productsRequest = null;
+let storeSettingsMutationVersion = 0;
 
 const getApiHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('vasuki_token') : null;
@@ -725,7 +726,7 @@ const getOrdersFromLocal = () => {
 export const getOrders = async () => {
   try {
     const orders = await fetchJson(ORDERS_API);
-    if (Array.isArray(orders) && orders.length > 0) {
+    if (Array.isArray(orders)) {
       syncLocalOrders(orders);
       return orders;
     }
@@ -778,40 +779,46 @@ export const saveOrder = async (order) => {
   }
 };
 
-export const updateOrderStatus = (id, status, paymentStatus) => {
-  const orders = getOrdersFromLocal();
-  const index = orders.findIndex((o) => o.id === id);
-  if (index >= 0) {
-    if (status) orders[index].status = status;
-    if (paymentStatus) orders[index].paymentStatus = paymentStatus;
-    syncLocalOrders(orders);
-    fetch(`${ORDERS_API}/${id}`, {
-      method: 'PUT',
-      headers: getApiHeaders(),
-      body: JSON.stringify({ status, paymentStatus }),
-    }).catch(() => {
-      // ignore backend failure
-    });
+export const updateOrderStatus = async (id, status, paymentStatus) => {
+  const updates = {
+    ...(status ? { status } : {}),
+    ...(paymentStatus ? { paymentStatus } : {}),
+  };
+  const response = await fetch(`${ORDERS_API}/${id}`, {
+    method: 'PUT',
+    headers: getApiHeaders(),
+    body: JSON.stringify(updates),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
   }
+
+  const cachedOrders = JSON.parse(localStorage.getItem('vasuki_orders') || '[]');
+  const existingIndex = cachedOrders.findIndex((order) => String(order.id) === String(id));
+  const updatedOrder = payload.id ? payload : { ...(cachedOrders[existingIndex] || {}), ...updates, id };
+  if (existingIndex >= 0) {
+    cachedOrders[existingIndex] = updatedOrder;
+  } else {
+    cachedOrders.unshift(updatedOrder);
+  }
+  syncLocalOrders(cachedOrders);
+  return updatedOrder;
 };
 
 export const deleteOrder = async (id) => {
-  const orders = getOrdersFromLocal().filter((o) => o.id !== id);
-  syncLocalOrders(orders);
-  try {
-    const response = await fetch(`${ORDERS_API}/${id}`, {
-      method: 'DELETE',
-      headers: getApiHeaders(),
-    });
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '');
-      throw new Error(errText || `HTTP ${response.status}`);
-    }
-  } catch (error) {
-    console.error('deleteOrder failed:', error);
-    // Re-throw so the UI can handle gracefully
-    throw error;
+  const response = await fetch(`${ORDERS_API}/${id}`, {
+    method: 'DELETE',
+    headers: getApiHeaders(),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
   }
+
+  const cachedOrders = JSON.parse(localStorage.getItem('vasuki_orders') || '[]');
+  syncLocalOrders(cachedOrders.filter((order) => String(order.id) !== String(id)));
+  return true;
 };
 
 // --- REVIEWS DATABASE ---
@@ -912,6 +919,11 @@ export const deleteReview = async (id) => {
     method: 'DELETE',
     headers: getApiHeaders(),
   });
+  if (response.status === 404) {
+    reviewsMutationVersion += 1;
+    syncLocalReviews(reviews);
+    return true;
+  }
   let payload = {};
   try {
     payload = await response.json();
@@ -947,22 +959,30 @@ export const toggleReviewVisibility = (id) => {
 
 // --- OFFERS DATABASE ---
 
+let offersMutationVersion = 0;
+
 const getOffersFromLocal = () => {
   const offers = localStorage.getItem('vasuki_offers');
   if (!offers) {
     localStorage.setItem('vasuki_offers', JSON.stringify(initialOffers));
-    backgroundFetch(OFFERS_API, syncLocalOffers);
+    const requestVersion = offersMutationVersion;
+    backgroundFetch(OFFERS_API, (latestOffers) => {
+      if (requestVersion === offersMutationVersion) syncLocalOffers(latestOffers);
+    });
     return initialOffers;
   }
   const parsed = JSON.parse(offers);
-  backgroundFetch(OFFERS_API, syncLocalOffers);
+  const requestVersion = offersMutationVersion;
+  backgroundFetch(OFFERS_API, (latestOffers) => {
+    if (requestVersion === offersMutationVersion) syncLocalOffers(latestOffers);
+  });
   return parsed;
 };
 
 export const getOffers = () => getOffersFromLocal();
 
-export const saveOffer = (offer) => {
-  const offers = getOffersFromLocal();
+export const saveOffer = async (offer) => {
+  offersMutationVersion += 1;
   const normalized = {
     id: offer.id || Date.now().toString(),
     code: (offer.code || 'SALE10').toUpperCase().trim(),
@@ -973,26 +993,32 @@ export const saveOffer = (offer) => {
     productId: offer.productId || '',
     minOrderValue: Number(offer.minOrderValue) || 0,
   };
-  const index = offers.findIndex((o) => o.id === normalized.id);
-  const nextOffers = [...offers];
-  if (index >= 0) {
-    nextOffers[index] = normalized;
-  } else {
-    nextOffers.push(normalized);
+  try {
+    const response = await fetch(OFFERS_API, {
+      method: 'POST',
+      headers: getApiHeaders(),
+      body: JSON.stringify(normalized),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error || payload.message || `HTTP ${response.status}`);
+    }
+
+    const savedOffer = payload.id ? payload : normalized;
+    offersMutationVersion += 1;
+    const cachedOffers = JSON.parse(localStorage.getItem('vasuki_offers') || '[]');
+    const existingIndex = cachedOffers.findIndex((item) => String(item.id) === String(savedOffer.id));
+    if (existingIndex >= 0) {
+      cachedOffers[existingIndex] = savedOffer;
+    } else {
+      cachedOffers.push(savedOffer);
+    }
+    syncLocalOffers(cachedOffers);
+    return savedOffer;
+  } catch (error) {
+    offersMutationVersion += 1;
+    throw error;
   }
-  syncLocalOffers(nextOffers);
-
-  const method = index >= 0 ? 'PUT' : 'POST';
-  const url = index >= 0 ? `${OFFERS_API}/${normalized.id}` : OFFERS_API;
-
-  fetch(url, {
-    method,
-    headers: getApiHeaders(),
-    body: JSON.stringify(normalized),
-  }).catch(() => {
-    // offline fallback
-  });
-  return normalized;
 };
 
 export const deleteOffer = async (id) => {
@@ -1048,14 +1074,20 @@ export const toggleOffer = async (id) => {
 // --- STORE & PAYMENT SETTINGS ---
 
 const getStoreSettingsFromLocal = () => {
+  const requestVersion = storeSettingsMutationVersion;
+  const syncIfUnchanged = (settings) => {
+    if (requestVersion === storeSettingsMutationVersion) {
+      syncLocalStoreSettings(settings);
+    }
+  };
   const data = localStorage.getItem('vasuki_settings');
   if (!data) {
     localStorage.setItem('vasuki_settings', JSON.stringify(defaultStoreSettings));
-    backgroundFetch(STORE_SETTINGS_API, syncLocalStoreSettings);
+    backgroundFetch(STORE_SETTINGS_API, syncIfUnchanged);
     return defaultStoreSettings;
   }
-  const parsed = JSON.parse(data);
-  backgroundFetch(STORE_SETTINGS_API, syncLocalStoreSettings);
+  const parsed = normalizeStoreSettings(JSON.parse(data));
+  backgroundFetch(STORE_SETTINGS_API, syncIfUnchanged);
   return parsed;
 };
 
@@ -1063,8 +1095,9 @@ export const getStoreSettings = () => getStoreSettingsFromLocal();
 
 export const refreshStoreSettings = async () => {
   const settings = await fetchJson(STORE_SETTINGS_API);
-  syncLocalStoreSettings(settings);
-  return settings;
+  const normalizedSettings = normalizeStoreSettings(settings);
+  syncLocalStoreSettings(normalizedSettings);
+  return normalizedSettings;
 };
 
 export const uploadStoreLogo = async (file) => {

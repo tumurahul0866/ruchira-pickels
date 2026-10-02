@@ -10,7 +10,7 @@ function post(path, body) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data),
+        'Content-Length': globalThis.Buffer.byteLength(data),
       },
     };
 
@@ -57,6 +57,6 @@ function post(path, body) {
     console.log(adminResp);
   } catch (err) {
     console.error('ERROR', err);
-    process.exit(1);
+    globalThis.process.exit(1);
   }
 })();

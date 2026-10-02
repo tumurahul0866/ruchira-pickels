@@ -49,7 +49,7 @@ const ChangePictures = () => {
             <Image className="text-brand-gold" size={28} /> Website Pictures & Media Manager
           </h1>
           <p className="text-xs sm:text-sm text-brand-cream/60 mt-1">
-            Change, update, or remove images for the Home Page, About Us Page, and Product Catalog.
+            Change, update, or remove images for the Home Page and Product Catalog.
           </p>
         </div>
 
@@ -65,17 +65,17 @@ const ChangePictures = () => {
 
       {savedSuccess && (
         <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500 text-emerald-300 text-sm font-semibold flex items-center gap-2 shadow-md">
-          <Check size={18} /> All Home page, About Us page, and Product image changes have been saved to live site!
+          <Check size={18} /> Home page and Product image changes have been saved to the live site!
         </div>
       )}
 
-      {/* Home Page & About Us Page Images Section */}
+      {/* Home Page Images Section */}
       <div className="p-6 rounded-3xl bg-brand-matte border border-brand-gold/30 space-y-6 shadow-xl">
         <h2 className="text-xl font-serif font-bold text-brand-gold border-b border-white/10 pb-3">
-          🖼️ Home Page & About Us Page Main Pictures
+          🖼️ Home Page Main Pictures
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 1. Home Page Hero Background Image */}
           <div className="space-y-3 bg-brand-black p-4 rounded-2xl border border-white/10">
             <div className="flex justify-between items-center">
@@ -150,42 +150,6 @@ const ChangePictures = () => {
             </div>
           </div>
 
-          {/* 3. About Us Page Story Image */}
-          <div className="space-y-3 bg-brand-black p-4 rounded-2xl border border-white/10">
-            <div className="flex justify-between items-center">
-              <label className="block text-xs uppercase tracking-wider font-extrabold text-brand-gold">
-                About Us Heritage Story Picture
-              </label>
-              {storeSettings.aboutImageUrl && (
-                <button
-                  onClick={() => handleRemoveStoreImage('aboutImageUrl')}
-                  className="text-rose-400 hover:underline text-xs flex items-center gap-1 font-bold"
-                >
-                  <Trash2 size={12} /> Remove
-                </button>
-              )}
-            </div>
-
-            <input
-              type="url"
-              value={storeSettings.aboutImageUrl || ''}
-              onChange={(e) => handleStoreImageChange('aboutImageUrl', e.target.value)}
-              placeholder="Image URL https://..."
-              className="w-full bg-white border-2 border-brand-gold/30 rounded-xl px-3 py-2 text-xs text-gray-900 font-mono font-semibold"
-            />
-
-            <div className="h-32 w-full rounded-xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
-              {storeSettings.aboutImageUrl ? (
-                <img
-                  src={storeSettings.aboutImageUrl}
-                  alt="About Us Story Preview"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="text-xs text-brand-cream/40 italic">No image (Removed)</span>
-              )}
-            </div>
-          </div>
         </div>
       </div>
 

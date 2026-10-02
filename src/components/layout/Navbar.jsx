@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Heart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getWishlist, getStoreSettings, refreshStoreSettings } from '../../services/dataStore';
@@ -10,6 +10,7 @@ const Navbar = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [storeSettings, setStoreSettings] = useState(() => getStoreSettings());
+  const [failedLogoUrl, setFailedLogoUrl] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const { user } = useAuth();
   const wishlistCount = getWishlist(user?.email || user?.phone || user?.id).length;
@@ -96,34 +97,6 @@ const Navbar = () => {
                 </span>
               </div>
             </Link>
-
-            <nav aria-label="Main navigation" className="hidden items-center gap-3 lg:flex xl:gap-5">
-              {[
-              { label: 'Home', to: '/', end: true },
-              { label: 'Shop', to: '/#products', end: true },
-              { label: 'Offers', to: '/offers' },
-              { label: 'About', to: '/about' },
-              { label: 'Reviews', to: '/reviews' },
-              ].map(({ label, to, end }) => (
-              <NavLink
-                key={label}
-                to={to}
-                end={end}
-                className={({ isActive }) => {
-                  const isCurrentPage = label === 'Shop'
-                    ? isActive && location.hash === '#products'
-                    : label === 'Home'
-                      ? isActive && location.hash !== '#products'
-                      : isActive;
-                  return `whitespace-nowrap text-[10px] font-bold uppercase tracking-wide transition-colors xl:text-xs ${
-                    isCurrentPage ? 'text-[#8B1E1E]' : 'text-[#556B2F] hover:text-[#8B1E1E]'
-                  }`;
-                }}
-              >
-                {label}
-              </NavLink>
-              ))}
-            </nav>
 
             {/* Middle — Search Bar */}
             <div className="flex-1 min-w-0 max-w-xl mx-3 hidden md:block lg:mx-6">

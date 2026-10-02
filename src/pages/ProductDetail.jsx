@@ -96,9 +96,7 @@ const ProductDetail = () => {
   };
 
   const handleWhatsAppOrder = () => {
-    const quantityType = product.quantityType || 'Weight';
     const isLegacy = isLegacyProduct(product);
-    const quantityLabel = isLegacy ? (selectedVariant.weight || selectedVariant.label) : `${selectedQuantity} ${quantityType}`;
     const unitPrice = selectedVariant?.price ?? getProductUnitPrice(product);
     const text = `Hi ${storeSettings.businessName || 'J&D Foods'}! I would like to order *${product.name}* (Pack: ${selectedVariant.label || selectedVariant.weight} × ${isLegacy ? 1 : selectedQuantity}) = ₹${unitPrice} each.`;
     const encoded = encodeURIComponent(text);

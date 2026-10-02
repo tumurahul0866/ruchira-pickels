@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { getReviews, saveReview, getProducts } from '../services/dataStore';
+import { getReviews, saveReview } from '../services/dataStore';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Star, CheckCircle2, Sparkles, LogIn, Send } from 'lucide-react';
@@ -60,32 +60,14 @@ const StarInputInteractive = ({ rating, onChange }) => {
 
 const Reviews = () => {
   const [reviews, setReviews] = useState(() => getReviews().filter((r) => r.visible !== false));
-  const [productList, setProductList] = useState([]);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    // Fetch products for dropdown
-    const loadProducts = async () => {
-      try {
-        const prods = await getProducts();
-        if (Array.isArray(prods) && prods.length > 0) {
-          setProductList(prods);
-          setSelectedProduct(prods[0].name || '');
-        }
-      } catch {
-        // fallback
-      }
-    };
-    loadProducts();
-  }, []);
 
   const loadReviewsList = () => {
     const allReviews = getReviews();
@@ -117,7 +99,7 @@ const Reviews = () => {
         name: user.name || user.email || 'Valued Customer',
         rating,
         text: reviewText.trim(),
-        product: selectedProduct || 'Konasema Pickle',
+        product: 'J&D Foods',
         date: new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }),
         visible: true,
         verifiedBuyer: true,
@@ -184,26 +166,6 @@ const Reviews = () => {
 
           {user ? (
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Product Selection */}
-              {productList.length > 0 && (
-                <div>
-                  <label className="block text-xs uppercase tracking-wider font-bold text-[#5C4033] mb-2">
-                    Select Product / Pickle
-                  </label>
-                  <select
-                    value={selectedProduct}
-                    onChange={(e) => setSelectedProduct(e.target.value)}
-                    className="w-full bg-[#F8F3E8]/80 border-2 border-[#5C4033]/15 rounded-2xl px-4 py-3 text-sm text-[#5C4033] font-semibold focus:outline-none focus:border-[#8B1E1E] focus:bg-white transition-all"
-                  >
-                    {productList.map((prod) => (
-                      <option key={prod.id || prod.name} value={prod.name}>
-                        {prod.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               {/* YOUR RATING */}
               <div>
                 <label className="block text-xs uppercase tracking-wider font-bold text-[#5C4033] mb-2">

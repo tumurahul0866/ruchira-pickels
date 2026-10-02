@@ -1,4 +1,4 @@
-const fetch = global.fetch || require('node-fetch');
+const fetch = globalThis.fetch || (await import('node-fetch')).default;
 (async () => {
   try {
     const adminBody = { email: 'admin@vasukipickles.com', password: 'Admin@123' };

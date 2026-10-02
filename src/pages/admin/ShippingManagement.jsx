@@ -2,12 +2,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { getShippingRules, saveShippingRules } from "../../services/dataStore";
 import {
-  Truck, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Save, AlertCircle, CheckCircle, Loader2, ChevronDown
+  Truck, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, Save, AlertCircle, CheckCircle, Loader2
 } from "lucide-react";
 
 const FIXED_STATES = ["Andhra Pradesh", "Telangana"];
-
-const defaultDistrictEntry = { charge: 60, active: true };
 
 // Format district charge safely
 const fmtCharge = (v) => {

@@ -21,6 +21,8 @@ const ApplyOffers = () => {
   const [active, setActive] = useState(true);
   const [productId, setProductId] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   // Fetch latest offers from backend on every mount
   const fetchOffersFromBackend = async () => {
@@ -66,22 +68,28 @@ const ApplyOffers = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
-
-    saveOffer({
-      id: editingOffer ? editingOffer.id : undefined,
-      code: (code.trim() || 'KONASEMA10').toUpperCase(),
-      title: title.trim(),
-      description: description.trim(),
-      discount: Number(discount),
-      minOrderValue: Number(minOrderValue) || 0,
-      active,
-      productId
-    });
-
-    await fetchOffersFromBackend();
-    setSuccessMsg(editingOffer ? 'Coupon offer updated!' : 'New coupon offer added & published!');
-    setTimeout(() => setSuccessMsg(''), 3000);
-    resetForm();
+    setFormError('');
+    setSaving(true);
+    try {
+      await saveOffer({
+        id: editingOffer ? editingOffer.id : undefined,
+        code: (code.trim() || 'KONASEMA10').toUpperCase(),
+        title: title.trim(),
+        description: description.trim(),
+        discount: Number(discount),
+        minOrderValue: Number(minOrderValue) || 0,
+        active,
+        productId
+      });
+      await fetchOffersFromBackend();
+      setSuccessMsg(editingOffer ? 'Coupon offer updated!' : 'New coupon offer added & published!');
+      setTimeout(() => setSuccessMsg(''), 3000);
+      resetForm();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Unable to save this offer. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleEdit = (offer) => {
@@ -146,6 +154,11 @@ const ApplyOffers = () => {
         >
           <Check size={18} /> {successMsg}
         </motion.div>
+      )}
+      {formError && (
+        <div role="alert" className="border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {formError}
+        </div>
       )}
 
       {/* Add / Edit Coupon Offer Form */}
@@ -269,9 +282,10 @@ const ApplyOffers = () => {
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 type="submit"
+                disabled={saving}
                 className="px-6 py-2.5 rounded-xl bg-brand-gold text-brand-black font-extrabold text-xs uppercase tracking-wider hover:bg-brand-gold-light transition-all shadow-lg"
               >
-                {editingOffer ? 'Update Coupon' : 'Save & Publish Coupon'}
+                {saving ? 'Saving...' : editingOffer ? 'Update Coupon' : 'Save & Publish Coupon'}
               </motion.button>
             </div>
           </div>
@@ -280,9 +294,10 @@ const ApplyOffers = () => {
 
       {/* Active Coupons List Table */}
       <div className="p-6 rounded-3xl bg-brand-matte border border-white/10 space-y-4">
-        <h2 className="text-xl font-serif font-bold text-brand-gold border-b border-white/10 pb-3">
-          📋 Manage Coupons & Offers ({offers.length})
-        </h2>
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <h2 className="text-xl font-serif font-bold text-brand-gold">Manage Coupons & Offers</h2>
+          <span className="text-xs text-brand-cream/50">{loading ? 'Loading offers…' : `${offers.length} offers`}</span>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {offers.map((offer) => (

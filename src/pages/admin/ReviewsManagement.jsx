@@ -9,6 +9,7 @@ const ReviewsManagement = () => {
   const [formState, setFormState] = useState({ id: '', name: '', rating: 5, text: '', visible: true });
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
 
   const refresh = () => setReviews(getReviews());
 
@@ -30,11 +31,13 @@ const ReviewsManagement = () => {
     try {
       await saveReview({ ...formState, rating: Number(formState.rating) });
       refresh();
+      setMessageType('success');
       setMessage('Review saved successfully.');
       setFormState({ id: '', name: '', rating: 5, text: '', visible: true });
       setIsEditing(false);
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
+      setMessageType('error');
       setMessage(error instanceof Error ? error.message : 'Review could not be saved. Please try again.');
     }
   };
@@ -44,9 +47,11 @@ const ReviewsManagement = () => {
       try {
         await deleteReview(id);
         refresh();
+        setMessageType('success');
         setMessage('Review deleted successfully.');
         setTimeout(() => setMessage(''), 3000);
       } catch (error) {
+        setMessageType('error');
         setMessage(error instanceof Error ? error.message : 'Review could not be deleted. Please try again.');
       }
     }
@@ -114,7 +119,11 @@ const ReviewsManagement = () => {
 
         <div className="bg-brand-matte border border-white/10 rounded-3xl p-6">
           <h3 className="text-xl font-semibold text-brand-cream mb-4">{isEditing ? 'Edit Review' : 'Add Review'}</h3>
-          {message && <div className="mb-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-emerald-200">{message}</div>}
+          {message && (
+            <div role={messageType === 'error' ? 'alert' : 'status'} className={`mb-4 border p-3 text-sm ${messageType === 'success' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-red-500/30 bg-red-500/10 text-red-200'}`}>
+              {message}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-brand-cream/70 mb-2">Reviewer Name</label>

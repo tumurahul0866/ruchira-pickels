@@ -39,13 +39,6 @@ const UserDashboard = ({ defaultTab }) => {
     defaultTab || location.state?.tab || new URLSearchParams(location.search).get('tab') || 'orders'
   );
 
-  useEffect(() => {
-    if (location.state?.tab) {
-      setActiveTab(location.state.tab);
-    } else if (defaultTab) {
-      setActiveTab(defaultTab);
-    }
-  }, [location.state, defaultTab]);
 
   const [orders, setOrders] = useState([]);
   const [userProfile, setUserProfileState] = useState(() => (user ? getUserProfile(user.email) : {
@@ -119,7 +112,7 @@ const UserDashboard = ({ defaultTab }) => {
     };
 
     loadOrders();
-  }, [user, navigate]);
+  }, [user, navigate, wishlistKey]);
 
   if (!user) return null;
 

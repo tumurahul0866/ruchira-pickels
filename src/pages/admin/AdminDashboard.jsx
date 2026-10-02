@@ -363,19 +363,7 @@ const Overview = ({ stats, orders = [], recentOrders, setActiveTab, statusBadge 
 
   const statusItems = Object.entries(statusCounts).map(([status, value]) => ({ status, value }));
   const totalStatus = statusItems.reduce((sum, item) => sum + item.value, 0);
-  let statusPosition = 0;
-  const statusBackground = statusItems
-    .map((item) => {
-      const start = statusPosition;
-      const slice = totalStatus ? (item.value / totalStatus) * 100 : 0;
-      statusPosition += slice;
-      const color = item.status === 'Delivered' ? '#22c55e'
-        : item.status === 'Processing' ? '#38bdf8'
-        : item.status === 'Cancelled' ? '#f43f5e'
-        : '#f59e0b';
-      return `${color} ${start}% ${statusPosition}%`;
-    })
-    .join(', ');
+  void totalStatus;
 
   const activeStats = statConfig.map((item) => ({
     ...item,

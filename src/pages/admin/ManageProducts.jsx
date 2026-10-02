@@ -4,8 +4,6 @@ import { Edit2, Trash2, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
 
-const emptyMessage = 'Please fill in the required product details before saving.';
-
 const defaultProduct = {
   id: '',
   name: '',

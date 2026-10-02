@@ -16,8 +16,6 @@ import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 import Reviews from './pages/Reviews';
-import About from './pages/About';
-import Contact from './pages/Contact';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
@@ -25,7 +23,6 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import UserDashboard from './pages/UserDashboard';
 import Offers from './pages/Offers';
-import OurStory from './pages/OurStory';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -74,7 +71,8 @@ function App() {
               {/* Customer Routes */}
               <Route path="/" element={<CustomerLayout><Home /></CustomerLayout>} />
               <Route path="/flavours" element={<Navigate to="/" replace />} />
-              <Route path="/about" element={<CustomerLayout><About /></CustomerLayout>} />
+              <Route path="/about" element={<Navigate to="/" replace />} />
+              <Route path="/our-story" element={<Navigate to="/" replace />} />
               <Route path="/product/:id" element={<CustomerLayout><ProductDetail /></CustomerLayout>} />
               <Route path="/reviews" element={<CustomerLayout><Reviews /></CustomerLayout>} />
               <Route path="/contact" element={<Navigate to="/reviews" replace />} />
@@ -101,8 +99,6 @@ function App() {
                 }
               />
               <Route path="/offers" element={<CustomerLayout><Offers /></CustomerLayout>} />
-              <Route path="/our-story" element={<CustomerLayout><OurStory /></CustomerLayout>} />
-
               {/* Fallback Catch-All Route */}
               <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
