@@ -77,6 +77,23 @@ select {
   font: inherit;
 }
 
+.admin-form-field {
+  background-color: #fff;
+  border: 2px solid #8d6c3f;
+  color: #1f2937;
+}
+
+.admin-form-field::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+
+.admin-form-field:focus {
+  border-color: #b78926;
+  outline: 2px solid rgba(183, 137, 38, 0.25);
+  outline-offset: 1px;
+}
+
 ::selection {
   background: rgba(217, 119, 6, 0.25);
   color: #5C4033;

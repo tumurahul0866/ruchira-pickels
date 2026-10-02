@@ -78,7 +78,7 @@ const AdminProfile = () => {
                 value={profile.heroTitle}
                 onChange={handleChange}
                 maxLength={100}
-                className="w-full rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
                 placeholder="Leave blank to hide the banner title"
               />
             </div>
@@ -90,7 +90,7 @@ const AdminProfile = () => {
                 onChange={handleChange}
                 rows={3}
                 maxLength={300}
-                className="min-h-24 w-full resize-y rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
+                className="admin-form-field min-h-24 w-full resize-y rounded-2xl px-4 py-3"
                 placeholder="Leave blank to hide the banner subtitle"
               />
             </div>
@@ -102,7 +102,7 @@ const AdminProfile = () => {
                 name="ownerName"
                 value={profile.ownerName}
                 onChange={handleChange}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>
             <div>
@@ -111,7 +111,7 @@ const AdminProfile = () => {
                 name="businessName"
                 value={profile.businessName}
                 onChange={handleChange}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>
             <div>
@@ -121,7 +121,7 @@ const AdminProfile = () => {
                 type="email"
                 value={profile.email}
                 onChange={handleChange}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>
             <div>
@@ -130,7 +130,7 @@ const AdminProfile = () => {
                 name="phone"
                 value={profile.phone}
                 onChange={handleChange}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>
             <div>
@@ -140,7 +140,7 @@ const AdminProfile = () => {
                 type="url"
                 value={profile.whatsapp}
                 onChange={handleChange}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>
             <div>
@@ -150,7 +150,7 @@ const AdminProfile = () => {
                 type="url"
                 value={profile.instagram}
                 onChange={handleChange}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>
           </div>
@@ -162,7 +162,7 @@ const AdminProfile = () => {
                 name="address"
                 value={profile.address}
                 onChange={handleChange}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>
             <div>
@@ -172,7 +172,7 @@ const AdminProfile = () => {
                 type="url"
                 value={profile.mapLink}
                 onChange={handleChange}
-                className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -183,7 +183,7 @@ const AdminProfile = () => {
                   type="url"
                   value={profile.profileImage}
                   onChange={handleChange}
-                  className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                  className="admin-form-field w-full rounded-2xl px-4 py-3"
                 />
               </div>
               <div>
@@ -193,7 +193,7 @@ const AdminProfile = () => {
                   type="url"
                   value={profile.logoImage}
                   onChange={handleChange}
-                  className="w-full bg-brand-black border border-white/10 rounded-2xl px-4 py-3 text-brand-cream"
+                  className="admin-form-field w-full rounded-2xl px-4 py-3"
                 />
               </div>
             </div>

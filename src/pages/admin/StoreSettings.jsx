@@ -14,7 +14,7 @@ const Field = ({ label, icon: Icon, hint, children }) => (
   </div>
 );
 
-const inputClass = "w-full bg-white border-2 border-brand-gold/30 rounded-2xl px-4 py-3 text-gray-900 text-sm font-semibold focus:outline-none focus:border-brand-gold transition-all placeholder-gray-400 shadow-inner";
+const inputClass = "admin-form-field w-full rounded-2xl px-4 py-3 text-sm font-semibold focus:outline-none transition-all shadow-inner";
 
 const StoreSettings = () => {
   const [settings, setSettings] = useState(() => {

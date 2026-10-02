@@ -133,7 +133,7 @@ const ReviewsManagement = () => {
                 onChange={handleChange}
                 maxLength={100}
                 required
-                className="w-full rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
                 placeholder="Customer name"
               />
             </div>
@@ -143,7 +143,7 @@ const ReviewsManagement = () => {
                 name="rating"
                 value={formState.rating}
                 onChange={handleChange}
-                className="w-full rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
+                className="admin-form-field w-full rounded-2xl px-4 py-3"
               >
                 {[5, 4, 3, 2, 1].map((n) => (
                   <option key={n} value={n}>{n} Star{n > 1 ? 's' : ''}</option>
@@ -159,7 +159,7 @@ const ReviewsManagement = () => {
                 onChange={handleChange}
                 maxLength={2000}
                 required
-                className="min-h-36 w-full resize-y rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
+                className="admin-form-field min-h-36 w-full resize-y rounded-2xl px-4 py-3"
                 placeholder="Customer feedback"
               />
               <p className="mt-1 text-right text-xs text-brand-cream/50">{formState.text.length}/2000</p>
