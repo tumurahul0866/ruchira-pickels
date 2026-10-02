@@ -629,8 +629,10 @@ export const refreshProducts = async () => {
 
 export const saveProduct = async (product) => {
   const payload = createProductPayload(product);
-  const method = payload.id ? 'PUT' : 'POST';
-  const url = payload.id ? `${PRODUCTS_API}/${payload.id}` : PRODUCTS_API;
+  const { id: productId, ...requestPayload } = payload;
+  const method = productId ? 'PUT' : 'POST';
+  const url = productId ? `${PRODUCTS_API}/${productId}` : PRODUCTS_API;
+  const body = method === 'PUT' ? requestPayload : payload;
 
   try {
     if (productsRequest) await productsRequest;
@@ -638,7 +640,7 @@ export const saveProduct = async (product) => {
     const response = await fetch(url, {
       method,
       headers: getApiHeaders(),
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
