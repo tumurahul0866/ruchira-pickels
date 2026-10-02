@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import ComboProductDialog from '../components/ui/ComboProductDialog';
 import {
   getProducts,
   refreshProducts as fetchLatestProducts,
@@ -12,6 +13,7 @@ import {
   isProductInWishlist,
   getProductUnitPrice,
   getProductUnitLabel,
+  getComboProductUnit,
   isLegacyProduct,
   getProductVariants
 } from '../services/dataStore';
@@ -37,6 +39,7 @@ const ProductDetail = () => {
 
   const [product, setProduct] = useState(null);
   const [comboProducts, setComboProducts] = useState([]);
+  const [selectedComboProduct, setSelectedComboProduct] = useState(null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
   const [productLoadError, setProductLoadError] = useState('');
   const [selectedVariant, setSelectedVariant] = useState({ label: 'Pack', price: 0 });
@@ -57,12 +60,15 @@ const ProductDetail = () => {
         ? found.comboProductIds
           .map((comboProductId) => allProducts.find((item) => String(item.id) === String(comboProductId)))
           .filter(Boolean)
-          .map(({ id: productId, name, image, productType, category }) => ({
-            id: productId,
-            name,
-            image,
-            productType,
-            category,
+          .map((comboProduct) => ({
+            id: comboProduct.id,
+            name: comboProduct.name,
+            image: comboProduct.image,
+            productType: comboProduct.productType,
+            category: comboProduct.category,
+            price: Number(comboProduct.pricePerUnit) || Number(comboProduct.weights?.[0]?.price) || 0,
+            quantity: Number(found.comboProductQuantities?.[String(comboProduct.id)]) || 1,
+            unit: getComboProductUnit(comboProduct),
           }))
         : []);
 
@@ -105,6 +111,7 @@ const ProductDetail = () => {
       isMounted = false;
     };
   }, [id, user?.email]);
+
   const [addedToast, setAddedToast] = useState(false);
 
   const reviews = getReviews().filter(
@@ -264,19 +271,29 @@ const ProductDetail = () => {
                     </div>
                     <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                       {comboProducts.map((comboProduct) => (
-                        <li key={comboProduct.id} className="flex min-w-0 items-center gap-3 rounded-xl border border-amber-100 bg-white p-3 shadow-sm">
-                          <img
-                            src={comboProduct.image}
-                            alt=""
-                            className="h-14 w-14 shrink-0 rounded-xl border border-amber-100 object-cover"
-                            loading="eager"
-                          />
-                          <span className="min-w-0">
-                            <span className="block whitespace-normal text-sm font-semibold leading-snug text-slate-900">{comboProduct.name}</span>
-                            <span className="mt-1 block truncate text-[11px] font-medium text-amber-800">
-                              {[comboProduct.productType, comboProduct.category].filter(Boolean).join(' · ')}
+                        <li key={comboProduct.id}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedComboProduct(comboProduct)}
+                            className="flex w-full min-w-0 items-center gap-3 rounded-xl border border-amber-100 bg-white p-3 text-left shadow-sm transition hover:border-amber-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                            aria-label={`View ${comboProduct.name} included in this combo`}
+                          >
+                            <img
+                              src={comboProduct.image}
+                              alt=""
+                              className="h-14 w-14 shrink-0 rounded-xl border border-amber-100 object-cover"
+                              loading="eager"
+                            />
+                            <span className="min-w-0 flex-1">
+                              <span className="block whitespace-normal text-sm font-semibold leading-snug text-slate-900">{comboProduct.name}</span>
+                              <span className="mt-1 block truncate text-[11px] font-medium text-amber-800">
+                                {[comboProduct.productType, comboProduct.category].filter(Boolean).join(' · ')}
+                              </span>
                             </span>
-                          </span>
+                            <span className="shrink-0 text-xs font-bold text-amber-900">
+                              {comboProduct.quantity || 1} {comboProduct.unit || 'units'}
+                            </span>
+                          </button>
                         </li>
                       ))}
                       {comboProducts.length === 0 && (
@@ -469,6 +486,7 @@ const ProductDetail = () => {
           </motion.div>
         </div>
       </div>
+      <ComboProductDialog product={selectedComboProduct} onClose={() => setSelectedComboProduct(null)} />
     </div>
   );
 };

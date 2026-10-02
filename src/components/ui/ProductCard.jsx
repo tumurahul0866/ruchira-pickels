@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Heart, Star, ShoppingCart, Check } from 'lucide-react';
+import ComboProductDialog from './ComboProductDialog';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { toggleWishlist, isProductInWishlist, getProductUnitPrice, getProductUnitLabel, isLegacyProduct, getProductVariants } from '../../services/dataStore';
+import { toggleWishlist, isProductInWishlist, getProductUnitPrice, getProductUnitLabel, isLegacyProduct, getProductVariants, getComboProductUnit } from '../../services/dataStore';
 
 const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
   const { addToCart } = useCart();
@@ -17,18 +18,22 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
     ? product.comboProducts
     : catalogProducts
       .filter((item) => selectedComboIds.includes(String(item.id)))
-      .map(({ id, name, image, productType, category }) => ({
-        id,
-        name,
-        image: image || '',
-        productType: productType || 'Product',
-        category: category || '',
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        image: item.image || '',
+        productType: item.productType || 'Product',
+        category: item.category || '',
+        price: Number(item.pricePerUnit) || Number(item.weights?.[0]?.price) || 0,
+        quantity: Number(product.comboProductQuantities?.[String(item.id)]) || 1,
+        unit: getComboProductUnit(item),
       }));
   const isLegacy = isLegacyProduct(product);
   const variantOptions = getProductVariants(product);
   const [selectedWeight, setSelectedWeight] = useState(() => variantOptions[0]);
   const [isWishlisted, setIsWishlisted] = useState(isProductInWishlist(wishlistKey, product.id));
   const [addedToast, setAddedToast] = useState(false);
+  const [selectedComboProduct, setSelectedComboProduct] = useState(null);
 
   const handleWishlistToggle = (e) => {
     e.preventDefault();
@@ -154,7 +159,17 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
           {isCombo && comboProducts.length > 0 && (
             <div className={`flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${compact ? 'mt-1 pb-1' : '-mt-2 mb-3'}`} aria-label="Products included in combo">
               {comboProducts.map((comboProduct) => (
-                <div key={comboProduct.id} className="flex shrink-0 items-center gap-1 rounded-full border border-[#5C4033]/10 bg-[#F8F3E8] pr-2">
+                <button
+                  key={comboProduct.id}
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setSelectedComboProduct(comboProduct);
+                  }}
+                  className="flex shrink-0 items-center gap-1 rounded-full border border-[#5C4033]/10 bg-[#F8F3E8] pr-2 text-left hover:border-[#D97706] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D97706]"
+                  aria-label={`View ${comboProduct.name} included in this combo`}
+                >
                   <img
                     src={comboProduct.image}
                     alt=""
@@ -164,7 +179,7 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
                   <span className={`${compact ? 'max-w-16 text-[8px]' : 'max-w-20 text-[9px]'} truncate font-semibold text-[#5C4033]/75`} title={comboProduct.productType || comboProduct.category || comboProduct.name}>
                     {comboProduct.productType || comboProduct.category || comboProduct.name}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -253,6 +268,7 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
           )}
         </button>
       </div>
+      <ComboProductDialog product={selectedComboProduct} onClose={() => setSelectedComboProduct(null)} />
     </motion.div>
   );
 };

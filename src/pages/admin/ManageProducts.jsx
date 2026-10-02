@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { refreshProducts as fetchLatestProducts, saveProduct, deleteProduct, toggleProductVisibility, getProductTypes, addProductType } from '../../services/dataStore';
+import { refreshProducts as fetchLatestProducts, saveProduct, deleteProduct, toggleProductVisibility, getProductTypes, addProductType, getComboProductUnit } from '../../services/dataStore';
 import { Edit2, Trash2, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
@@ -10,6 +10,7 @@ const defaultProduct = {
   category: 'Veg',
   productType: '',
   comboProductIds: [],
+  comboProductQuantities: {},
   quantityType: 'Weight',
   pricePerUnit: 0,
   variants: [],
@@ -33,7 +34,13 @@ const measurementTypes = ['Weight', 'Volume', 'Pieces', 'Box', 'Size', 'Custom']
 const getComboMembers = (combo, products) => {
   if (Array.isArray(combo.comboProducts) && combo.comboProducts.length > 0) return combo.comboProducts;
   const selectedIds = Array.isArray(combo.comboProductIds) ? combo.comboProductIds.map(String) : [];
-  return products.filter((product) => selectedIds.includes(String(product.id)));
+  return products
+    .filter((product) => selectedIds.includes(String(product.id)))
+    .map((product) => ({
+      ...product,
+      quantity: Number(combo.comboProductQuantities?.[String(product.id)]) || 1,
+      unit: getComboProductUnit(product),
+    }));
 };
 
 const ManageProducts = ({ mode = 'products' }) => {
@@ -75,6 +82,14 @@ const ManageProducts = ({ mode = 'products' }) => {
         : Array.isArray(product.comboProducts)
         ? product.comboProducts.map((includedProduct) => String(includedProduct.id))
         : [],
+      comboProductQuantities: product.comboProductQuantities &&
+        typeof product.comboProductQuantities === 'object' &&
+        Object.keys(product.comboProductQuantities).length > 0
+        ? product.comboProductQuantities
+        : Object.fromEntries((product.comboProducts || []).map((includedProduct) => [
+          String(includedProduct.id),
+          Number(includedProduct.quantity) || 1,
+        ])),
       pricePerUnit: Number(product.pricePerUnit ?? product.weights?.[0]?.price) || 0,
       variants: Array.isArray(product.variants)
         ? product.variants
@@ -141,6 +156,12 @@ const ManageProducts = ({ mode = 'products' }) => {
         productType: isCombo ? 'Combos' : formData.productType,
         quantityType: isCombo ? 'Combo' : formData.quantityType,
         comboProductIds: isCombo ? [...new Set(formData.comboProductIds.map(String))] : [],
+        comboProductQuantities: isCombo
+          ? Object.fromEntries([...new Set(formData.comboProductIds.map(String))].map((id) => [
+            id,
+            Math.max(1, Math.floor(Number(formData.comboProductQuantities?.[id]) || 1)),
+          ]))
+          : {},
         variants: isCombo ? [] : formData.variants,
         additionalImages: previewImages.filter(Boolean),
         inStock: Number(formData.stockQuantity) > 0,
@@ -195,12 +216,30 @@ const ManageProducts = ({ mode = 'products' }) => {
   const allFilteredProductsSelected = filteredComboProducts.length > 0 &&
     filteredComboProducts.every((product) => selectedComboIds.includes(String(product.id)));
 
+  const toggleComboProduct = (productId, checked) => {
+    const id = String(productId);
+    const nextIds = checked
+      ? [...new Set([...selectedComboIds, id])]
+      : selectedComboIds.filter((selectedId) => selectedId !== id);
+    const nextQuantities = { ...formData.comboProductQuantities };
+    if (checked) {
+      if (!Number(nextQuantities[id])) nextQuantities[id] = 1;
+    } else {
+      delete nextQuantities[id];
+    }
+    setFormData({ ...formData, comboProductIds: nextIds, comboProductQuantities: nextQuantities });
+  };
+
   const toggleFilteredComboProducts = () => {
     const visibleIds = filteredComboProducts.map((product) => String(product.id));
     const nextIds = allFilteredProductsSelected
       ? selectedComboIds.filter((id) => !visibleIds.includes(id))
       : [...new Set([...selectedComboIds, ...visibleIds])];
-    setFormData({ ...formData, comboProductIds: nextIds });
+    const nextQuantities = Object.fromEntries(nextIds.map((id) => [
+      id,
+      Number(formData.comboProductQuantities?.[id]) || 1,
+    ]));
+    setFormData({ ...formData, comboProductIds: nextIds, comboProductQuantities: nextQuantities });
   };
 
   if (isEditing) {
@@ -344,24 +383,42 @@ const ManageProducts = ({ mode = 'products' }) => {
                       </div>
                       <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
                         {filteredComboProducts.map((product) => (
-                    <label key={product.id} className="flex items-center gap-3 rounded-xl border border-brand-gold/15 bg-white/50 px-3 py-2 text-sm text-brand-black">
+                    <div key={product.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-brand-gold/15 bg-white/50 px-3 py-2 text-sm text-brand-black">
                       <input
+                        id={`combo-product-${product.id}`}
                         type="checkbox"
                         checked={selectedComboIds.includes(String(product.id))}
-                        onChange={(event) => {
-                          const nextIds = event.target.checked
-                            ? [...new Set([...selectedComboIds, String(product.id)])]
-                            : selectedComboIds.filter((id) => id !== String(product.id));
-                          setFormData({ ...formData, comboProductIds: nextIds });
-                        }}
+                        onChange={(event) => toggleComboProduct(product.id, event.target.checked)}
                         className="h-4 w-4 accent-brand-gold"
                       />
-                      <span className="min-w-0 flex-1">
+                      <label htmlFor={`combo-product-${product.id}`} className="min-w-0 flex-1 cursor-pointer">
                         <span className="block truncate">{product.name}</span>
                         <span className="block text-[11px] text-brand-black/55">{product.productType} · {product.category}</span>
-                      </span>
+                      </label>
                       <span className="shrink-0 text-xs text-brand-black/60">₹{product.pricePerUnit || product.weights?.[0]?.price || 0}</span>
-                    </label>
+                      {selectedComboIds.includes(String(product.id)) && (
+                        <label className="flex items-center gap-2 text-xs font-semibold">
+                          Amount
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            required
+                            value={formData.comboProductQuantities?.[String(product.id)] ?? 1}
+                            onChange={(event) => setFormData({
+                              ...formData,
+                              comboProductQuantities: {
+                                ...formData.comboProductQuantities,
+                                [String(product.id)]: Number(event.target.value),
+                              },
+                            })}
+                            className="w-20 rounded-lg border border-brand-gold/30 bg-white px-2 py-1 text-brand-black"
+                            aria-label={`Amount of ${product.name}`}
+                          />
+                          <span>{getComboProductUnit(product)}</span>
+                        </label>
+                      )}
+                    </div>
                         ))}
                         {filteredComboProducts.length === 0 && (
                           <p className="py-3 text-center text-sm text-brand-black/60">No products in this category.</p>
@@ -649,7 +706,10 @@ const ManageProducts = ({ mode = 'products' }) => {
                     {includedProducts.map((product) => (
                       <span key={product.id} className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-white/5 py-1 pl-1 pr-2 text-xs text-brand-cream/80">
                         <img src={product.image} alt="" className="h-6 w-6 rounded-full object-cover" />
-                        <span className="max-w-32 truncate">{product.name || product.productType || product.category}</span>
+                        <span className="max-w-32 truncate">
+                          {product.name || product.productType || product.category}
+                          {product.quantity ? ` · ${product.quantity} ${product.unit || 'units'}` : ''}
+                        </span>
                       </span>
                     ))}
                   </div>

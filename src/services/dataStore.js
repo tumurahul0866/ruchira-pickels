@@ -544,6 +544,14 @@ export const getProductUnitPrice = (product) => {
   return 0;
 };
 
+export const getComboProductUnit = (product) => {
+  const quantityType = String(product.quantityType || '').toLowerCase();
+  const firstWeight = String(product.weights?.[0]?.weight ?? product.weights?.[0]?.label ?? '').toLowerCase();
+  if (/\b(weight|g|gram|grams|kg|kilogram|kilograms)\b|(?:\d)\s*(?:g|kg)\b/.test(`${quantityType} ${firstWeight}`)) return 'g';
+  if (/\b(volume|ml|milliliter|milliliters|l|liter|liters)\b|(?:\d)\s*(?:ml|l)\b/.test(`${quantityType} ${firstWeight}`)) return 'ml';
+  return 'units';
+};
+
 export const getProductUnitLabel = (product) => {
   return product.quantityType || 'Unit';
 };
@@ -660,9 +668,12 @@ export const saveProduct = async (product) => {
       payload.productType.trim().toLowerCase() === 'combos' &&
       (!Array.isArray(updated.comboProductIds) ||
         payload.comboProductIds.length !== updated.comboProductIds.length ||
-        payload.comboProductIds.some((id) => !updated.comboProductIds.map(String).includes(id)))
+        payload.comboProductIds.some((id) => !updated.comboProductIds.map(String).includes(id)) ||
+        Object.entries(payload.comboProductQuantities || {}).some(([id, quantity]) => (
+          Number(updated.comboProductQuantities?.[id]) !== Number(quantity)
+        )))
     ) {
-      throw new Error('The server did not confirm the combo products were saved. Please try again after the backend update is deployed.');
+      throw new Error('The server did not confirm the combo products and quantities were saved. Please try again after the backend update is deployed.');
     }
 
     const products = getProductsFromLocal();
