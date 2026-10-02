@@ -112,7 +112,7 @@ const Home = () => {
                 <img
                   src={settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl}
                   alt="Andhra Avakaya Mango Pickle"
-                  className="h-full w-full object-cover sm:object-contain"
+                  className="h-full w-full object-cover"
                 />
               </picture>
             ) : (
