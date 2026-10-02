@@ -118,7 +118,9 @@ const Home = () => {
             ) : (
               <div className="absolute inset-0 bg-[#EAE0D0]" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#24140F]/90 via-[#24140F]/65 to-transparent" />
+            {settings?.heroGradientOverlay !== false && (
+              <div className="absolute inset-0 bg-gradient-to-r from-[#24140F]/90 via-[#24140F]/65 to-transparent" />
+            )}
 
             <div className="absolute inset-x-0 bottom-0 left-0 flex max-w-[90%] flex-col items-start gap-3 p-4 text-white sm:max-w-[68%] sm:gap-4 sm:p-6 lg:p-8">
               <div>

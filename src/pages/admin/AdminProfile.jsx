@@ -21,6 +21,7 @@ const AdminProfile = () => {
       }),
       heroTitle: storeSettings.heroTitle || '',
       heroSubtitle: storeSettings.heroSubtitle || '',
+      heroGradientOverlay: storeSettings.heroGradientOverlay !== false,
     };
   });
   const [message, setMessage] = useState('');
@@ -28,7 +29,8 @@ const AdminProfile = () => {
   const [saving, setSaving] = useState(false);
 
   const handleChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setProfile({ ...profile, [name]: type === 'checkbox' ? checked : value });
   };
 
   const handleSave = async (e) => {
@@ -40,9 +42,10 @@ const AdminProfile = () => {
       await saveStoreSettings({
         heroTitle: profile.heroTitle,
         heroSubtitle: profile.heroSubtitle,
+        heroGradientOverlay: profile.heroGradientOverlay,
       });
       setMessageType('success');
-      setMessage('Admin profile and homepage banner text updated successfully.');
+      setMessage('Admin profile and homepage banner settings updated successfully.');
       setTimeout(() => setMessage(''), 4000);
     } catch (error) {
       setMessageType('error');
@@ -94,6 +97,21 @@ const AdminProfile = () => {
                 placeholder="Leave blank to hide the banner subtitle"
               />
             </div>
+            <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-brand-black/30 p-3 text-sm text-brand-cream">
+              <input
+                type="checkbox"
+                name="heroGradientOverlay"
+                checked={profile.heroGradientOverlay}
+                onChange={handleChange}
+                className="mt-0.5 h-5 w-5 shrink-0 accent-brand-gold"
+              />
+              <span>
+                <span className="block font-medium">Show dark gradient overlay</span>
+                <span className="mt-1 block text-xs text-brand-cream/60">
+                  Turn this off to show the hero image without the dark overlay.
+                </span>
+              </span>
+            </label>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
