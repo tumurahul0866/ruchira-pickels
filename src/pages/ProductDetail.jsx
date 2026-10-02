@@ -35,6 +35,7 @@ const ProductDetail = () => {
   const storeSettings = getStoreSettings();
 
   const [product, setProduct] = useState(null);
+  const [comboProducts, setComboProducts] = useState([]);
   const [selectedVariant, setSelectedVariant] = useState({ label: 'Pack', price: 0 });
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -44,6 +45,11 @@ const ProductDetail = () => {
       const allProducts = await getProducts();
       const found = allProducts.find((item) => item.id === id);
       setProduct(found);
+      setComboProducts(Array.isArray(found?.comboProducts)
+        ? found.comboProducts
+        : Array.isArray(found?.comboProductIds)
+        ? found.comboProductIds.map((comboProductId) => allProducts.find((item) => String(item.id) === String(comboProductId))).filter(Boolean)
+        : []);
       if (found) {
         const variants = getProductVariants(found);
         const defaultVariant = variants.find((v) => v.label === '500g') || variants[0];
@@ -74,6 +80,8 @@ const ProductDetail = () => {
     );
   }
 
+  const isCombo = String(product.productType || '').trim().toLowerCase() === 'combos';
+
   const handleWishlistToggle = () => {
     const list = toggleWishlist(user?.email, product.id);
     setIsWishlisted(list.includes(product.id));
@@ -83,7 +91,8 @@ const ProductDetail = () => {
     // Always persist the selected variant (label + price). Quantity: 1 for legacy fixed packs, otherwise selectedQuantity.
     const option = selectedVariant ?? { label: getProductUnitLabel(product), price: getProductUnitPrice(product) };
     const quantity = isLegacyProduct(product) ? 1 : selectedQuantity;
-    addToCart(product, option, quantity);
+    const cartProduct = isCombo ? { ...product, comboProducts } : product;
+    addToCart(cartProduct, option, quantity);
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 2000);
   };
@@ -91,7 +100,8 @@ const ProductDetail = () => {
   const handleBuyNow = () => {
     const option = selectedVariant ?? { label: getProductUnitLabel(product), price: getProductUnitPrice(product) };
     const quantity = isLegacyProduct(product) ? 1 : selectedQuantity;
-    addToCart(product, option, quantity);
+    const cartProduct = isCombo ? { ...product, comboProducts } : product;
+    addToCart(cartProduct, option, quantity);
     navigate('/checkout');
   };
 
@@ -148,16 +158,20 @@ const ProductDetail = () => {
                 <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      product.category === 'Veg'
+                      isCombo
+                        ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                        : product.category === 'Veg'
                         ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                         : 'bg-rose-100 text-rose-800 border border-rose-300'
                     }`}
                   >
-                    {product.category === 'Veg' ? '🥬 100% Vegetarian' : '🍖 Non-Vegetarian'}
+                    {isCombo ? '🎁 Product Combo' : product.category === 'Veg' ? '🥬 100% Vegetarian' : '🍖 Non-Vegetarian'}
                   </span>
-                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300">
-                    🌶️ {product.spiceLevel}
-                  </span>
+                  {!isCombo && (
+                    <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300">
+                      🌶️ {product.spiceLevel}
+                    </span>
+                  )}
                 </div>
 
                 <div>
@@ -176,6 +190,17 @@ const ProductDetail = () => {
                 </div>
 
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{product.description}</p>
+
+                {isCombo && (
+                  <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                    <h2 className="text-sm font-bold text-slate-800">Products included in this combo</h2>
+                    <ul className="mt-2 space-y-1 text-sm text-slate-600">
+                      {comboProducts.map((comboProduct) => (
+                        <li key={comboProduct.id}>{comboProduct.name}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
 
                 {isLegacyProduct(product) ? (
                   <div className="pt-3 border-t border-slate-100">

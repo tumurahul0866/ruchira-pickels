@@ -499,35 +499,40 @@ const syncLocalCustomers = (customers) => {
   localStorage.setItem('vasuki_customers', JSON.stringify(customers));
 };
 
-const createProductPayload = (product) => ({
-  ...product,
-  name: product.name || '',
-  category: product.category || 'Veg',
-  productType: product.productType || 'Pickles',
-  quantityType: product.quantityType || 'Weight',
-  pricePerUnit: Number(product.pricePerUnit) || 0,
-  // Support new `variants` shape while remaining backward compatible with `weights`.
-  weights: Array.isArray(product.variants)
-    ? product.variants.map((v) => ({ weight: v.label ?? v.weight, price: Number(v.price) || 0 }))
-    : Array.isArray(product.weights)
-    ? product.weights
-    : [],
-  spiceLevel: product.spiceLevel || 'Medium',
-  description: product.description || '',
-  ingredients: product.ingredients || '',
-  shelfLife: product.shelfLife || '9 Months',
-  discountPrice: Number(product.discountPrice) || 0,
-  bulkPrice: Number(product.bulkPrice) || 0,
-  stockQuantity: Number(product.stockQuantity) || 25,
-  inStock: product.inStock !== undefined ? product.inStock : Number(product.stockQuantity) > 0,
-  bestSeller: Boolean(product.bestSeller),
-  newArrival: Boolean(product.newArrival),
-  visible: product.visible !== undefined ? product.visible : true,
-  rating: product.rating || 4.9,
-  reviewsCount: product.reviewsCount || 10,
-  image: product.image || '',
-  additionalImages: Array.isArray(product.additionalImages) ? product.additionalImages : []
-});
+const createProductPayload = (product) => {
+  const productData = { ...product };
+  delete productData.comboProducts;
+  return {
+    ...productData,
+    name: product.name || '',
+    category: product.category || 'Veg',
+    productType: product.productType || 'Pickles',
+    comboProductIds: Array.isArray(product.comboProductIds) ? product.comboProductIds.map(String) : [],
+    quantityType: product.quantityType || 'Weight',
+    pricePerUnit: Number(product.pricePerUnit) || 0,
+    // Support new `variants` shape while remaining backward compatible with `weights`.
+    weights: Array.isArray(product.variants)
+      ? product.variants.map((v) => ({ weight: v.label ?? v.weight, price: Number(v.price) || 0 }))
+      : Array.isArray(product.weights)
+      ? product.weights
+      : [],
+    spiceLevel: product.spiceLevel || 'Medium',
+    description: product.description || '',
+    ingredients: product.ingredients || '',
+    shelfLife: product.shelfLife || '9 Months',
+    discountPrice: Number(product.discountPrice) || 0,
+    bulkPrice: Number(product.bulkPrice) || 0,
+    stockQuantity: Number(product.stockQuantity) || 25,
+    inStock: product.inStock !== undefined ? product.inStock : Number(product.stockQuantity) > 0,
+    bestSeller: Boolean(product.bestSeller),
+    newArrival: Boolean(product.newArrival),
+    visible: product.visible !== undefined ? product.visible : true,
+    rating: product.rating || 4.9,
+    reviewsCount: product.reviewsCount || 10,
+    image: product.image || '',
+    additionalImages: Array.isArray(product.additionalImages) ? product.additionalImages : []
+  };
+};
 
 export const getProductUnitPrice = (product) => {
   if (typeof product.pricePerUnit === 'number' && product.pricePerUnit > 0) {

@@ -5,7 +5,7 @@ import { ArrowRight, MessageCircle, Star } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getReviews } from '../services/dataStore';
 
-const homeCategories = ['All', 'Pickles', 'Podis', 'Non Veg', 'Sweets', 'Snacks'];
+const homeCategories = ['All', 'Pickles', 'Podis', 'Non Veg', 'Sweets', 'Snacks', 'Combos'];
 const snackProductName = /gavvalu|chekkalu|murukku|murukulu|mixture|chips|namkeen|snack|cracker/i;
 
 const matchesCategory = (product, category) => {
@@ -15,6 +15,8 @@ const matchesCategory = (product, category) => {
   const isNonVeg = /non[\s-]?veg/.test(`${type} ${productCategory}`);
 
   switch (category) {
+    case 'Combos':
+      return type === 'combos';
     case 'Pickles':
       return type.includes('pickle') && !isNonVeg;
     case 'Podis':
@@ -214,7 +216,7 @@ const Home = () => {
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} offer={offers[0]} compact />
+                <ProductCard key={product.id} product={product} offer={offers[0]} compact catalogProducts={products} />
               ))}
             </div>
           ) : (

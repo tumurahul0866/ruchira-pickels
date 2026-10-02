@@ -267,6 +267,9 @@ const Checkout = () => {
       const itemTotal = (item.weightOption?.price || 0) * item.quantity;
       const variantLabel = item.weightOption?.label ?? item.weightOption?.weight ?? 'Unit';
       lines.push(`• *${item.product.name}* (Pack: ${variantLabel}) × ${item.quantity} — ₹${item.weightOption?.price || 0} each, Total ₹${itemTotal}`);
+      if (Array.isArray(item.product.comboProducts) && item.product.comboProducts.length > 0) {
+        lines.push(`  Includes: ${item.product.comboProducts.map((comboProduct) => comboProduct.name).join(', ')}`);
+      }
     });
 
     lines.push('');
@@ -797,6 +800,11 @@ const Checkout = () => {
                       <p className="text-[11px] text-slate-500">
                         {item.product.quantityType || 'Weight'}: {item.weightOption?.label ?? item.weightOption?.weight ?? 'Unit'} × {item.quantity}
                       </p>
+                      {Array.isArray(item.product.comboProducts) && item.product.comboProducts.length > 0 && (
+                        <p className="text-[10px] text-slate-500">
+                          Includes: {item.product.comboProducts.map((comboProduct) => comboProduct.name).join(', ')}
+                        </p>
+                      )}
                     </div>
                     <p className="text-xs font-bold text-slate-900 font-mono">
                       ₹{item.weightOption.price * item.quantity}

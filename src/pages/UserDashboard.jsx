@@ -407,6 +407,11 @@ const UserDashboard = ({ defaultTab }) => {
                                           <span className="font-semibold text-slate-700">{item.weightOption?.weight}</span>
                                         )}
                                       </p>
+                                      {Array.isArray(item.product?.comboProducts) && item.product.comboProducts.length > 0 && (
+                                        <p className="mt-1 text-[11px] text-slate-500">
+                                          Includes: {item.product.comboProducts.map((comboProduct) => comboProduct.name).join(', ')}
+                                        </p>
+                                      )}
                                     </div>
                                   </div>
                                   <p className="text-sm font-bold text-slate-900">

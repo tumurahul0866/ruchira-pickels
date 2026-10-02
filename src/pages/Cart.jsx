@@ -105,6 +105,11 @@ const Cart = () => {
                       <p className="text-xs text-[#5C4033]/65 font-medium">
                         Pack: {item.weightOption?.label ?? item.weightOption?.weight}
                       </p>
+                      {Array.isArray(item.product.comboProducts) && item.product.comboProducts.length > 0 && (
+                        <p className="mt-1 text-[11px] text-[#5C4033]/65">
+                          Includes: {item.product.comboProducts.map((comboProduct) => comboProduct.name).join(', ')}
+                        </p>
+                      )}
                       <p className="text-xs font-bold text-[#8B1E1E] mt-1">Unit Price: ₹{item.weightOption.price}</p>
                     </>
                   </div>

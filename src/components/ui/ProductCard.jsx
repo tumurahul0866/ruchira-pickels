@@ -6,11 +6,12 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { toggleWishlist, isProductInWishlist, getProductUnitPrice, getProductUnitLabel, isLegacyProduct, getProductVariants } from '../../services/dataStore';
 
-const ProductCard = ({ product, compact = false }) => {
+const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const wishlistKey = user?.email || user?.phone || user?.id;
 
+  const isCombo = String(product.productType || '').trim().toLowerCase() === 'combos';
   const isLegacy = isLegacyProduct(product);
   const variantOptions = getProductVariants(product);
   const [selectedWeight, setSelectedWeight] = useState(() => variantOptions[0]);
@@ -29,7 +30,18 @@ const ProductCard = ({ product, compact = false }) => {
     e.stopPropagation();
     // Always use the selected variant (label + price). Fallback to unit option.
     const option = selectedWeight ?? { label: getProductUnitLabel(product), price: getProductUnitPrice(product) };
-    addToCart(product, option, 1);
+    const selectedComboIds = Array.isArray(product.comboProductIds) ? product.comboProductIds.map(String) : [];
+    const cartProduct = isCombo
+      ? {
+          ...product,
+          comboProducts: Array.isArray(product.comboProducts)
+            ? product.comboProducts
+            : catalogProducts
+              .filter((item) => selectedComboIds.includes(String(item.id)))
+              .map(({ id, name }) => ({ id, name, quantity: 1 })),
+        }
+      : product;
+    addToCart(cartProduct, option, 1);
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 2000);
   };
@@ -70,17 +82,21 @@ const ProductCard = ({ product, compact = false }) => {
           {!compact && <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
             <span
               className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                product.category === 'Veg'
+                isCombo
+                  ? 'bg-[#D97706] text-white shadow-sm'
+                  : product.category === 'Veg'
                   ? 'bg-[#556B2F] text-white shadow-sm'
                   : 'bg-[#8B1E1E] text-white shadow-sm'
               }`}
             >
-              {product.category === 'Veg' ? '🥬 Veg' : '🍖 Non-Veg'}
+              {isCombo ? '🎁 Combo' : product.category === 'Veg' ? '🥬 Veg' : '🍖 Non-Veg'}
             </span>
 
-            <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider bg-white/90 text-[#8B1E1E] border border-[#8B1E1E]/20 backdrop-blur-sm shadow-sm">
-              {getSpiceEmojis(product.spiceLevel)}
-            </span>
+            {!isCombo && (
+              <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider bg-white/90 text-[#8B1E1E] border border-[#8B1E1E]/20 backdrop-blur-sm shadow-sm">
+                {getSpiceEmojis(product.spiceLevel)}
+              </span>
+            )}
           </div>}
 
           {/* Wishlist Heart Button */}
@@ -124,6 +140,11 @@ const ProductCard = ({ product, compact = false }) => {
             </h3>
           </Link>
           {!compact && <p className="text-xs text-[#5C4033]/70 line-clamp-2 mb-4 leading-relaxed">{product.description}</p>}
+          {isCombo && (
+            <p className={`text-[10px] font-semibold text-[#8B1E1E] ${compact ? 'mt-1' : '-mt-3 mb-3'}`}>
+              Includes {product.comboProductIds?.length || 0} products
+            </p>
+          )}
 
           {/* Weight Option Selector */}
           {compact && variantOptions.length > 1 && (

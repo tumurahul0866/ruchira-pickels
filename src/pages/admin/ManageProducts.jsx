@@ -9,6 +9,7 @@ const defaultProduct = {
   name: '',
   category: 'Veg',
   productType: '',
+  comboProductIds: [],
   quantityType: 'Weight',
   pricePerUnit: 0,
   variants: [],
@@ -36,6 +37,7 @@ const ManageProducts = () => {
   const [previewImages, setPreviewImages] = useState([]);
   const [productTypes, setProductTypes] = useState([]);
   const [newType, setNewType] = useState('');
+  const [comboProductCategory, setComboProductCategory] = useState('All categories');
   const [saveError, setSaveError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -62,6 +64,7 @@ const ManageProducts = () => {
     setFormData({
       ...product,
       quantityType: product.quantityType || 'Weight',
+      comboProductIds: Array.isArray(product.comboProductIds) ? product.comboProductIds.map(String) : [],
       pricePerUnit: Number(product.pricePerUnit ?? product.weights?.[0]?.price) || 0,
       variants: Array.isArray(product.variants)
         ? product.variants
@@ -79,13 +82,28 @@ const ManageProducts = () => {
     setIsEditing(true);
   };
 
+  const handleCreateCombo = () => {
+    setFormData({
+      ...defaultProduct,
+      category: 'Combo',
+      productType: 'Combos',
+      comboProductIds: [],
+      quantityType: 'Combo',
+      spiceLevel: 'N/A',
+      description: 'A hand-picked combo of our favourite products.',
+    });
+    setPreviewImages([]);
+    setIsEditing(true);
+  };
+
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      const success = await deleteProduct(id);
-      if (success) {
+      try {
+        const success = await deleteProduct(id);
+        if (!success) throw new Error('Failed to delete product.');
         await refreshProducts();
-      } else {
-        window.alert('Failed to delete product. Please try again.');
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : 'Failed to delete product. Please try again.');
       }
     }
   };
@@ -94,6 +112,11 @@ const ManageProducts = () => {
     e.preventDefault();
     setSaveError('');
 
+    const isCombo = formData.productType === 'Combos';
+    if (isCombo && new Set(formData.comboProductIds.map(String)).size < 2) {
+      setSaveError('Select at least two different products for this combo.');
+      return;
+    }
     if (!formData.name.trim() || !formData.description.trim() || !formData.image.trim() || Number(formData.pricePerUnit) <= 0) {
       setSaveError('Please fill in all required product details and set a valid unit price.');
       return;
@@ -104,6 +127,11 @@ const ManageProducts = () => {
       // Prepare payload: ensure `variants` are present and legacy `weights` are derived
       const payload = {
         ...formData,
+        category: isCombo ? 'Combo' : formData.category,
+        productType: isCombo ? 'Combos' : formData.productType,
+        quantityType: isCombo ? 'Combo' : formData.quantityType,
+        comboProductIds: isCombo ? [...new Set(formData.comboProductIds.map(String))] : [],
+        variants: isCombo ? [] : formData.variants,
         additionalImages: previewImages.filter(Boolean),
         inStock: Number(formData.stockQuantity) > 0,
         // ensure backend compatibility: map variants -> weights will be handled by dataStore
@@ -140,6 +168,27 @@ const ManageProducts = () => {
     await refreshProducts();
   };
 
+  const isCombo = formData.productType === 'Combos';
+  const selectableProducts = products.filter((product) => (
+    String(product.id) !== String(formData.id) &&
+    String(product.productType || '').trim().toLowerCase() !== 'combos'
+  ));
+  const comboProductCategories = [...new Set(selectableProducts.map((product) => product.category).filter(Boolean))];
+  const filteredComboProducts = comboProductCategory === 'All categories'
+    ? selectableProducts
+    : selectableProducts.filter((product) => product.category === comboProductCategory);
+  const selectedComboIds = formData.comboProductIds.map(String);
+  const allFilteredProductsSelected = filteredComboProducts.length > 0 &&
+    filteredComboProducts.every((product) => selectedComboIds.includes(String(product.id)));
+
+  const toggleFilteredComboProducts = () => {
+    const visibleIds = filteredComboProducts.map((product) => String(product.id));
+    const nextIds = allFilteredProductsSelected
+      ? selectedComboIds.filter((id) => !visibleIds.includes(id))
+      : [...new Set([...selectedComboIds, ...visibleIds])];
+    setFormData({ ...formData, comboProductIds: nextIds });
+  };
+
   if (isEditing) {
     return (
       <motion.div 
@@ -150,8 +199,14 @@ const ManageProducts = () => {
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <h2 className="text-3xl font-serif text-brand-black">{formData.id ? 'Edit Product' : 'Add New Product'}</h2>
-            <p className="text-brand-black/60 mt-1">Update product details, pricing, stock and images. Changes reflect on customer pages immediately.</p>
+            <h2 className="text-3xl font-serif text-brand-black">
+              {isCombo ? (formData.id ? 'Edit Combo' : 'Create Product Combo') : (formData.id ? 'Edit Product' : 'Add New Product')}
+            </h2>
+            <p className="text-brand-black/60 mt-1">
+              {isCombo
+                ? 'Choose products for this bundle, set one combo price, and manage its stock.'
+                : 'Update product details, pricing, stock and images. Changes reflect on customer pages immediately.'}
+            </p>
           </div>
           <button onClick={() => setIsEditing(false)} className="text-brand-black/70 hover:text-brand-black">
             <X size={26} />
@@ -171,51 +226,59 @@ const ManageProducts = () => {
               />
 
 
-              <label className="block text-sm text-brand-cream/70">Product Type</label>
-              <select
-                required
-                value={formData.productType}
-                onChange={(e) => setFormData({ ...formData, productType: e.target.value })}
-                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
-              >
-                <option value="">Select Type</option>
-                {productTypes.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
+              {isCombo ? (
+                <div className="rounded-2xl border border-brand-gold/30 bg-brand-gold/10 px-4 py-3 text-sm font-bold text-brand-black">
+                  Product Type: Combos
+                </div>
+              ) : (
+                <>
+                  <label className="block text-sm text-brand-cream/70">Product Type</label>
+                  <select
+                    required
+                    value={formData.productType}
+                    onChange={(e) => setFormData({ ...formData, productType: e.target.value })}
+                    className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
+                  >
+                    <option value="">Select Type</option>
+                    {productTypes.filter((type) => type.trim().toLowerCase() !== 'combos').map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
 
-              <div className="flex gap-2 mt-2">
-                <input
-                  type="text"
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value)}
-                  placeholder="Add new type (e.g. Masalas)"
-                  className="flex-1 bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-2 text-brand-black"
-                />
-                <button type="button" onClick={handleAddType} className="bg-brand-gold text-brand-black rounded-2xl px-4 py-2 font-semibold">Add</button>
-              </div>
+                  <div className="flex gap-2 mt-2">
+                    <input
+                      type="text"
+                      value={newType}
+                      onChange={(e) => setNewType(e.target.value)}
+                      placeholder="Add new type (e.g. Masalas)"
+                      className="flex-1 bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-2 text-brand-black"
+                    />
+                    <button type="button" onClick={handleAddType} className="bg-brand-gold text-brand-black rounded-2xl px-4 py-2 font-semibold">Add</button>
+                  </div>
 
-              <label className="block text-sm text-brand-cream/70 mt-4">Category</label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
-              >
-                <option>Veg</option>
-                <option>Non-Veg</option>
-              </select>
+                  <label className="block text-sm text-brand-cream/70 mt-4">Category</label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
+                  >
+                    <option>Veg</option>
+                    <option>Non-Veg</option>
+                  </select>
 
-              <label className="block text-sm text-brand-cream/70">Spice Level</label>
-              <select
-                value={formData.spiceLevel}
-                onChange={(e) => setFormData({ ...formData, spiceLevel: e.target.value })}
-                className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
-              >
-                <option>Mild</option>
-                <option>Medium</option>
-                <option>Hot</option>
-                <option>Extra Hot</option>
-              </select>
+                  <label className="block text-sm text-brand-cream/70">Spice Level</label>
+                  <select
+                    value={formData.spiceLevel}
+                    onChange={(e) => setFormData({ ...formData, spiceLevel: e.target.value })}
+                    className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
+                  >
+                    <option>Mild</option>
+                    <option>Medium</option>
+                    <option>Hot</option>
+                    <option>Extra Hot</option>
+                  </select>
+                </>
+              )}
 
               <label className="block text-sm text-brand-cream/70">Main Image URL</label>
               <input
@@ -240,6 +303,66 @@ const ManageProducts = () => {
             </div>
 
             <div className="space-y-4">
+              {isCombo && (
+                <fieldset className="space-y-2 rounded-2xl border border-brand-gold/30 p-4">
+                  <legend className="px-2 text-sm font-bold text-brand-black">Select multiple products for this combo</legend>
+                  {selectableProducts.length > 0 && (
+                    <>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <select
+                          value={comboProductCategory}
+                          onChange={(event) => setComboProductCategory(event.target.value)}
+                          className="min-w-0 flex-1 rounded-xl border border-brand-gold/30 bg-white px-3 py-2 text-sm text-brand-black"
+                          aria-label="Filter combo products by category"
+                        >
+                          <option>All categories</option>
+                          {comboProductCategories.map((category) => (
+                            <option key={category} value={category}>{category}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={toggleFilteredComboProducts}
+                          className="rounded-xl border border-brand-gold/40 px-3 py-2 text-xs font-bold text-brand-black hover:bg-brand-gold/10"
+                        >
+                          {allFilteredProductsSelected ? 'Clear visible products' : 'Select all visible'}
+                        </button>
+                      </div>
+                      <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
+                        {filteredComboProducts.map((product) => (
+                    <label key={product.id} className="flex items-center gap-3 rounded-xl border border-brand-gold/15 bg-white/50 px-3 py-2 text-sm text-brand-black">
+                      <input
+                        type="checkbox"
+                        checked={selectedComboIds.includes(String(product.id))}
+                        onChange={(event) => {
+                          const nextIds = event.target.checked
+                            ? [...new Set([...selectedComboIds, String(product.id)])]
+                            : selectedComboIds.filter((id) => id !== String(product.id));
+                          setFormData({ ...formData, comboProductIds: nextIds });
+                        }}
+                        className="h-4 w-4 accent-brand-gold"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate">{product.name}</span>
+                        <span className="block text-[11px] text-brand-black/55">{product.productType} · {product.category}</span>
+                      </span>
+                      <span className="shrink-0 text-xs text-brand-black/60">₹{product.pricePerUnit || product.weights?.[0]?.price || 0}</span>
+                    </label>
+                        ))}
+                        {filteredComboProducts.length === 0 && (
+                          <p className="py-3 text-center text-sm text-brand-black/60">No products in this category.</p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                  {selectableProducts.length === 0 && (
+                    <p className="text-sm text-brand-black/60">Add regular products before creating a combo.</p>
+                  )}
+                  <p className="text-xs text-brand-black/60">
+                    {selectedComboIds.length} selected total; choose at least two products.
+                  </p>
+                </fieldset>
+              )}
               <label className="block text-sm text-brand-cream/70">Description</label>
               <textarea
                 required
@@ -290,20 +413,22 @@ const ManageProducts = () => {
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+              {!isCombo && (
+                <div>
+                  <label className="block text-sm text-brand-cream/70 mb-2">Measurement Type</label>
+                  <select
+                    value={formData.quantityType}
+                    onChange={(e) => setFormData({ ...formData, quantityType: e.target.value })}
+                    className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
+                  >
+                    {measurementTypes.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
-                <label className="block text-sm text-brand-cream/70 mb-2">Measurement Type</label>
-                <select
-                  value={formData.quantityType}
-                  onChange={(e) => setFormData({ ...formData, quantityType: e.target.value })}
-                  className="w-full bg-brand-cream border border-brand-gold/30 rounded-2xl px-4 py-3 text-brand-black"
-                >
-                  {measurementTypes.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-brand-cream/70 mb-2">Unit Price</label>
+                <label className="block text-sm text-brand-cream/70 mb-2">{isCombo ? 'Combo Price' : 'Unit Price'}</label>
                 <input
                   type="number"
                   min="0"
@@ -314,10 +439,10 @@ const ManageProducts = () => {
                 />
               </div>
             </div>
-            <p className="text-xs text-brand-cream/60">New products use a unit-based pricing model. Legacy products with existing variants will continue to work.</p>
+            {!isCombo && <p className="text-xs text-brand-cream/60">New products use a unit-based pricing model. Legacy products with existing variants will continue to work.</p>}
           </div>
 
-          <div className="mt-4">
+          {!isCombo && <div className="mt-4">
             <label className="block text-sm text-brand-cream/70 mb-2">Variants (Pack options)</label>
             <div className="space-y-2">
               {(formData.variants || []).map((v, idx) => (
@@ -343,7 +468,7 @@ const ManageProducts = () => {
                 <button type="button" onClick={addVariantRow} className="px-3 py-2 rounded-2xl bg-brand-gold text-brand-black font-semibold">Add Variant</button>
               </div>
             </div>
-          </div>
+          </div>}
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
@@ -452,11 +577,18 @@ const ManageProducts = () => {
           <h2 className="text-3xl font-serif text-brand-cream">Manage Products</h2>
           <p className="text-brand-cream/60 mt-2">Add, edit, and update all store products with pricing, stock, and visibility settings.</p>
         </div>
-        <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
-          <Button variant="outline" onClick={handleCreate} className="py-2.5 px-5 bg-brand-gold text-brand-black hover:bg-brand-gold-light font-bold flex items-center gap-2 rounded-2xl shadow-md">
-            <Plus size={18} /> Add New Product
-          </Button>
-        </motion.div>
+        <div className="flex flex-wrap gap-3">
+          <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
+            <Button variant="outline" onClick={handleCreate} className="py-2.5 px-5 bg-brand-gold text-brand-black hover:bg-brand-gold-light font-bold flex items-center gap-2 rounded-2xl shadow-md">
+              <Plus size={18} /> Add New Product
+            </Button>
+          </motion.div>
+          <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
+            <Button variant="outline" onClick={handleCreateCombo} className="py-2.5 px-5 border border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10 font-bold flex items-center gap-2 rounded-2xl shadow-md">
+              <Plus size={18} /> Add Combo
+            </Button>
+          </motion.div>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-3xl border border-white/10 bg-brand-matte">
@@ -486,8 +618,8 @@ const ManageProducts = () => {
                 </td>
                 <td className="px-6 py-4 font-medium text-brand-cream">{product.name}</td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.category === 'Veg' ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
-                    {product.category}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.productType === 'Combos' ? 'bg-brand-gold/20 text-brand-gold' : product.category === 'Veg' ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
+                    {product.productType === 'Combos' ? 'Combo' : product.category}
                   </span>
                 </td>
                 <td className="px-6 py-4">{product.pricePerUnit ? `₹${product.pricePerUnit} / ${product.quantityType || 'Unit'}` : Array.isArray(product.weights) && product.weights[0] ? `${product.weights[0].weight} · ₹${product.weights[0].price}` : '—'}</td>

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, X, Sparkles } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getProducts, getProductTypes, getOffers } from '../services/dataStore';
+import { getProducts, getProductTypes, getOffers, getProductUnitPrice } from '../services/dataStore';
 
 const Flavours = () => {
   const [products, setProducts] = useState([]);
@@ -27,13 +27,21 @@ const Flavours = () => {
     loadData();
   }, []);
 
-  const availableTypes = ['All', ...productTypes];
+  const availableTypes = [
+    'All',
+    ...productTypes.filter((type) => type.trim().toLowerCase() !== 'combos'),
+    ...(products.some((product) => String(product.productType || '').trim().toLowerCase() === 'combos')
+      ? ['Combos']
+      : []),
+  ];
   const spiceLevels = ['All', 'Sweet', 'Mild', 'Medium', 'Hot', 'Extra Hot'];
 
   let filteredProducts = products;
 
   if (selectedType !== 'All') {
-    filteredProducts = filteredProducts.filter((p) => p.productType === selectedType);
+    filteredProducts = filteredProducts.filter((p) => selectedType === 'Combos'
+      ? String(p.productType || '').trim().toLowerCase() === 'combos'
+      : p.productType === selectedType);
   }
 
   if (selectedSpice !== 'All') {
@@ -53,11 +61,11 @@ const Flavours = () => {
 
   if (sortBy === 'low-high') {
     filteredProducts = [...filteredProducts].sort(
-      (a, b) => (a.weights?.[0]?.price || 0) - (b.weights?.[0]?.price || 0)
+      (a, b) => getProductUnitPrice(a) - getProductUnitPrice(b)
     );
   } else if (sortBy === 'high-low') {
     filteredProducts = [...filteredProducts].sort(
-      (a, b) => (b.weights?.[0]?.price || 0) - (a.weights?.[0]?.price || 0)
+      (a, b) => getProductUnitPrice(b) - getProductUnitPrice(a)
     );
   }
 
@@ -197,7 +205,7 @@ const Flavours = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: idx * 0.05 }}
               >
-                <ProductCard product={product} offer={offers[0]} />
+                <ProductCard product={product} offer={offers[0]} catalogProducts={products} />
               </motion.div>
             ))}
           </div>
