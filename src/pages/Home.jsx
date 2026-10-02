@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Flame, MessageCircle, Star } from 'lucide-react';
+import { ArrowRight, MessageCircle, Star } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getStoreSettings, refreshStoreSettings, getProducts, getOffers, getReviews } from '../services/dataStore';
 
@@ -64,7 +64,6 @@ const Home = () => {
     };
   }, []);
 
-  const brandTagline = settings?.brandTagline || 'Authentic Andhra Pickles & Podis Handcrafted with Love.';
   const featuredOffer = offers.find((o) => o.code);
   const filteredProducts = products.filter((product) => {
     if (!matchesCategory(product, selectedCategory)) return false;
@@ -117,16 +116,7 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-[#24140F]/90 via-[#24140F]/65 to-transparent" />
 
             <div className="absolute inset-y-0 left-0 flex max-w-[84%] flex-col items-start justify-center p-4 text-white sm:max-w-[58%] sm:p-6 lg:p-8">
-              <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#8B1E1E] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em]">
-                <Flame size={13} className="text-[#FFD700]" /> Bestseller
-              </span>
-              <h1 className="font-serif text-[25px] font-bold leading-tight sm:text-[28px]">
-                Andhra Avakaya Mango Pickle
-              </h1>
-              <p className="mt-2 max-w-[250px] text-xs leading-relaxed text-white/90 sm:text-sm">
-                {brandTagline}
-              </p>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Link
                   to="/#products"
                   className="inline-flex items-center gap-2 rounded-full bg-[#556B2F] px-4 py-2.5 text-xs font-bold text-white shadow-sm"
