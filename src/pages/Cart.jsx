@@ -106,9 +106,17 @@ const Cart = () => {
                         Pack: {item.weightOption?.label ?? item.weightOption?.weight}
                       </p>
                       {Array.isArray(item.product.comboProducts) && item.product.comboProducts.length > 0 && (
-                        <p className="mt-1 text-[11px] text-[#5C4033]/65">
-                          Includes: {item.product.comboProducts.map((comboProduct) => comboProduct.name).join(', ')}
-                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {item.product.comboProducts.map((comboProduct) => (
+                            <div key={comboProduct.id} className="flex items-center gap-1.5 rounded-full bg-[#F8F3E8] pr-2">
+                              <img src={comboProduct.image} alt="" className="h-7 w-7 rounded-full object-cover" loading="lazy" />
+                              <span className="max-w-28">
+                                <span className="block truncate text-[10px] font-semibold text-[#5C4033]">{comboProduct.name}</span>
+                                <span className="block truncate text-[9px] text-[#5C4033]/60">{comboProduct.productType || comboProduct.category}</span>
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       )}
                       <p className="text-xs font-bold text-[#8B1E1E] mt-1">Unit Price: ₹{item.weightOption.price}</p>
                     </>

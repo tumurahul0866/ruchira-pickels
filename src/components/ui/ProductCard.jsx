@@ -12,6 +12,18 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
   const wishlistKey = user?.email || user?.phone || user?.id;
 
   const isCombo = String(product.productType || '').trim().toLowerCase() === 'combos';
+  const selectedComboIds = Array.isArray(product.comboProductIds) ? product.comboProductIds.map(String) : [];
+  const comboProducts = Array.isArray(product.comboProducts)
+    ? product.comboProducts
+    : catalogProducts
+      .filter((item) => selectedComboIds.includes(String(item.id)))
+      .map(({ id, name, image, productType, category }) => ({
+        id,
+        name,
+        image: image || '',
+        productType: productType || 'Product',
+        category: category || '',
+      }));
   const isLegacy = isLegacyProduct(product);
   const variantOptions = getProductVariants(product);
   const [selectedWeight, setSelectedWeight] = useState(() => variantOptions[0]);
@@ -30,16 +42,8 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
     e.stopPropagation();
     // Always use the selected variant (label + price). Fallback to unit option.
     const option = selectedWeight ?? { label: getProductUnitLabel(product), price: getProductUnitPrice(product) };
-    const selectedComboIds = Array.isArray(product.comboProductIds) ? product.comboProductIds.map(String) : [];
     const cartProduct = isCombo
-      ? {
-          ...product,
-          comboProducts: Array.isArray(product.comboProducts)
-            ? product.comboProducts
-            : catalogProducts
-              .filter((item) => selectedComboIds.includes(String(item.id)))
-              .map(({ id, name }) => ({ id, name, quantity: 1 })),
-        }
+      ? { ...product, comboProducts }
       : product;
     addToCart(cartProduct, option, 1);
     setAddedToast(true);
@@ -144,6 +148,23 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
             <p className={`text-[10px] font-semibold text-[#8B1E1E] ${compact ? 'mt-1' : '-mt-3 mb-3'}`}>
               Includes {product.comboProductIds?.length || 0} products
             </p>
+          )}
+          {isCombo && comboProducts.length > 0 && (
+            <div className={`flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${compact ? 'mt-1 pb-1' : '-mt-2 mb-3'}`} aria-label="Products included in combo">
+              {comboProducts.map((comboProduct) => (
+                <div key={comboProduct.id} className="flex shrink-0 items-center gap-1 rounded-full border border-[#5C4033]/10 bg-[#F8F3E8] pr-2">
+                  <img
+                    src={comboProduct.image}
+                    alt=""
+                    className={`${compact ? 'h-6 w-6' : 'h-8 w-8'} shrink-0 rounded-full object-cover`}
+                    loading="lazy"
+                  />
+                  <span className={`${compact ? 'max-w-16 text-[8px]' : 'max-w-20 text-[9px]'} truncate font-semibold text-[#5C4033]/75`} title={comboProduct.productType || comboProduct.category || comboProduct.name}>
+                    {comboProduct.productType || comboProduct.category || comboProduct.name}
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Weight Option Selector */}

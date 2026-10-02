@@ -48,7 +48,10 @@ const ProductDetail = () => {
       setComboProducts(Array.isArray(found?.comboProducts)
         ? found.comboProducts
         : Array.isArray(found?.comboProductIds)
-        ? found.comboProductIds.map((comboProductId) => allProducts.find((item) => String(item.id) === String(comboProductId))).filter(Boolean)
+        ? found.comboProductIds
+          .map((comboProductId) => allProducts.find((item) => String(item.id) === String(comboProductId)))
+          .filter(Boolean)
+          .map(({ id, name, image, productType, category }) => ({ id, name, image, productType, category }))
         : []);
       if (found) {
         const variants = getProductVariants(found);
@@ -194,9 +197,22 @@ const ProductDetail = () => {
                 {isCombo && (
                   <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                     <h2 className="text-sm font-bold text-slate-800">Products included in this combo</h2>
-                    <ul className="mt-2 space-y-1 text-sm text-slate-600">
+                    <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                       {comboProducts.map((comboProduct) => (
-                        <li key={comboProduct.id}>{comboProduct.name}</li>
+                        <li key={comboProduct.id} className="flex min-w-0 items-center gap-2 rounded-xl border border-amber-100 bg-white p-2">
+                          <img
+                            src={comboProduct.image}
+                            alt=""
+                            className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                            loading="lazy"
+                          />
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-semibold text-slate-800">{comboProduct.name}</span>
+                            <span className="block truncate text-[11px] text-slate-500">
+                              {[comboProduct.productType, comboProduct.category].filter(Boolean).join(' · ')}
+                            </span>
+                          </span>
+                        </li>
                       ))}
                     </ul>
                   </section>

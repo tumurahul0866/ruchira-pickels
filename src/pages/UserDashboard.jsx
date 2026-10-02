@@ -408,9 +408,16 @@ const UserDashboard = ({ defaultTab }) => {
                                         )}
                                       </p>
                                       {Array.isArray(item.product?.comboProducts) && item.product.comboProducts.length > 0 && (
-                                        <p className="mt-1 text-[11px] text-slate-500">
-                                          Includes: {item.product.comboProducts.map((comboProduct) => comboProduct.name).join(', ')}
-                                        </p>
+                                        <div className="mt-1 flex flex-wrap gap-1">
+                                          {item.product.comboProducts.map((comboProduct) => (
+                                            <div key={comboProduct.id} className="flex items-center gap-1 rounded-full bg-slate-100 pr-1.5">
+                                              <img src={comboProduct.image} alt="" className="h-6 w-6 rounded-full object-cover" loading="lazy" />
+                                              <span className="max-w-24 truncate text-[10px] text-slate-600">
+                                                {comboProduct.productType || comboProduct.category || comboProduct.name}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
                                       )}
                                     </div>
                                   </div>

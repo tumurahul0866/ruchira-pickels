@@ -277,9 +277,14 @@ const ManageOrders = () => {
                                 <p className="truncate text-sm font-medium text-brand-cream">{item.product?.name || 'Item'}</p>
                                 <p className="text-xs text-brand-cream/50">{item.weightOption?.weight || item.product?.quantityType || 'Unit'} × {Number(item.quantity) || 1}</p>
                                 {Array.isArray(item.product?.comboProducts) && item.product.comboProducts.length > 0 && (
-                                  <p className="mt-1 text-xs text-brand-gold/80">
-                                    Includes: {item.product.comboProducts.map((comboProduct) => comboProduct.name).join(', ')}
-                                  </p>
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {item.product.comboProducts.map((comboProduct) => (
+                                      <span key={comboProduct.id} className="inline-flex items-center gap-1 rounded-full bg-white/5 pr-1.5 text-[10px] text-brand-gold/80">
+                                        <img src={comboProduct.image} alt="" className="h-5 w-5 rounded-full object-cover" loading="lazy" />
+                                        {comboProduct.productType || comboProduct.category || comboProduct.name}
+                                      </span>
+                                    ))}
+                                  </div>
                                 )}
                               </div>
                               <p className="shrink-0 text-sm font-semibold text-brand-cream">{formatCurrency(getItemPrice(item) * (Number(item.quantity) || 1))}</p>
