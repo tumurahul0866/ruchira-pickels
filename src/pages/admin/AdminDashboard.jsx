@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  LayoutDashboard, Package, ShoppingBag, LogOut, Settings,
+  LayoutDashboard, Package, PackageOpen, ShoppingBag, LogOut, Settings,
   CreditCard, Star, Bell, Globe, User, Key, ChevronRight, Users, Truck
 } from 'lucide-react';
 import { getProducts, getOrders } from '../../services/dataStore';
@@ -22,6 +22,7 @@ import ShippingManagement from './ShippingManagement';
 const navItems = [
   { id: 'overview',          label: 'Dashboard',       icon: LayoutDashboard, group: 'main' },
   { id: 'products',          label: 'Products',         icon: Package,         group: 'catalog' },
+  { id: 'combos',            label: 'Combos',           icon: PackageOpen,     group: 'catalog' },
   { id: 'orders',            label: 'Orders',           icon: ShoppingBag,     group: 'catalog' },
   { id: 'payments',          label: 'Payments',         icon: CreditCard,      group: 'store' },
   { id: 'offers',            label: 'Coupons & Offers', icon: Bell,            group: 'store' },
@@ -219,6 +220,7 @@ const AdminDashboard = () => {
     switch (activeTab) {
       case 'overview':       return <Overview stats={stats} orders={orders} recentOrders={recentOrders} setActiveTab={setActiveTab} statusBadge={statusBadge} />;
       case 'products':       return <ManageProducts />;
+      case 'combos':         return <ManageProducts mode="combos" />;
       case 'orders':         return <ManageOrders />;
       case 'payments':       return <PaymentSettings />;
       case 'reviews':        return <ReviewsManagement />;

@@ -30,7 +30,7 @@ const defaultProduct = {
 
 const measurementTypes = ['Weight', 'Volume', 'Pieces', 'Box', 'Size', 'Custom'];
 
-const ManageProducts = () => {
+const ManageProducts = ({ mode = 'products' }) => {
   const [products, setProducts] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(defaultProduct);
@@ -169,6 +169,10 @@ const ManageProducts = () => {
   };
 
   const isCombo = formData.productType === 'Combos';
+  const isCombosPage = mode === 'combos';
+  const listedProducts = isCombosPage
+    ? products.filter((product) => String(product.productType || '').trim().toLowerCase() === 'combos')
+    : products.filter((product) => String(product.productType || '').trim().toLowerCase() !== 'combos');
   const selectableProducts = products.filter((product) => (
     String(product.id) !== String(formData.id) &&
     String(product.productType || '').trim().toLowerCase() !== 'combos'
@@ -574,15 +578,21 @@ const ManageProducts = () => {
     <div>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-3xl font-serif text-brand-cream">Manage Products</h2>
-          <p className="text-brand-cream/60 mt-2">Add, edit, and update all store products with pricing, stock, and visibility settings.</p>
+          <h2 className="text-3xl font-serif text-brand-cream">{isCombosPage ? 'Manage Combos' : 'Manage Products'}</h2>
+          <p className="text-brand-cream/60 mt-2">
+            {isCombosPage
+              ? 'Create and manage product bundles with selected products and a combo price.'
+              : 'Add, edit, and update all store products with pricing, stock, and visibility settings.'}
+          </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
-            <Button variant="outline" onClick={handleCreate} className="py-2.5 px-5 bg-brand-gold text-brand-black hover:bg-brand-gold-light font-bold flex items-center gap-2 rounded-2xl shadow-md">
-              <Plus size={18} /> Add New Product
-            </Button>
-          </motion.div>
+          {!isCombosPage && (
+            <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
+              <Button variant="outline" onClick={handleCreate} className="py-2.5 px-5 bg-brand-gold text-brand-black hover:bg-brand-gold-light font-bold flex items-center gap-2 rounded-2xl shadow-md">
+                <Plus size={18} /> Add New Product
+              </Button>
+            </motion.div>
+          )}
           <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
             <Button variant="outline" onClick={handleCreateCombo} className="py-2.5 px-5 border border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10 font-bold flex items-center gap-2 rounded-2xl shadow-md">
               <Plus size={18} /> Add Combo
@@ -605,7 +615,7 @@ const ManageProducts = () => {
             </tr>
           </thead>
           <tbody>
-            {products.map((product, index) => (
+            {listedProducts.map((product, index) => (
               <motion.tr 
                 key={product.id} 
                 initial={{ opacity: 0, x: -10 }}
@@ -644,6 +654,11 @@ const ManageProducts = () => {
             ))}
           </tbody>
         </table>
+        {listedProducts.length === 0 && (
+          <div className="px-6 py-12 text-center text-sm text-brand-cream/60">
+            {isCombosPage ? 'No combos yet. Select Add Combo to create your first bundle.' : 'No products have been added yet.'}
+          </div>
+        )}
       </div>
     </div>
   );
