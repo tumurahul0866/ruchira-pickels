@@ -76,7 +76,7 @@ const Navbar = () => {
 
             {/* Brand Logo */}
             <Link to="/" className="flex items-center gap-2 group shrink-0 sm:gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#D97706]/30 bg-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#D97706]/30 bg-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
                 {storeSettings.logoUrl && failedLogoUrl !== storeSettings.logoUrl ? (
                   <img
                     src={storeSettings.logoUrl}
