@@ -108,7 +108,7 @@ const Home = () => {
               <img
                 src={settings.featureImageUrl}
                 alt="Andhra Avakaya Mango Pickle"
-                className="absolute inset-0 h-full w-full object-contain"
+                className="absolute inset-0 h-full w-full object-cover sm:object-contain"
               />
             ) : (
               <div className="absolute inset-0 bg-[#EAE0D0]" />
