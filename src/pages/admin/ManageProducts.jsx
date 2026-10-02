@@ -70,7 +70,11 @@ const ManageProducts = ({ mode = 'products' }) => {
     setFormData({
       ...product,
       quantityType: product.quantityType || 'Weight',
-      comboProductIds: Array.isArray(product.comboProductIds) ? product.comboProductIds.map(String) : [],
+      comboProductIds: Array.isArray(product.comboProductIds)
+        ? product.comboProductIds.map(String)
+        : Array.isArray(product.comboProducts)
+        ? product.comboProducts.map((includedProduct) => String(includedProduct.id))
+        : [],
       pricePerUnit: Number(product.pricePerUnit ?? product.weights?.[0]?.price) || 0,
       variants: Array.isArray(product.variants)
         ? product.variants

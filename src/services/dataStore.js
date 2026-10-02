@@ -633,6 +633,8 @@ export const saveProduct = async (product) => {
   const url = payload.id ? `${PRODUCTS_API}/${payload.id}` : PRODUCTS_API;
 
   try {
+    if (productsRequest) await productsRequest;
+
     const response = await fetch(url, {
       method,
       headers: getApiHeaders(),
@@ -652,6 +654,15 @@ export const saveProduct = async (product) => {
     }
 
     const updated = await response.json();
+    if (
+      payload.productType.trim().toLowerCase() === 'combos' &&
+      (!Array.isArray(updated.comboProductIds) ||
+        payload.comboProductIds.length !== updated.comboProductIds.length ||
+        payload.comboProductIds.some((id) => !updated.comboProductIds.map(String).includes(id)))
+    ) {
+      throw new Error('The server did not confirm the combo products were saved. Please try again after the backend update is deployed.');
+    }
+
     const products = getProductsFromLocal();
     const existingIndex = products.findIndex((item) => item.id === updated.id);
     if (existingIndex >= 0) {
