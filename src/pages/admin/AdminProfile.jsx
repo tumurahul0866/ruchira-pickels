@@ -79,7 +79,7 @@ const AdminProfile = () => {
                 onChange={handleChange}
                 maxLength={100}
                 className="w-full rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
-                placeholder="J&D Foods"
+                placeholder="Leave blank to hide the banner title"
               />
             </div>
             <div>
@@ -91,7 +91,7 @@ const AdminProfile = () => {
                 rows={3}
                 maxLength={300}
                 className="min-h-24 w-full resize-y rounded-2xl border border-white/10 bg-brand-black px-4 py-3 text-brand-cream"
-                placeholder="Add a short introduction for your homepage banner."
+                placeholder="Leave blank to hide the banner subtitle"
               />
             </div>
           </div>
