@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-6">
             <Link to="/" className="inline-block">
-              <span className="font-serif text-2xl font-bold tracking-wider text-[#8B1E1E]">KONASEMA RUCHULU</span>
+              <span className="font-serif text-2xl font-bold tracking-wider text-[#8B1E1E]">JD FOODS</span>
             </Link>
             <p className="text-sm text-[#5C4033]/70 leading-relaxed">
               Crafted to Crave. Experience rich, authentic Konasema pickles made with premium cold-pressed oil and time-tested family recipes.
@@ -43,7 +43,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 border-t border-[#5C4033]/10 pt-8 text-center text-sm text-[#5C4033]/60">
-          <p>&copy; {new Date().getFullYear()} Konasema Ruchulu. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} JD Foods. All rights reserved.</p>
         </div>
       </div>
     </footer>

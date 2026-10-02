@@ -273,9 +273,9 @@ const defaultStoreSettings = {
   featureImageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
   aboutImageUrl: 'https://images.unsplash.com/photo-1506544777-64cfb638973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   brandTagline: 'Handcrafted Heritage Pickles & Podis from Konasema Delta.',
-  heroTitle: 'KONASEMA RUCHULU',
+  heroTitle: 'JD FOODS',
   heroSubtitle: 'Authentic Andhra & Konasema pickles made with cold-pressed oil and grandma recipes.',
-  whatsappMessage: 'Hi Konasema Ruchulu! I would like to place an order.',
+  whatsappMessage: 'Hi JD Foods! I would like to place an order.',
   whatsappNumber: '+918885473903',
   contactNumber: '+91 8885473903',
   email: 'support@konasemaruchulu.com',
@@ -284,7 +284,7 @@ const defaultStoreSettings = {
   mapLink: 'https://maps.google.com',
   deliveryNote: 'Free Express shipping on all orders above ₹999.',
   aboutTitle: 'Preserving Authentic Konasema Pickling Traditions',
-  aboutStory: 'Konasema Ruchulu is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
+  aboutStory: 'JD Foods is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
   aboutStory2: 'What started as a family tradition has blossomed into a trusted brand dedicated to preserving the authentic culinary heritage of South India. We believe that a meal is incomplete without that perfect touch of spice, tanginess, and aromatic cold-pressed groundnut oil.',
   aboutReasonTitle: 'The Essence of Konasema',
   aboutReasonText: 'Symbolizes agricultural richness, warmth, and legendary culinary heritage. Like timeless recipes passed through generations, our pickles are bold, memorable, and packaged in food-grade glass jars and sealed pouches without chemical shortcuts.',
@@ -294,7 +294,7 @@ const defaultStoreSettings = {
   aboutPromise2Desc: 'Slow-extracted groundnut oil retains wholesome aroma and natural health benefits without chemical refining.',
   aboutPromise3Title: 'Made with Love',
   aboutPromise3Desc: 'Hand-mixed in hygienic small batches with the same devotion and care as for our own family.',
-  businessName: 'Konasema Ruchulu',
+  businessName: 'JD Foods',
   address: '123 Heritage Spice Lane, Jubilee Hills, Hyderabad, Telangana 500033',
   freeShippingEnabled: true,
   minFreeShippingAmount: 999
@@ -312,8 +312,8 @@ const defaultPaymentSettings = {
 };
 
 const defaultAdminProfile = {
-  ownerName: 'Konasema Ruchulu Management',
-  businessName: 'Konasema Ruchulu',
+  ownerName: 'JD Foods Management',
+  businessName: 'JD Foods',
   email: 'ruchira@gmail.com',
   phone: '+91 8885473903',
   whatsapp: '+91 8885473903',
@@ -385,6 +385,7 @@ const ORDERS_API = resolveApiUrl('/orders');
 const REVIEWS_API = resolveApiUrl('/reviews');
 const OFFERS_API = resolveApiUrl('/offers');
 const STORE_SETTINGS_API = resolveApiUrl('/store-settings');
+const STORE_LOGO_API = resolveApiUrl('/store-settings/logo');
 const PAYMENT_SETTINGS_API = resolveApiUrl('/payment-settings');
 const ADMIN_PROFILE_API = resolveApiUrl('/admin-profile');
 const PRODUCT_TYPES_API = resolveApiUrl('/product-types');
@@ -445,6 +446,7 @@ const syncLocalOffers = (offers) => {
 
 const syncLocalStoreSettings = (settings) => {
   localStorage.setItem('vasuki_settings', JSON.stringify(settings));
+  window.dispatchEvent(new CustomEvent('vasuki:store-settings-updated', { detail: settings }));
 };
 
 const syncLocalPaymentSettings = (settings) => {
@@ -1040,6 +1042,40 @@ export const refreshStoreSettings = async () => {
   const settings = await fetchJson(STORE_SETTINGS_API);
   syncLocalStoreSettings(settings);
   return settings;
+};
+
+export const uploadStoreLogo = async (file) => {
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('Choose a PNG, JPEG, or WebP image.');
+  }
+  if (file.size === 0 || file.size > 500 * 1024) {
+    throw new Error('Logo image must be smaller than 500 KB.');
+  }
+
+  const token = localStorage.getItem('vasuki_token');
+  const response = await fetch(STORE_LOGO_API, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': file.type,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: file,
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    if (response.status === 401) {
+      window.dispatchEvent(new CustomEvent('vasuki:auth-expired'));
+    }
+    throw new Error(payload.error || payload.message || `Unable to upload logo (HTTP ${response.status}).`);
+  }
+  if (typeof payload.logoUrl !== 'string' || !payload.logoUrl.startsWith('data:image/')) {
+    throw new Error('The server returned an invalid logo response.');
+  }
+
+  const settings = getStoreSettingsFromLocal();
+  syncLocalStoreSettings({ ...settings, logoUrl: payload.logoUrl });
+  return payload.logoUrl;
 };
 
 export const updateStoreSettings = async (settings) => {

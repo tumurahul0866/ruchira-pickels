@@ -7,7 +7,7 @@ const About = () => {
   const [settings] = useState(() => ({
     ...{
       aboutTitle: 'Preserving Authentic Konasema Pickling Traditions',
-      aboutStory: 'Konasema Ruchulu is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
+      aboutStory: 'JD Foods is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
       aboutStory2: 'What started as a family tradition has blossomed into a trusted brand dedicated to preserving the authentic culinary heritage of South India. We believe that a meal is incomplete without that perfect touch of spice, tanginess, and aromatic cold-pressed groundnut oil.',
       aboutReasonTitle: 'The Essence of Konasema',
       aboutReasonText: 'Symbolizes agricultural richness, warmth, and legendary culinary heritage. Like timeless recipes passed through generations, our pickles are bold, memorable, and packaged in food-grade glass jars and sealed pouches without chemical shortcuts.',
@@ -99,7 +99,7 @@ const About = () => {
               Our Core Promises
             </span>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white">
-              Why Families Choose Konasema Ruchulu
+              Why Families Choose JD Foods
             </h2>
             <p className="text-xs sm:text-sm text-white/80">
               Uncompromising quality, heirloom recipes, and hygienic preparation.
@@ -154,4 +154,3 @@ const About = () => {
 };
 
 export default About;
-

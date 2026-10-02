@@ -73,10 +73,10 @@ const Sidebar = ({ mobile = false, activeTab, onNav, onClose, onLogout }) => (
     <div className="p-5 border-b border-white/5">
       <Link to="/" className="flex items-center gap-3 mb-3 group" onClick={onClose}>
         <div className="w-10 h-10 rounded-xl bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center font-serif font-bold text-brand-gold">
-          K
+          JD
         </div>
         <div>
-          <p className="font-serif font-bold text-brand-cream text-sm leading-tight group-hover:text-brand-gold transition-colors">Konasema Ruchulu</p>
+          <p className="font-serif font-bold text-brand-cream text-sm leading-tight group-hover:text-brand-gold transition-colors">JD FOODS</p>
           <p className="text-[10px] text-brand-cream/40 uppercase tracking-widest">Admin Portal</p>
         </div>
       </Link>

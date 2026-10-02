@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getStoreSettings, saveStoreSettings } from '../../services/dataStore';
-import { Settings, Check, Phone, Mail, MapPin, Truck, MessageSquare, BookOpen } from 'lucide-react';
+import { getStoreSettings, saveStoreSettings, uploadStoreLogo } from '../../services/dataStore';
+import { Settings, Check, Phone, Mail, MapPin, Truck, MessageSquare, BookOpen, ImagePlus, Upload, X } from 'lucide-react';
 
 const Field = ({ label, icon: Icon, hint, children }) => (
   <div className="space-y-2">
@@ -21,18 +21,19 @@ const StoreSettings = () => {
   const [settings, setSettings] = useState(() => {
     const s = getStoreSettings();
     return {
-      businessName: s.businessName || 'Konasema Ruchulu',
+      logoUrl: s.logoUrl || '',
+      businessName: s.businessName || 'JD Foods',
       contactNumber: s.contactNumber || '+91 8885473903',
       email: s.email || 'support@konasemaruchulu.com',
       whatsappNumber: s.whatsappNumber || '+918885473903',
-      whatsappMessage: s.whatsappMessage || 'Hi Konasema Ruchulu! I would like to place an order.',
+      whatsappMessage: s.whatsappMessage || 'Hi JD Foods! I would like to place an order.',
       address: s.address || '123 Heritage Spice Lane, Jubilee Hills, Hyderabad, Telangana 500033',
       freeShippingEnabled: s.freeShippingEnabled !== false,
       minFreeShippingAmount: s.minFreeShippingAmount || 999,
       heroTitle: s.heroTitle || 'KONASEMA RUCHULU',
       brandTagline: s.brandTagline || 'Handcrafted Heritage Pickles & Podis from Konasema Delta.',
       aboutTitle: s.aboutTitle || 'Preserving Authentic Konasema Pickling Traditions',
-      aboutStory: s.aboutStory || 'Konasema Ruchulu is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
+      aboutStory: s.aboutStory || 'JD Foods is crafted with traditional heirloom recipes, farm-fresh ingredients, and bold regional flavors from the fertile Konasema delta. Every jar is prepared with care to bring rich homemade taste to every meal.',
       aboutStory2: s.aboutStory2 || 'What started as a family tradition has blossomed into a trusted brand dedicated to preserving the authentic culinary heritage of South India. We believe that a meal is incomplete without that perfect touch of spice, tanginess, and aromatic cold-pressed groundnut oil.',
       aboutReasonTitle: s.aboutReasonTitle || 'The Essence of Konasema',
       aboutReasonText: s.aboutReasonText || 'Symbolizes agricultural richness, warmth, and legendary culinary heritage. Like timeless recipes passed through generations, our pickles are bold, memorable, and packaged in food-grade glass jars and sealed pouches without chemical shortcuts.',
@@ -46,6 +47,10 @@ const StoreSettings = () => {
   });
 
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+  const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoError, setLogoError] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -54,9 +59,44 @@ const StoreSettings = () => {
 
   const handleSave = (e) => {
     e.preventDefault();
-    saveStoreSettings(settings);
-    setMessage('All Store details, About Us text & shipping settings updated successfully! Changes reflect on the website immediately.');
-    setTimeout(() => setMessage(''), 5000);
+    setSaving(true);
+    setMessage('');
+    try {
+      const savedSettings = await saveStoreSettings(settings);
+      setSettings(savedSettings);
+      setMessageType('success');
+      setMessage('Store and About page settings saved.');
+      setTimeout(() => setMessage(''), 5000);
+    } catch (error) {
+      setMessageType('error');
+      setMessage(error instanceof Error ? error.message : 'Unable to save settings. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setLogoError('');
+    setUploadingLogo(true);
+    try {
+      const logoUrl = await uploadStoreLogo(file);
+      setSettings((current) => ({ ...current, logoUrl }));
+      setMessageType('success');
+      setMessage('Store logo uploaded successfully.');
+    } catch (error) {
+      setLogoError(error instanceof Error ? error.message : 'Unable to upload logo. Please try again.');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const removeLogo = () => {
+    setSettings((current) => ({ ...current, logoUrl: '' }));
+    setLogoError('');
   };
 
   return (
@@ -78,14 +118,55 @@ const StoreSettings = () => {
         {message && (
           <motion.div
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500 text-emerald-300 text-sm font-bold flex items-center gap-2 shadow-md"
+            className={`p-4 text-sm font-bold flex items-center gap-2 ${messageType === 'success' ? 'bg-emerald-500/20 border border-emerald-500 text-emerald-300' : 'bg-red-500/10 border border-red-500/40 text-red-200'}`}
           >
-            <Check size={18} /> {message}
+            {messageType === 'success' && <Check size={18} />} {message}
           </motion.div>
         )}
       </AnimatePresence>
 
       <form onSubmit={handleSave} className="space-y-6">
+        <section className="p-6 md:p-8 rounded-3xl bg-brand-matte border border-brand-gold/30 space-y-5 shadow-xl">
+          <h2 className="text-lg font-serif font-bold text-brand-gold flex items-center gap-2 pb-3 border-b border-white/10">
+            <ImagePlus size={18} /> Website Logo
+          </h2>
+          <p className="text-xs text-brand-cream/60">
+            Upload a PNG, JPEG, or WebP image up to 500 KB. The logo appears in the storefront navigation.
+          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-xl border border-white/15 bg-white p-2">
+              {settings.logoUrl ? (
+                <img src={settings.logoUrl} alt="Current website logo" className="max-h-full max-w-full object-contain" />
+              ) : (
+                <span className="font-serif text-2xl font-bold text-[#8B1E1E]">JD</span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <label className={`inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand-gold px-4 py-2.5 text-xs font-extrabold text-brand-black transition-opacity ${uploadingLogo ? 'pointer-events-none opacity-60' : 'hover:opacity-90'}`}>
+                <Upload size={15} />
+                {uploadingLogo ? 'Uploading...' : settings.logoUrl ? 'Change Logo' : 'Add Logo'}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleLogoUpload}
+                  disabled={uploadingLogo}
+                  className="sr-only"
+                />
+              </label>
+              {settings.logoUrl && (
+                <button
+                  type="button"
+                  onClick={removeLogo}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-xs font-bold text-brand-cream transition-colors hover:bg-white/5"
+                >
+                  <X size={15} /> Remove
+                </button>
+              )}
+            </div>
+          </div>
+          {logoError && <p role="alert" className="text-xs font-semibold text-red-300">{logoError}</p>}
+        </section>
+
         {/* SECTION 1: ABOUT US PAGE TEXT CONTENT EDITOR */}
         <section className="p-6 md:p-8 rounded-3xl bg-brand-matte border border-brand-gold/30 space-y-6 shadow-xl">
           <h2 className="text-lg font-serif font-bold text-brand-gold flex items-center gap-2 pb-3 border-b border-white/10">
@@ -201,11 +282,12 @@ const StoreSettings = () => {
 
         <motion.button
           type="submit"
+          disabled={saving}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           className="w-full py-4 rounded-2xl bg-brand-gold text-brand-black font-extrabold uppercase tracking-widest text-xs shadow-lg hover:bg-brand-gold-light transition-all"
         >
-          Save All Store & About Us Settings
+          {saving ? 'Saving Settings...' : 'Save Store Settings'}
         </motion.button>
       </form>
     </div>

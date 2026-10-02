@@ -240,7 +240,7 @@ const Reviews = () => {
           ) : (
             <div className="p-6 rounded-2xl bg-[#F8F3E8] border border-[#5C4033]/15 text-center space-y-3">
               <p className="text-sm text-[#5C4033] font-medium">
-                Please sign in to submit a review for Konasema Ruchulu pickles.
+                Please sign in to submit a review for JD Foods pickles.
               </p>
               <Link
                 to="/login"
