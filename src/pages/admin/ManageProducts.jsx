@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getProducts, saveProduct, deleteProduct, toggleProductVisibility, getProductTypes, addProductType } from '../../services/dataStore';
+import { refreshProducts as fetchLatestProducts, saveProduct, deleteProduct, toggleProductVisibility, getProductTypes, addProductType } from '../../services/dataStore';
 import { Edit2, Trash2, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
@@ -43,7 +43,7 @@ const ManageProducts = ({ mode = 'products' }) => {
 
   useEffect(() => {
     const loadProducts = async () => {
-      setProducts(await getProducts());
+      setProducts(await fetchLatestProducts());
       setProductTypes(getProductTypes());
     };
     loadProducts();
@@ -58,7 +58,7 @@ const ManageProducts = ({ mode = 'products' }) => {
     }
   };
 
-  const refreshProducts = async () => setProducts(await getProducts());
+  const refreshProducts = async () => setProducts(await fetchLatestProducts());
 
   const handleEdit = (product) => {
     setFormData({
@@ -566,7 +566,7 @@ const ManageProducts = ({ mode = 'products' }) => {
           <div className="flex justify-end gap-4 pt-4">
             <Button variant="ghost" onClick={() => setIsEditing(false)}>Cancel</Button>
             <Button variant="primary" type="submit" disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Product'}
+              {isSaving ? 'Saving...' : isCombo ? 'Save Combo' : 'Save Product'}
             </Button>
           </div>
         </form>
@@ -607,6 +607,7 @@ const ManageProducts = ({ mode = 'products' }) => {
             <tr>
               <th className="px-6 py-4">Image</th>
               <th className="px-6 py-4">Name</th>
+              {isCombosPage && <th className="px-6 py-4">Included Products</th>}
               <th className="px-6 py-4">Category</th>
               <th className="px-6 py-4">Primary Price</th>
               <th className="px-6 py-4">Stock</th>
@@ -627,6 +628,30 @@ const ManageProducts = ({ mode = 'products' }) => {
                   <img src={product.image} className="w-14 h-14 object-cover rounded-xl" alt={product.name} />
                 </td>
                 <td className="px-6 py-4 font-medium text-brand-cream">{product.name}</td>
+                {isCombosPage && (
+                  <td className="px-6 py-4">
+                    {(() => {
+                      const selectedIds = Array.isArray(product.comboProductIds)
+                        ? product.comboProductIds.map(String)
+                        : [];
+                      const includedProducts = Array.isArray(product.comboProducts) && product.comboProducts.length > 0
+                        ? product.comboProducts
+                        : products.filter((candidate) => selectedIds.includes(String(candidate.id)));
+                      return includedProducts.length > 0 ? (
+                        <div className="flex min-w-48 flex-wrap gap-1.5">
+                          {includedProducts.map((includedProduct) => (
+                            <span key={includedProduct.id} className="inline-flex items-center gap-1 rounded-full bg-white/5 py-1 pl-1 pr-2 text-xs">
+                              <img src={includedProduct.image} alt="" className="h-6 w-6 rounded-full object-cover" />
+                              <span className="max-w-28 truncate">{includedProduct.name || includedProduct.productType || includedProduct.category}</span>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-brand-red/80">No included products saved</span>
+                      );
+                    })()}
+                  </td>
+                )}
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.productType === 'Combos' ? 'bg-brand-gold/20 text-brand-gold' : product.category === 'Veg' ? 'bg-green-900/60 text-green-300' : 'bg-red-900/60 text-red-300'}`}>
                     {product.productType === 'Combos' ? 'Combo' : product.category}
@@ -644,7 +669,7 @@ const ManageProducts = ({ mode = 'products' }) => {
                     {product.visible ? 'Hide' : 'Show'}
                   </motion.button>
                   <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleEdit(product)} className="rounded-2xl bg-brand-gold/10 px-3 py-2 text-xs font-semibold text-brand-gold hover:bg-brand-gold/20 transition-colors flex items-center gap-2">
-                    <Edit2 size={14} /> Edit
+                    <Edit2 size={14} /> {isCombosPage ? 'Edit Combo' : 'Edit'}
                   </motion.button>
                   <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleDelete(product.id)} className="rounded-2xl bg-brand-red/10 px-3 py-2 text-xs font-semibold text-brand-red hover:bg-brand-red/20 transition-colors flex items-center gap-2">
                     <Trash2 size={14} /> Delete

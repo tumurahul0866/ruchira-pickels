@@ -13,7 +13,7 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
 
   const isCombo = String(product.productType || '').trim().toLowerCase() === 'combos';
   const selectedComboIds = Array.isArray(product.comboProductIds) ? product.comboProductIds.map(String) : [];
-  const comboProducts = Array.isArray(product.comboProducts)
+  const comboProducts = Array.isArray(product.comboProducts) && product.comboProducts.length > 0
     ? product.comboProducts
     : catalogProducts
       .filter((item) => selectedComboIds.includes(String(item.id)))
@@ -146,7 +146,9 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
           {!compact && <p className="text-xs text-[#5C4033]/70 line-clamp-2 mb-4 leading-relaxed">{product.description}</p>}
           {isCombo && (
             <p className={`text-[10px] font-semibold text-[#8B1E1E] ${compact ? 'mt-1' : '-mt-3 mb-3'}`}>
-              Includes {product.comboProductIds?.length || 0} products
+              {comboProducts.length > 0 || selectedComboIds.length > 0
+                ? `Includes ${selectedComboIds.length || comboProducts.length} products`
+                : 'Included products unavailable'}
             </p>
           )}
           {isCombo && comboProducts.length > 0 && (

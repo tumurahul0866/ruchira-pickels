@@ -45,7 +45,7 @@ const ProductDetail = () => {
       const allProducts = await fetchLatestProducts();
       const found = allProducts.find((item) => item.id === id);
       setProduct(found);
-      setComboProducts(Array.isArray(found?.comboProducts)
+      setComboProducts(Array.isArray(found?.comboProducts) && found.comboProducts.length > 0
         ? found.comboProducts
         : Array.isArray(found?.comboProductIds)
         ? found.comboProductIds
@@ -214,6 +214,11 @@ const ProductDetail = () => {
                           </span>
                         </li>
                       ))}
+                      {comboProducts.length === 0 && (
+                        <li className="text-sm text-slate-600">
+                          Included product details are unavailable right now.
+                        </li>
+                      )}
                     </ul>
                   </section>
                 )}
