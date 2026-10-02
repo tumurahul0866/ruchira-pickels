@@ -737,7 +737,6 @@ export const getOrders = async () => {
 };
 
 export const saveOrder = async (order) => {
-  const orders = getOrdersFromLocal();
   const trackingNumber = 'TRK' + Math.floor(100000 + Math.random() * 900000);
   const newOrder = {
     ...order,
@@ -747,36 +746,29 @@ export const saveOrder = async (order) => {
     status: order.status || 'Order Placed',
     paymentStatus: order.paymentStatus || 'Pending',
   };
-  const nextOrders = [newOrder, ...orders];
-  syncLocalOrders(nextOrders);
+
+  const response = await fetch(ORDERS_API, {
+    method: 'POST',
+    headers: getApiHeaders(),
+    body: JSON.stringify(newOrder),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || payload.message || `Unable to save order (HTTP ${response.status}).`);
+  }
+  if (!payload.id) {
+    throw new Error('The server did not confirm that the order was saved.');
+  }
 
   try {
-    const response = await fetch(ORDERS_API, {
-      method: 'POST',
-      headers: getApiHeaders(),
-      body: JSON.stringify(newOrder),
-    });
-
-    if (response.ok) {
-      const savedOrder = await response.json();
-      const mergedOrders = [savedOrder, ...orders.filter((o) => o.id !== savedOrder.id)];
-      syncLocalOrders(mergedOrders);
-      return savedOrder;
-    }
-
-    const errorPayload = await response.text();
-    let message = 'Failed to save order';
-    try {
-      const parsed = JSON.parse(errorPayload);
-      message = parsed.error || parsed.message || message;
-    } catch {
-      if (errorPayload) message = errorPayload;
-    }
-    throw new Error(message || `HTTP ${response.status}`);
+    const cachedOrders = JSON.parse(localStorage.getItem('vasuki_orders') || '[]');
+    const currentOrders = Array.isArray(cachedOrders) ? cachedOrders : [];
+    syncLocalOrders([payload, ...currentOrders.filter((cachedOrder) => String(cachedOrder.id) !== String(payload.id))]);
   } catch (error) {
-    console.error('saveOrder error:', error);
-    return newOrder;
+    console.error('Order was saved, but the local order cache could not be updated:', error);
   }
+
+  return payload;
 };
 
 export const updateOrderStatus = async (id, status, paymentStatus) => {
