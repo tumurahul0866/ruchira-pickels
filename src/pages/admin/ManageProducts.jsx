@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { refreshProducts as fetchLatestProducts, saveProduct, deleteProduct, toggleProductVisibility, getProductTypes, addProductType, getComboProductUnit } from '../../services/dataStore';
+import { refreshProducts as fetchLatestProducts, saveProduct, deleteProduct, toggleProductVisibility, getProductTypes, addProductType, getComboProductUnit, getProductVariants } from '../../services/dataStore';
 import { Edit2, Trash2, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../../components/ui/Button';
@@ -11,6 +11,7 @@ const defaultProduct = {
   productType: '',
   comboProductIds: [],
   comboProductQuantities: {},
+  comboProductVariants: {},
   quantityType: 'Weight',
   pricePerUnit: 0,
   variants: [],
@@ -32,15 +33,29 @@ const defaultProduct = {
 const measurementTypes = ['Weight', 'Volume', 'Pieces', 'Box', 'Size', 'Custom'];
 
 const getComboMembers = (combo, products) => {
-  if (Array.isArray(combo.comboProducts) && combo.comboProducts.length > 0) return combo.comboProducts;
   const selectedIds = Array.isArray(combo.comboProductIds) ? combo.comboProductIds.map(String) : [];
-  return products
-    .filter((product) => selectedIds.includes(String(product.id)))
-    .map((product) => ({
-      ...product,
-      quantity: Number(combo.comboProductQuantities?.[String(product.id)]) || 1,
-      unit: getComboProductUnit(product),
-    }));
+  const expandedProducts = Array.isArray(combo.comboProducts) ? combo.comboProducts : [];
+  return selectedIds.map((id) => {
+    const product = products.find((candidate) => String(candidate.id) === id);
+    const expandedProduct = expandedProducts.find((candidate) => String(candidate.id) === id);
+    if (!product && !expandedProduct) return null;
+
+    const source = product || expandedProduct;
+    const variants = getProductVariants(source);
+    const variantLabel = combo.comboProductVariants?.[id] ||
+      expandedProduct?.variantLabel ||
+      variants[0]?.label ||
+      '';
+    const selectedVariant = variants.find((variant) => variant.label === variantLabel) || variants[0];
+    return {
+      ...source,
+      ...expandedProduct,
+      variantLabel,
+      price: Number(expandedProduct?.price) || selectedVariant?.price || 0,
+      quantity: Number(combo.comboProductQuantities?.[id]) || 1,
+      unit: getComboProductUnit(source),
+    };
+  }).filter(Boolean);
 };
 
 const ManageProducts = ({ mode = 'products' }) => {
@@ -90,6 +105,16 @@ const ManageProducts = ({ mode = 'products' }) => {
           String(includedProduct.id),
           Number(includedProduct.quantity) || 1,
         ])),
+      comboProductVariants: product.comboProductVariants &&
+        typeof product.comboProductVariants === 'object' &&
+        Object.keys(product.comboProductVariants).length > 0
+        ? product.comboProductVariants
+        : Object.fromEntries((product.comboProducts || []).map((includedProduct) => [
+          String(includedProduct.id),
+          includedProduct.variantLabel || getProductVariants(
+            products.find((candidate) => String(candidate.id) === String(includedProduct.id)) || includedProduct
+          )[0]?.label || '',
+        ])),
       pricePerUnit: Number(product.pricePerUnit ?? product.weights?.[0]?.price) || 0,
       variants: Array.isArray(product.variants)
         ? product.variants
@@ -113,6 +138,7 @@ const ManageProducts = ({ mode = 'products' }) => {
       category: 'Combo',
       productType: 'Combos',
       comboProductIds: [],
+      comboProductVariants: {},
       quantityType: 'Combo',
       spiceLevel: 'N/A',
       description: 'A hand-picked combo of our favourite products.',
@@ -142,6 +168,18 @@ const ManageProducts = ({ mode = 'products' }) => {
       setSaveError('Select at least two different products for this combo.');
       return;
     }
+    if (isCombo) {
+      const productsWithoutValidPack = formData.comboProductIds
+        .map(String)
+        .map((id) => selectableProducts.find((product) => String(product.id) === id))
+        .filter((product) => product && !getProductVariants(product).some(
+          (variant) => variant.label === formData.comboProductVariants?.[String(product.id)]
+        ));
+      if (productsWithoutValidPack.length > 0) {
+        setSaveError(`Choose a pack size for each included product: ${productsWithoutValidPack.map((product) => product.name).join(', ')}.`);
+        return;
+      }
+    }
     if (!formData.name.trim() || !formData.description.trim() || !formData.image.trim() || Number(formData.pricePerUnit) <= 0) {
       setSaveError('Please fill in all required product details and set a valid unit price.');
       return;
@@ -160,6 +198,12 @@ const ManageProducts = ({ mode = 'products' }) => {
           ? Object.fromEntries([...new Set(formData.comboProductIds.map(String))].map((id) => [
             id,
             Math.max(1, Math.floor(Number(formData.comboProductQuantities?.[id]) || 1)),
+          ]))
+          : {},
+        comboProductVariants: isCombo
+          ? Object.fromEntries([...new Set(formData.comboProductIds.map(String))].map((id) => [
+            id,
+            String(formData.comboProductVariants?.[id] || ''),
           ]))
           : {},
         variants: isCombo ? [] : formData.variants,
@@ -222,12 +266,20 @@ const ManageProducts = ({ mode = 'products' }) => {
       ? [...new Set([...selectedComboIds, id])]
       : selectedComboIds.filter((selectedId) => selectedId !== id);
     const nextQuantities = { ...formData.comboProductQuantities };
+    const nextVariants = { ...formData.comboProductVariants };
     if (checked) {
       if (!Number(nextQuantities[id])) nextQuantities[id] = 1;
+      if (!nextVariants[id]) nextVariants[id] = '';
     } else {
       delete nextQuantities[id];
+      delete nextVariants[id];
     }
-    setFormData({ ...formData, comboProductIds: nextIds, comboProductQuantities: nextQuantities });
+    setFormData({
+      ...formData,
+      comboProductIds: nextIds,
+      comboProductQuantities: nextQuantities,
+      comboProductVariants: nextVariants,
+    });
   };
 
   const toggleFilteredComboProducts = () => {
@@ -239,7 +291,16 @@ const ManageProducts = ({ mode = 'products' }) => {
       id,
       Number(formData.comboProductQuantities?.[id]) || 1,
     ]));
-    setFormData({ ...formData, comboProductIds: nextIds, comboProductQuantities: nextQuantities });
+    const nextVariants = Object.fromEntries(nextIds.map((id) => [
+      id,
+      formData.comboProductVariants?.[id] || '',
+    ]));
+    setFormData({
+      ...formData,
+      comboProductIds: nextIds,
+      comboProductQuantities: nextQuantities,
+      comboProductVariants: nextVariants,
+    });
   };
 
   if (isEditing) {
@@ -395,27 +456,29 @@ const ManageProducts = ({ mode = 'products' }) => {
                         <span className="block truncate">{product.name}</span>
                         <span className="block text-[11px] text-brand-black/55">{product.productType} · {product.category}</span>
                       </label>
-                      <span className="shrink-0 text-xs text-brand-black/60">₹{product.pricePerUnit || product.weights?.[0]?.price || 0}</span>
                       {selectedComboIds.includes(String(product.id)) && (
                         <label className="flex items-center gap-2 text-xs font-semibold">
-                          Amount
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
+                          Pack and price
+                          <select
                             required
-                            value={formData.comboProductQuantities?.[String(product.id)] ?? 1}
+                            value={formData.comboProductVariants?.[String(product.id)] || ''}
                             onChange={(event) => setFormData({
                               ...formData,
-                              comboProductQuantities: {
-                                ...formData.comboProductQuantities,
-                                [String(product.id)]: Number(event.target.value),
+                              comboProductVariants: {
+                                ...formData.comboProductVariants,
+                                [String(product.id)]: event.target.value,
                               },
                             })}
-                            className="w-20 rounded-lg border border-brand-gold/30 bg-white px-2 py-1 text-brand-black"
-                            aria-label={`Amount of ${product.name}`}
-                          />
-                          <span>{getComboProductUnit(product)}</span>
+                            className="max-w-52 rounded-lg border border-brand-gold/30 bg-white px-2 py-1 text-brand-black"
+                            aria-label={`Pack and price for ${product.name}`}
+                          >
+                            <option value="" disabled>Select pack size</option>
+                            {getProductVariants(product).map((variant) => (
+                              <option key={variant.label} value={variant.label}>
+                                {variant.label} - ₹{variant.price}
+                              </option>
+                            ))}
+                          </select>
                         </label>
                       )}
                     </div>
@@ -706,9 +769,10 @@ const ManageProducts = ({ mode = 'products' }) => {
                     {includedProducts.map((product) => (
                       <span key={product.id} className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-white/5 py-1 pl-1 pr-2 text-xs text-brand-cream/80">
                         <img src={product.image} alt="" className="h-6 w-6 rounded-full object-cover" />
-                        <span className="max-w-32 truncate">
+                        <span className="max-w-48 truncate">
                           {product.name || product.productType || product.category}
-                          {product.quantity ? ` · ${product.quantity} ${product.unit || 'units'}` : ''}
+                          {product.variantLabel ? ` · ${product.variantLabel}` : ''}
+                          {product.price ? ` · ₹${product.price}` : ''}
                         </span>
                       </span>
                     ))}

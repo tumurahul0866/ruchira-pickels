@@ -48,17 +48,15 @@ const ComboProductDialog = ({ product, onClose }) => {
           <p className="text-sm text-slate-600">
             {[product.productType, product.category].filter(Boolean).join(' · ')}
           </p>
-          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-            <span className="text-sm text-slate-600">Product cost</span>
-            <span className="text-xl font-bold text-slate-900">₹{product.price || 0}</span>
-          </div>
           <div className="flex items-center justify-between rounded-xl bg-amber-50 px-4 py-3">
-            <span className="text-sm font-medium text-amber-900">
-              {product.unit === 'g' ? 'Included weight' : product.unit === 'ml' ? 'Included volume' : 'Included quantity'}
-            </span>
+            <span className="text-sm font-medium text-amber-900">Selected pack</span>
             <span className="text-lg font-bold text-amber-950">
-              {product.quantity || 1} {product.unit || 'units'}
+              {product.variantLabel || `${product.quantity || 1} ${product.unit || 'units'}`}
             </span>
+          </div>
+          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+            <span className="text-sm text-slate-600">Selected pack price</span>
+            <span className="text-xl font-bold text-slate-900">₹{product.price || 0}</span>
           </div>
         </div>
       </section>

@@ -671,11 +671,14 @@ export const saveProduct = async (product) => {
       (!Array.isArray(updated.comboProductIds) ||
         payload.comboProductIds.length !== updated.comboProductIds.length ||
         payload.comboProductIds.some((id) => !updated.comboProductIds.map(String).includes(id)) ||
+        Object.entries(payload.comboProductVariants || {}).some(([id, label]) => (
+          String(updated.comboProductVariants?.[id] || '') !== String(label)
+        )) ||
         Object.entries(payload.comboProductQuantities || {}).some(([id, quantity]) => (
           Number(updated.comboProductQuantities?.[id]) !== Number(quantity)
         )))
     ) {
-      throw new Error('The server did not confirm the combo products and quantities were saved. Please try again after the backend update is deployed.');
+      throw new Error('The server did not confirm the combo products, pack options, and quantities were saved. Please try again after the backend update is deployed.');
     }
 
     const products = getProductsFromLocal();

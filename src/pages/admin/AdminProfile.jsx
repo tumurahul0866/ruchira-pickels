@@ -155,9 +155,10 @@ const AdminProfile = () => {
               <label className="block text-sm text-brand-cream/70 mb-2">WhatsApp Link</label>
               <input
                 name="whatsapp"
-                type="url"
+                type="text"
                 value={profile.whatsapp}
                 onChange={handleChange}
+                placeholder="Phone number or https://wa.me/... link"
                 className="admin-form-field w-full rounded-2xl px-4 py-3"
               />
             </div>

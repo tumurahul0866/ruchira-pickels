@@ -61,16 +61,22 @@ const ProductDetail = () => {
         ? found.comboProductIds
           .map((comboProductId) => allProducts.find((item) => String(item.id) === String(comboProductId)))
           .filter(Boolean)
-          .map((comboProduct) => ({
-            id: comboProduct.id,
-            name: comboProduct.name,
-            image: comboProduct.image,
-            productType: comboProduct.productType,
-            category: comboProduct.category,
-            price: Number(comboProduct.pricePerUnit) || Number(comboProduct.weights?.[0]?.price) || 0,
-            quantity: Number(found.comboProductQuantities?.[String(comboProduct.id)]) || 1,
-            unit: getComboProductUnit(comboProduct),
-          }))
+          .map((comboProduct) => {
+            const variants = getProductVariants(comboProduct);
+            const variantLabel = found.comboProductVariants?.[String(comboProduct.id)] || variants[0]?.label || '';
+            const selectedVariant = variants.find((variant) => variant.label === variantLabel) || variants[0];
+            return {
+              id: comboProduct.id,
+              name: comboProduct.name,
+              image: comboProduct.image,
+              productType: comboProduct.productType,
+              category: comboProduct.category,
+              variantLabel,
+              price: selectedVariant?.price || 0,
+              quantity: Number(found.comboProductQuantities?.[String(comboProduct.id)]) || 1,
+              unit: getComboProductUnit(comboProduct),
+            };
+          })
         : []);
 
       const variants = getProductVariants(found);

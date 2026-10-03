@@ -18,16 +18,22 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
     ? product.comboProducts
     : catalogProducts
       .filter((item) => selectedComboIds.includes(String(item.id)))
-      .map((item) => ({
-        id: item.id,
-        name: item.name,
-        image: item.image || '',
-        productType: item.productType || 'Product',
-        category: item.category || '',
-        price: Number(item.pricePerUnit) || Number(item.weights?.[0]?.price) || 0,
-        quantity: Number(product.comboProductQuantities?.[String(item.id)]) || 1,
-        unit: getComboProductUnit(item),
-      }));
+      .map((item) => {
+        const variants = getProductVariants(item);
+        const variantLabel = product.comboProductVariants?.[String(item.id)] || variants[0]?.label || '';
+        const selectedVariant = variants.find((variant) => variant.label === variantLabel) || variants[0];
+        return {
+          id: item.id,
+          name: item.name,
+          image: item.image || '',
+          productType: item.productType || 'Product',
+          category: item.category || '',
+          variantLabel,
+          price: selectedVariant?.price || 0,
+          quantity: Number(product.comboProductQuantities?.[String(item.id)]) || 1,
+          unit: getComboProductUnit(item),
+        };
+      });
   const isLegacy = isLegacyProduct(product);
   const variantOptions = getProductVariants(product);
   const [selectedWeight, setSelectedWeight] = useState(() => variantOptions[0]);
