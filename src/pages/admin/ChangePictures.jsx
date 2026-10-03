@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getStoreSettings, saveStoreSettings, getProducts, saveProduct } from '../../services/dataStore';
-import { Image, Upload, Check, Trash2 } from 'lucide-react';
+import { Image, Upload, Check, Trash2, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const ChangePictures = () => {
@@ -116,6 +116,49 @@ const ChangePictures = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-white/10 bg-brand-black p-4">
+          <div className="flex items-center justify-between">
+            <label htmlFor="heroVideoUrl" className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-brand-gold">
+              <Video size={15} /> Hero Banner Video URL
+            </label>
+            {storeSettings.heroVideoUrl && (
+              <button
+                type="button"
+                onClick={() => handleRemoveStoreImage('heroVideoUrl')}
+                className="flex items-center gap-1 text-xs font-bold text-rose-400 hover:underline"
+              >
+                <Trash2 size={12} /> Remove
+              </button>
+            )}
+          </div>
+          <input
+            id="heroVideoUrl"
+            type="url"
+            value={storeSettings.heroVideoUrl || ''}
+            onChange={(e) => handleStoreImageChange('heroVideoUrl', e.target.value)}
+            placeholder="Direct video URL https://..."
+            className="w-full rounded-xl border-2 border-brand-gold/30 bg-white px-3 py-2 text-xs font-mono font-semibold text-gray-900"
+          />
+          <p className="text-xs text-brand-cream/50">
+            Use a direct HTTPS URL to an MP4, WebM, or Ogg video. When set, the video replaces the hero image.
+          </p>
+          <div className="flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-slate-900">
+            {storeSettings.heroVideoUrl ? (
+              <video
+                src={storeSettings.heroVideoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                controls
+                className="h-full w-full object-contain"
+              />
+            ) : (
+              <span className="text-xs italic text-brand-cream/40">No hero video set</span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

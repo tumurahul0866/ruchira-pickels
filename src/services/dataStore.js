@@ -276,6 +276,7 @@ const defaultStoreSettings = {
   featureImageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
   heroDesktopImageUrl: '',
   heroMobileImageUrl: '',
+  heroVideoUrl: '',
   heroGradientOverlay: true,
   aboutImageUrl: 'https://images.unsplash.com/photo-1506544777-64cfb638973b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   brandTagline: 'Handcrafted Heritage Pickles & Podis from Konasema Delta.',
