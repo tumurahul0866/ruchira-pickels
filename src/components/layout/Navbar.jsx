@@ -92,16 +92,14 @@ const Navbar = () => {
                   <span className="bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] bg-clip-text font-serif text-base font-bold text-transparent">J&amp;D</span>
                 )}
               </div>
-              {!hasStoreLogo && (
-                <div className="hidden min-[360px]:flex max-w-[86px] flex-col sm:max-w-[160px]">
-                  <span className="text-xs font-serif font-bold tracking-wide text-[#5C4033] leading-tight sm:text-lg lg:text-xl">
-                    J&D FOODS
-                  </span>
-                  <span className="hidden text-[9px] uppercase tracking-[0.16em] font-bold text-[#556B2F] leading-tight sm:block">
-                    Heritage Delta Pickles
-                  </span>
-                </div>
-              )}
+              <div className="flex max-w-[100px] flex-col sm:max-w-[160px]">
+                <span className="text-xs font-serif font-bold tracking-wide text-[#5C4033] leading-tight sm:text-lg lg:text-xl">
+                  J&amp;D FOODS
+                </span>
+                <span className="hidden text-[9px] uppercase tracking-[0.16em] font-bold text-[#556B2F] leading-tight sm:block">
+                  Heritage Delta Pickles
+                </span>
+              </div>
             </Link>
 
             {/* Middle — Search Bar */}

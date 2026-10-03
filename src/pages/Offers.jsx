@@ -20,7 +20,7 @@ const Offers = () => {
   useEffect(() => {
     const loadData = async () => {
       const activeOffers = getOffers().filter((o) => o.active);
-      const visibleProducts = (await getProducts()).filter((p) => p.visible);
+      const visibleProducts = (await getProducts()).filter((p) => p.visible !== false);
       setOffers(activeOffers);
       setProducts(visibleProducts);
     };
@@ -33,9 +33,11 @@ const Offers = () => {
     setTimeout(() => setCopiedCode(''), 2500);
   };
 
-  // Only show products linked to active offers
+  // Include combo products alongside products linked to active offers.
   const discountedProducts = products.filter(
-    (p) => p.discountPrice > 0 || offers.some((o) => o.productId === p.id)
+    (p) => String(p.productType || '').trim().toLowerCase() === 'combos' ||
+      p.discountPrice > 0 ||
+      offers.some((o) => String(o.productId) === String(p.id))
   );
 
   return (
@@ -49,6 +51,9 @@ const Offers = () => {
           transition={{ duration: 0.5 }}
           className="text-center max-w-3xl mx-auto space-y-4"
         >
+          <p className="text-sm font-serif font-extrabold uppercase tracking-[0.2em] text-[#556B2F]">
+            J&amp;D Foods
+          </p>
           <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#8B1E1E]/10 text-[#8B1E1E] text-xs uppercase font-extrabold tracking-widest border border-[#8B1E1E]/20 shadow-sm">
             <Sparkles size={14} className="text-[#D97706]" /> Exclusive Deals & Discounts
           </span>
@@ -163,16 +168,21 @@ const Offers = () => {
           <div className="space-y-6 pt-6">
             <div className="border-b border-[#5C4033]/15 pb-4">
               <span className="text-xs uppercase tracking-[0.2em] font-extrabold text-[#D97706] block mb-1">
-                Limited Time Deals
+                Limited Time Deals & Combos
               </span>
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#5C4033]">
-                Offer-Linked Products
+                Offers, Products & Combos
               </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {discountedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} offer={offers[0]} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  offer={offers[0]}
+                  catalogProducts={products}
+                />
               ))}
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -12,21 +12,19 @@ import Navbar from './components/layout/Navbar';
 import FloatingNavbar from './components/layout/FloatingNavbar';
 import Footer from './components/layout/Footer';
 
-// Customer Pages
-import Home from './pages/Home';
-import ProductDetail from './pages/ProductDetail';
-import Reviews from './pages/Reviews';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import UserDashboard from './pages/UserDashboard';
-import Offers from './pages/Offers';
-
-// Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminLogin from './pages/admin/AdminLogin';
+// Load route pages on demand so the initial storefront bundle stays small.
+const Home = lazy(() => import('./pages/Home'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Reviews = lazy(() => import('./pages/Reviews'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const UserDashboard = lazy(() => import('./pages/UserDashboard'));
+const Offers = lazy(() => import('./pages/Offers'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -55,7 +53,8 @@ function App() {
           <Router>
             <ScrollToTop />
             <AnimatePresence mode="wait">
-              <Routes>
+              <Suspense fallback={<div className="min-h-screen bg-[#F8F3E8]" aria-label="Loading page" />}>
+                <Routes>
               {/* Admin Routes */}
               <Route path="/admin-forgot-password" element={<ForgotPassword adminMode />} />
               <Route path="/admin-login" element={<AdminLogin />} />
@@ -101,7 +100,8 @@ function App() {
               <Route path="/offers" element={<CustomerLayout><Offers /></CustomerLayout>} />
               {/* Fallback Catch-All Route */}
               <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+                </Routes>
+              </Suspense>
             </AnimatePresence>
           </Router>
         </CartProvider>
