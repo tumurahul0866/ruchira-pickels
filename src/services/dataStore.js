@@ -723,6 +723,28 @@ export const addProductType = (type) => {
   }
 };
 
+export const deleteProductType = async (type) => {
+  const types = getProductTypes();
+  const nextTypes = types.filter((existingType) => existingType !== type);
+  if (nextTypes.length === types.length) return types;
+
+  const response = await fetch(PRODUCT_TYPES_API, {
+    method: 'POST',
+    headers: getApiHeaders(),
+    body: JSON.stringify(nextTypes),
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(payload?.error || `Unable to delete product type (HTTP ${response.status}).`);
+  }
+  if (!Array.isArray(payload)) {
+    throw new Error('The server returned an invalid product type list.');
+  }
+
+  syncLocalProductTypes(payload);
+  return payload;
+};
+
 export const deleteProduct = async (id) => {
   const normalizedId = String(id);
   const response = await fetch(`${PRODUCTS_API}/${normalizedId}`, {
