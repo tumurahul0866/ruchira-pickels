@@ -45,6 +45,7 @@ const ProductDetail = () => {
   const [selectedVariant, setSelectedVariant] = useState({ label: 'Pack', price: 0 });
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [productReviews, setProductReviews] = useState(() => getReviews());
 
   useEffect(() => {
     let isMounted = true;
@@ -114,10 +115,19 @@ const ProductDetail = () => {
     };
   }, [id, user?.email]);
 
+  useEffect(() => {
+    const handleReviewsUpdated = (event) => setProductReviews(event.detail || []);
+    window.addEventListener('vasuki:reviews-updated', handleReviewsUpdated);
+    return () => window.removeEventListener('vasuki:reviews-updated', handleReviewsUpdated);
+  }, []);
+
   const [addedToast, setAddedToast] = useState(false);
 
-  const reviews = getReviews().filter(
-    (review) => review.visible !== false && (!review.product || review.product === product?.name)
+  const reviews = productReviews.filter(
+    (review) => review.visible !== false && (
+      (Array.isArray(review.productIds) && review.productIds.includes(String(product?.id))) ||
+      (!review.productIds?.length && (!review.product || review.product === product?.name))
+    )
   );
 
   if (isLoadingProduct) {

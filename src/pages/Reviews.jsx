@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getReviews, saveReview } from '../services/dataStore';
+import { refreshProducts, getReviews, saveReview } from '../services/dataStore';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Star, CheckCircle2, Sparkles, LogIn, Send } from 'lucide-react';
@@ -60,6 +60,9 @@ const StarInputInteractive = ({ rating, onChange }) => {
 
 const Reviews = () => {
   const [reviews, setReviews] = useState(() => getReviews().filter((r) => r.visible !== false));
+  const [products, setProducts] = useState([]);
+  const [selectedProductIds, setSelectedProductIds] = useState([]);
+  const [allProductsSelected, setAllProductsSelected] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -68,6 +71,21 @@ const Reviews = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    refreshProducts().then((catalog) => {
+      if (isMounted) setProducts(catalog.filter((product) => product.visible !== false));
+    });
+    const handleReviewsUpdated = (event) => {
+      setReviews((event.detail || []).filter((review) => review.visible !== false));
+    };
+    window.addEventListener('vasuki:reviews-updated', handleReviewsUpdated);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('vasuki:reviews-updated', handleReviewsUpdated);
+    };
+  }, []);
 
   const loadReviewsList = () => {
     const allReviews = getReviews();
@@ -91,6 +109,19 @@ const Reviews = () => {
       return;
     }
 
+    const productIds = allProductsSelected
+      ? products.map((product) => String(product.id))
+      : selectedProductIds;
+    if (productIds.length === 0) {
+      setErrorMessage('Select at least one product for your review.');
+      return;
+    }
+    const selectedProducts = products.filter((product) => productIds.includes(String(product.id)));
+    if (selectedProducts.length !== productIds.length) {
+      setErrorMessage('One or more selected products are no longer available. Refresh and try again.');
+      return;
+    }
+
     setErrorMessage('');
     setSubmitting(true);
 
@@ -99,7 +130,8 @@ const Reviews = () => {
         name: user.name || user.email || 'Valued Customer',
         rating,
         text: reviewText.trim(),
-        product: 'J&D Foods',
+        product: selectedProducts[0].name,
+        productIds,
         date: new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }),
         visible: true,
         verifiedBuyer: true,
@@ -111,6 +143,8 @@ const Reviews = () => {
       setSuccessMessage('🎉 Thank you! Your review has been submitted successfully.');
       setReviewText('');
       setRating(5);
+      setSelectedProductIds([]);
+      setAllProductsSelected(false);
       setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to submit review. Please try again.');
@@ -166,6 +200,49 @@ const Reviews = () => {
 
           {user ? (
             <form onSubmit={handleSubmit} className="space-y-6">
+              <fieldset>
+                <legend className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#5C4033]">
+                  WHICH PRODUCTS ARE YOU REVIEWING? *
+                </legend>
+                {products.length === 0 ? (
+                  <p className="rounded-xl bg-[#F8F3E8] p-3 text-sm text-[#5C4033]/70">
+                    No products are currently available to review.
+                  </p>
+                ) : (
+                  <div className="max-h-56 space-y-2 overflow-y-auto rounded-2xl border border-[#5C4033]/15 bg-[#F8F3E8]/60 p-3">
+                    <label className="flex cursor-pointer items-center gap-2 border-b border-[#5C4033]/10 pb-2 text-sm font-bold">
+                      <input
+                        type="checkbox"
+                        checked={allProductsSelected}
+                        onChange={(event) => {
+                          setAllProductsSelected(event.target.checked);
+                          setSelectedProductIds([]);
+                        }}
+                        className="accent-[#8B1E1E]"
+                      />
+                      All products
+                    </label>
+                    {products.map((product) => (
+                      <label key={product.id} className="flex cursor-pointer items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={allProductsSelected || selectedProductIds.includes(String(product.id))}
+                          disabled={allProductsSelected}
+                          onChange={(event) => {
+                            const productId = String(product.id);
+                            setSelectedProductIds((selected) => event.target.checked
+                              ? [...selected, productId]
+                              : selected.filter((id) => id !== productId));
+                          }}
+                          className="accent-[#8B1E1E]"
+                        />
+                        {product.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </fieldset>
+
               {/* YOUR RATING */}
               <div>
                 <label className="block text-xs uppercase tracking-wider font-bold text-[#5C4033] mb-2">
@@ -202,7 +279,7 @@ const Reviews = () => {
           ) : (
             <div className="p-6 rounded-2xl bg-[#F8F3E8] border border-[#5C4033]/15 text-center space-y-3">
               <p className="text-sm text-[#5C4033] font-medium">
-                Please sign in to submit a review for J&D Foods pickles.
+                Please sign in to submit a product review.
               </p>
               <Link
                 to="/login"
@@ -262,7 +339,15 @@ const Reviews = () => {
                           <h3 className="text-sm font-serif font-bold text-[#5C4033] leading-tight">
                             {rev.name}
                           </h3>
-                          {rev.product && (
+                          {Array.isArray(rev.productIds) && rev.productIds.length > 0 ? (
+                            <p className="mt-0.5 text-xs font-semibold leading-tight text-[#556B2F]">
+                              {rev.productIds.length === products.length
+                                && products.every((product) => rev.productIds.includes(String(product.id)))
+                                ? 'All products'
+                                : products.filter((product) => rev.productIds.includes(String(product.id)))
+                                  .map((product) => product.name).join(', ') || rev.product}
+                            </p>
+                          ) : rev.product && (
                             <p className="text-xs text-[#556B2F] font-semibold leading-tight mt-0.5">
                               {rev.product}
                             </p>

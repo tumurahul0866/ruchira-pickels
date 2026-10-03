@@ -446,6 +446,7 @@ const syncLocalOrders = (orders) => {
 
 const syncLocalReviews = (reviews) => {
   localStorage.setItem('vasuki_reviews', JSON.stringify(reviews));
+  window.dispatchEvent(new CustomEvent('vasuki:reviews-updated', { detail: reviews }));
 };
 
 const syncLocalOffers = (offers) => {
@@ -898,6 +899,7 @@ export const saveReview = async (review) => {
     id: review.id || Date.now().toString(),
     name: review.name || 'Valued Customer',
     product: review.product || 'Vasuki Pickle',
+    productIds: Array.isArray(review.productIds) ? review.productIds.map(String) : [],
     rating: Number(review.rating) || 5,
     date: review.date || new Date().toLocaleDateString('en-IN', {
       day: 'numeric',
