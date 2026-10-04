@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, MessageCircle, Star, Volume2, VolumeX } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getStoreSettings, refreshStoreSettings, getProducts, refreshProducts as fetchLatestProducts, getOffers, getReviews } from '../services/dataStore';
@@ -266,9 +266,11 @@ const Home = () => {
 
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} offer={offers[0]} compact catalogProducts={products} />
-              ))}
+              <AnimatePresence>
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} offer={offers[0]} compact catalogProducts={products} />
+                ))}
+              </AnimatePresence>
             </div>
           ) : (
             <div className="rounded-2xl border border-[#5C4033]/10 bg-white p-8 text-center">

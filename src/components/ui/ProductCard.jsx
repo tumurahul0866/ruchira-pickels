@@ -74,8 +74,12 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
 
   return (
     <motion.div
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 12 }}
       whileHover={{ y: -2, scale: 1.01 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       className="group overflow-hidden bg-white border border-[#5C4033]/10 shadow-md hover:shadow-lg hover:border-[#D97706]/40 transition-[box-shadow,border-color,transform] duration-300 ease-out flex flex-col justify-between rounded-none"
     >
       <div>
