@@ -8,9 +8,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <title>J&D Foods - Crafted to Crave</title>
+    <style>
+      @keyframes page-loader-spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div role="status" aria-live="polite" style="display:flex;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#F8F3E8;color:#5C4033;font-family:Inter,system-ui,sans-serif">
+        <span style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;letter-spacing:.04em">J&amp;D FOODS</span>
+        <span style="width:32px;height:32px;border:4px solid rgba(92,64,51,.15);border-top-color:#556B2F;border-radius:50%;animation:page-loader-spin .8s linear infinite"></span>
+        <span style="font-size:14px">Loading your page...</span>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

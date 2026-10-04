@@ -45,6 +45,18 @@ const CustomerLayout = ({ children }) => (
   </div>
 );
 
+const PageLoadingFallback = () => (
+  <div
+    className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F8F3E8] text-[#5C4033]"
+    role="status"
+    aria-live="polite"
+  >
+    <span className="font-serif text-2xl font-bold tracking-wide">J&amp;D FOODS</span>
+    <span className="h-8 w-8 animate-spin rounded-full border-4 border-[#5C4033]/15 border-t-[#556B2F]" />
+    <span className="text-sm text-[#5C4033]/70">Loading your page...</span>
+  </div>
+);
+
 function App() {
   return (
     <MotionConfig reducedMotion="user" transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}>
@@ -53,7 +65,7 @@ function App() {
           <Router>
             <ScrollToTop />
             <AnimatePresence mode="wait">
-              <Suspense fallback={<div className="min-h-screen bg-[#F8F3E8]" aria-label="Loading page" />}>
+              <Suspense fallback={<PageLoadingFallback />}>
                 <Routes>
               {/* Admin Routes */}
               <Route path="/admin-forgot-password" element={<ForgotPassword adminMode />} />
