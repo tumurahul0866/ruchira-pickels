@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { getWishlist, getStoreSettings, refreshStoreSettings } from '../../services/dataStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const MotionLink = motion(Link);
+
 const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,7 +67,10 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-[#F8F3E8]">
       {/* Main Navbar */}
-      <nav
+      <motion.nav
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
         className={`transition-all duration-300 ${
           scrolled
             ? 'bg-[#F8F3E8]/95 backdrop-blur-xl shadow-md border-b border-[#5C4033]/10'
@@ -77,7 +82,12 @@ const Navbar = () => {
 
             {/* Brand Logo */}
             <Link to="/" className="flex items-center gap-2 group shrink-0 sm:gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#D97706]/30 bg-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl sm:h-14 sm:w-14">
+              <motion.div
+                whileHover={{ scale: 1.06, rotate: -3 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#D97706]/30 bg-white shadow-lg transition-all duration-300 group-hover:shadow-xl sm:h-14 sm:w-14"
+              >
                 {hasStoreLogo ? (
                   <img
                     src={storeSettings.logoUrl}
@@ -91,7 +101,7 @@ const Navbar = () => {
                 ) : (
                   <span className="bg-gradient-to-br from-[#8B1E1E] to-[#5C4033] bg-clip-text font-serif text-base font-bold text-transparent">J&amp;D</span>
                 )}
-              </div>
+              </motion.div>
               <div className="flex max-w-[100px] flex-col sm:max-w-[160px]">
                 <span className="text-xs font-serif font-bold tracking-wide text-[#5C4033] leading-tight sm:text-lg lg:text-xl">
                   J&amp;D FOODS
@@ -118,8 +128,11 @@ const Navbar = () => {
             </div>
 
             <div className="hidden md:flex items-center gap-1">
-              <Link
+              <MotionLink
                 to="/wishlist"
+                whileHover={{ scale: 1.08, y: -1 }}
+                whileTap={{ scale: 0.94 }}
+                transition={{ duration: 0.18 }}
                 className="relative rounded-xl p-2.5 text-[#556B2F] transition-all hover:bg-[#8B1E1E]/[0.08] hover:text-[#8B1E1E]"
                 title="Wishlist"
                 aria-label="Wishlist"
@@ -130,22 +143,43 @@ const Navbar = () => {
                     {wishlistCount}
                   </span>
                 )}
-              </Link>
+              </MotionLink>
             </div>
 
             {/* Mobile right side */}
             <div className="flex items-center gap-1 md:hidden">
-              <button
+              <motion.button
                 onClick={() => setIsSearchOpen((open) => !open)}
+                whileTap={{ scale: 0.9 }}
                 className="p-1.5 rounded-full text-[#5C4033] hover:bg-white/70"
                 aria-label="Toggle search"
               >
                 <Search size={20} />
-              </button>
-              <Link to="/wishlist" className="relative p-1.5 text-[#5C4033] hover:text-[#8B1E1E]" aria-label="Wishlist" title="Wishlist">
+              </motion.button>
+              <MotionLink
+                to="/wishlist"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                className="relative p-1.5 text-[#5C4033] hover:text-[#8B1E1E]"
+                aria-label="Wishlist"
+                title="Wishlist"
+              >
                 <Heart size={20} />
-                {wishlistCount > 0 && <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#8B1E1E] px-1 text-[9px] font-bold text-white">{wishlistCount}</span>}
-              </Link>
+                <AnimatePresence>
+                  {wishlistCount > 0 && (
+                    <motion.span
+                      key={wishlistCount}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#8B1E1E] px-1 text-[9px] font-bold text-white"
+                    >
+                      {wishlistCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </MotionLink>
             </div>
           </div>
         </div>
@@ -156,6 +190,7 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               className="md:hidden overflow-hidden border-t border-[#5C4033]/10 px-4 py-3"
             >
               <div className="relative">
@@ -175,7 +210,7 @@ const Navbar = () => {
           )}
         </AnimatePresence>
 
-      </nav>
+      </motion.nav>
     </header>
   );
 };
