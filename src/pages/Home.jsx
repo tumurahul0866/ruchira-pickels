@@ -40,7 +40,6 @@ const Home = () => {
   const [offers] = useState(() => getOffers().filter((offer) => offer.active));
   const [reviews] = useState(() => getReviews().filter((review) => review.visible).slice(0, 3));
   const [copiedCode, setCopiedCode] = useState(false);
-  const [isHeroVideoReady, setIsHeroVideoReady] = useState(false);
   const [isHeroVideoMuted, setIsHeroVideoMuted] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchParams] = useSearchParams();
@@ -71,11 +70,6 @@ const Home = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
-
-  useEffect(() => {
-    const videoLoadTimer = window.setTimeout(() => setIsHeroVideoReady(true), 1200);
-    return () => window.clearTimeout(videoLoadTimer);
   }, []);
 
   const featuredOffer = offers.find((o) => o.code);
@@ -135,7 +129,7 @@ const Home = () => {
           >
             {settings?.heroVideoUrl ? (
               <>
-                {!isHeroVideoReady && (settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl) && (
+                {(settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl) && (
                   <img
                     src={settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl}
                     alt="Andhra Avakaya Mango Pickle"
@@ -144,18 +138,17 @@ const Home = () => {
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 )}
-                {isHeroVideoReady && (
-                  <video
-                    src={settings.heroVideoUrl}
-                    poster={settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl}
-                    autoPlay
-                    loop
-                    playsInline
-                    muted={isHeroVideoMuted}
-                    aria-label="Hero banner video"
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                )}
+                <video
+                  src={settings.heroVideoUrl}
+                  poster={settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl}
+                  preload="auto"
+                  autoPlay
+                  loop
+                  playsInline
+                  muted={isHeroVideoMuted}
+                  aria-label="Hero banner video"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
               </>
             ) : settings?.heroDesktopImageUrl || settings?.heroMobileImageUrl || settings?.featureImageUrl ? (
               <picture className="absolute inset-0">
