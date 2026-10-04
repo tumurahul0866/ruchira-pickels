@@ -7,7 +7,7 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { toggleWishlist, isProductInWishlist, getProductUnitPrice, getProductUnitLabel, isLegacyProduct, getProductVariants, getComboProductUnit } from '../../services/dataStore';
 
-const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
+const ProductCard = ({ product, compact = false, catalogProducts = [], priority = false }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const wishlistKey = user?.email || user?.phone || user?.id;
@@ -89,6 +89,9 @@ const ProductCard = ({ product, compact = false, catalogProducts = [] }) => {
             <img
               src={product.image}
               alt={product.name}
+              loading={priority ? 'eager' : 'lazy'}
+              decoding="async"
+              fetchPriority={priority ? 'high' : 'low'}
               className="w-full h-full object-cover transition-transform duration-400 ease-out group-hover:scale-[1.03]"
               onError={(e) => {
                 e.target.onerror = null;

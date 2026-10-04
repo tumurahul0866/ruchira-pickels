@@ -40,6 +40,7 @@ const Home = () => {
   const [offers] = useState(() => getOffers().filter((offer) => offer.active));
   const [reviews] = useState(() => getReviews().filter((review) => review.visible).slice(0, 3));
   const [copiedCode, setCopiedCode] = useState(false);
+  const [isHeroVideoReady, setIsHeroVideoReady] = useState(false);
   const [isHeroVideoMuted, setIsHeroVideoMuted] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchParams] = useSearchParams();
@@ -70,6 +71,11 @@ const Home = () => {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const videoLoadTimer = window.setTimeout(() => setIsHeroVideoReady(true), 1200);
+    return () => window.clearTimeout(videoLoadTimer);
   }, []);
 
   const featuredOffer = offers.find((o) => o.code);
@@ -128,16 +134,29 @@ const Home = () => {
             className="relative h-[230px] overflow-hidden rounded-none border border-[#5C4033]/10 bg-[#EAE0D0] shadow-sm sm:h-[280px] lg:h-[320px]"
           >
             {settings?.heroVideoUrl ? (
-              <video
-                src={settings.heroVideoUrl}
-                poster={settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl}
-                autoPlay
-                loop
-                playsInline
-                muted={isHeroVideoMuted}
-                aria-label="Hero banner video"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
+              <>
+                {!isHeroVideoReady && (settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl) && (
+                  <img
+                    src={settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl}
+                    alt="Andhra Avakaya Mango Pickle"
+                    fetchPriority="high"
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
+                {isHeroVideoReady && (
+                  <video
+                    src={settings.heroVideoUrl}
+                    poster={settings.heroDesktopImageUrl || settings.featureImageUrl || settings.heroMobileImageUrl}
+                    autoPlay
+                    loop
+                    playsInline
+                    muted={isHeroVideoMuted}
+                    aria-label="Hero banner video"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
+              </>
             ) : settings?.heroDesktopImageUrl || settings?.heroMobileImageUrl || settings?.featureImageUrl ? (
               <picture className="absolute inset-0">
                 {settings.heroMobileImageUrl && (
@@ -267,8 +286,15 @@ const Home = () => {
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
               <AnimatePresence>
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} offer={offers[0]} compact catalogProducts={products} />
+                {filteredProducts.map((product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    offer={offers[0]}
+                    compact
+                    catalogProducts={products}
+                    priority={index < 4}
+                  />
                 ))}
               </AnimatePresence>
             </div>
